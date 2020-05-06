@@ -1,0 +1,42 @@
+name: Check
+
+
+
+
+
+on: push
+
+
+
+
+
+jobs:
+
+  build:
+    name: Check
+    runs-on: ubuntu-18.04
+
+    steps:
+
+      - uses: actions/checkout@v1
+
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 12.x
+
+      - run: npm install --no-save
+        env:
+          ADBLOCK: true
+          DISABLE_OPENCOLLECTIVE: true
+          HUSKY_SKIP_INSTALL: true
+
+      - run: npm run test -- --verbose
+
+      - run: npm run build
+
+      - run: ls -lh dist/{index,bin}*
+
+      - run: npm run bundle
+
+      - run: ls -lh dist/{index,bin}*
+
