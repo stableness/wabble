@@ -1,0 +1,26 @@
+{
+
+  "preset": "ts-jest",
+  "testEnvironment": "node",
+
+  "globals": {
+    "ts-jest": {
+      "tsConfig": "tsconfig.test.json"
+    }
+  },
+
+  "testPathIgnorePatterns": [
+    "<rootDir>/dist/",
+    "<rootDir>/node_modules/"
+  ],
+
+  "coveragePathIgnorePatterns": [
+    "test/helpers"
+  ],
+
+  "reporters": [
+    "default",
+    "jest-junit"
+  ]
+
+}
