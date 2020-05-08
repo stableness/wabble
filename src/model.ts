@@ -59,7 +59,7 @@ export const readLevel = R.converge(
             R.prop('LOG_LEVEL'),
         ),
     ],
-) as (obj: object) => string;
+) as u.Fn<object, string>;
 
 
 

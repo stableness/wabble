@@ -266,7 +266,7 @@ export const numberToUInt16BE = R.cond([
 
     [ R.T, _numberToUInt16BE ],
 
-]) as (n: number) => Buffer;
+]) as Fn<number, Buffer>;
 
 function _numberToUInt16BE (num: number) {
 

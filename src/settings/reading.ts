@@ -7,6 +7,8 @@ import { eq as Eq, option as O, pipeable as P, function as F } from 'fp-ts';
 
 import type { Config, Basic, Remote } from '../config';
 
+import type { Fn } from '../utils';
+
 import { ShadowSocks } from './utils';
 
 
@@ -143,13 +145,13 @@ export function filterTags <T extends TagsOnlyRemote> (tags: unknown, servers: T
     const i = R.reject(R.startsWith('-'), t);
 
     // Exclude
-    const e = R.map(R.tail as (str: string) => string, R.symmetricDifference(i, t));
+    const e = R.map(R.tail as Fn<string>, R.symmetricDifference(i, t));
 
     // tags to array
     const t2a = R.o(
         Array.from,
         R.prop('tags') as () => T['tags'],
-    ) as (t: T) => string[];
+    ) as Fn<T, string[]>;
 
     const isSubset = R.o(
         R.isEmpty,

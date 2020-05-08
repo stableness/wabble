@@ -1,6 +1,6 @@
 import * as R from 'ramda';
 
-import { EVP_BytesToKey } from '../utils';
+import { EVP_BytesToKey, Fn } from '../utils';
 
 
 
@@ -47,7 +47,7 @@ export namespace ShadowSocks {
         [ R.equals('chacha20-ietf-poly1305'), R.always('chacha20-poly1305') ],
         [ R.equals('chacha20-ietf'),          R.always('chacha20') ],
         [ R.T,                                R.identity ],
-    ]) as (s: string) => string;
+    ]) as Fn<string>;
 
 
 
@@ -60,7 +60,7 @@ export namespace ShadowSocks {
             alg: 'chacha20-ietf-poly1305',
             key: '',
         }),
-    ) as unknown as (obj: object) => { key: string, alg: string };
+    ) as unknown as Fn<object, { key: string, alg: string }>;
 
 
 
