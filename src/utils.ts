@@ -30,13 +30,13 @@ import * as o from 'rxjs/operators';
 
 
 
-export type Fun <I, O = I> = (i: I) => O;
+export type Fn <I, O = I> = (i: I) => O;
 
 
 
 
 
-export function testWith (list: Iterable<Fun<string, boolean>>) {
+export function testWith (list: Iterable<Fn<string, boolean>>) {
 
     return R.memoizeWith(R.identity, test);
 
@@ -118,8 +118,8 @@ export namespace rules {
         R.adjust(0, R.map(R.replace('NOT,', ''))) as typeof R.identity,
         R.map(through),
         R.applySpec({
-            not: R.head as Fun<any, Test>,
-            yes: R.last as Fun<any, Test>,
+            not: R.head as Fn<any, Test>,
+            yes: R.last as Fn<any, Test>,
         }),
     );
 
@@ -417,7 +417,7 @@ export function DoH (endpoint: string, path = 'dohdec') {
 
 
 
-export const onceErr: Fun<NodeJS.EventEmitter, Promise<[ Error ]>>
+export const onceErr: Fn<NodeJS.EventEmitter, Promise<[ Error ]>>
     = R.flip(once)('error') as any;
 
 

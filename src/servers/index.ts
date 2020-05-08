@@ -16,7 +16,7 @@ import {
 } from 'fp-ts';
 
 import type { Remote } from '../config';
-import { DoH, Fun } from '../utils';
+import { DoH, Fn } from '../utils';
 import { logLevel } from '../model';
 import type { Hook } from '../services/index';
 
@@ -33,7 +33,7 @@ type Opts = {
     port: number,
     hook: Hook,
     dns: O.Option<ReturnType<typeof DoH>>,
-    doh: Fun<string, boolean>,
+    doh: Fn<string, boolean>,
     logger: Logger,
 };
 
@@ -48,7 +48,7 @@ export type ChainOpts = Pick<Opts, 'port' | 'logger' | 'hook'> & {
 const dnsCache = new Map<string, string>();
 const nsLookup = (host: string) => fpMap.lookup (Eq.eqString) (host, dnsCache);
 
-const hostCache = R.memoizeWith(F.identity, O.some as Fun<string, O.Option<string>>);
+const hostCache = R.memoizeWith(F.identity, O.some as Fn<string, O.Option<string>>);
 
 
 
@@ -178,11 +178,11 @@ export const netConnectTo = R.compose(
         .setKeepAlive(true, 1000 * 60)
     ),
 
-    net.connect as Fun<net.NetConnectOpts, net.Socket>,
+    net.connect as Fn<net.NetConnectOpts, net.Socket>,
 
     R.mergeRight({
         allowHalfOpen: true,
     }),
 
-) as Fun<net.NetConnectOpts, net.Socket>;
+) as Fn<net.NetConnectOpts, net.Socket>;
 
