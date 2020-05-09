@@ -1,6 +1,6 @@
 {
   "name": "@stableness/wabble",
-  "version": "0.5.5",
+  "version": "0.5.6-0",
   "description": "tbd",
   "esm": "dist/index.mjs",
   "main": "dist/index.cjs",
