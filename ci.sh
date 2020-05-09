@@ -27,7 +27,7 @@ release()
 
     jq '{ name, version, bin, files }' ${PKG} > ${TMP} && mv ${TMP} ${PKG}
 
-    npm pack && mv *.tgz dist/ && cd dist/
+    npm pack && mv *.tgz dist/wabble.${VER}.tgz && cd dist/
 
     # npx nexe bin.cjs --target macos-x64-v12.13.1 --name macos-v${VER}-n12
 
