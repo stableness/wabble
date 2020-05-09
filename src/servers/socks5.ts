@@ -25,7 +25,7 @@ export function chain ({ ipOrHost, port, logger, hook }: ChainOpts, remote: Sock
     return P.pipe(
 
         TE.tryCatch(
-            async () => await encase(netConnectTo(remote), knock),
+            () => encase(netConnectTo(remote), knock),
             E.toError,
         ),
 
@@ -46,7 +46,7 @@ export function chain ({ ipOrHost, port, logger, hook }: ChainOpts, remote: Sock
 
         TE.chain(conn =>
             TE.tryCatch(
-                async () => await hook(conn),
+                () => hook(conn),
                 E.toError,
             ),
         ),

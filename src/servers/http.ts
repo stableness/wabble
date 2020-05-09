@@ -26,7 +26,7 @@ export function chain ({ ipOrHost, port, logger, hook }: ChainOpts, remote: Http
     return P.pipe(
 
         TE.tryCatch(
-            async () => await tunnel(remote, R.join(':', [ ipOrHost, port ])),
+            () => tunnel(remote, R.join(':', [ ipOrHost, port ])),
             E.toError,
         ),
 
@@ -47,7 +47,7 @@ export function chain ({ ipOrHost, port, logger, hook }: ChainOpts, remote: Http
 
         TE.chain(conn =>
             TE.tryCatch(
-                async () => await hook(conn),
+                () => hook(conn),
                 E.toError,
             ),
         ),

@@ -59,7 +59,7 @@ export function chain ({ ipOrHost, port, logger, hook }: ChainOpts, remote: SS) 
 
         TE.chain(({ enc, dec }) =>
             TE.tryCatch(
-                async () => await hook(enc, netConnectTo(remote), dec),
+                () => hook(enc, netConnectTo(remote), dec),
                 E.toError,
             ),
         ),

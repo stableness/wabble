@@ -120,7 +120,7 @@ export function connect ({ host, port, hook, dns, doh, logger }: Opts) {
 
             return P.pipe(
                 TE.tryCatch(
-                    async () => await hook(netConnectTo({ port, host: ipOrHost })),
+                    () => hook(netConnectTo({ port, host: ipOrHost })),
                     E.toError,
                 ),
                 TE.mapLeft(R.tap(() => hook())),
