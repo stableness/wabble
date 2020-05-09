@@ -15,7 +15,7 @@ import * as o from 'rxjs/operators';
 
 import { logger, logLevel } from '../model';
 import type { Service } from '../config';
-import { pump, onceErr } from '../utils';
+import { pump, mountErrOf } from '../utils';
 
 
 
@@ -198,7 +198,7 @@ export function socks5Proxy ({ port, host, auth }: Service) {
             async hook (...duplex: NodeJS.ReadWriteStream[]) {
 
                 if (R.isEmpty(duplex)) {
-                    onceErr(socket);
+                    mountErrOf(socket);
                     return socket.destroy();
                 }
 
