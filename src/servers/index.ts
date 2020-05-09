@@ -106,8 +106,7 @@ export function connect ({ host, port, hook, dns, doh, logger }: Opts) {
 
         const ipOrHost = P.pipe(
             ip,
-            O.fromNullable,
-            E.fromOption(Error),
+            E.fromNullable(Error('Non DoH')),
             E.flatten,
             O.fromEither,
             O.flatten,

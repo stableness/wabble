@@ -6,9 +6,7 @@ import * as R from 'ramda';
 import {
     either as E,
     taskEither as TE,
-    option as O,
     pipeable as P,
-    function as F,
 } from 'fp-ts';
 
 import { toTransform } from 'buffer-pond';
@@ -33,9 +31,7 @@ export function chain ({ ipOrHost, port, logger, hook }: ChainOpts, remote: SS) 
 
         cryptoPairs(remote, knock),
 
-        O.fromNullable,
-
-        E.fromOption(F.constant(Error('Has no crypto to perform'))),
+        E.fromNullable(Error('Has no crypto to perform')),
 
         E.map(R.tap(() => {
 
