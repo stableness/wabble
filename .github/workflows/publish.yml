@@ -85,7 +85,7 @@ jobs:
         with:
           upload_url: ${{ steps.draft.outputs.upload_url }}
           asset_path: dist/artifacts/stableness-wabble-${{ steps.release.outputs.ver }}.tgz
-          asset_name: stableness-wabble-${{ steps.release.outputs.ver }}.tgz
+          asset_name: wabble-${{ steps.release.outputs.ver }}.tgz
           asset_content_type: application/gzip
 
       - uses: actions/upload-release-asset@v1.0.1
