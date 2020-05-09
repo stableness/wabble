@@ -26,6 +26,8 @@ import * as R from 'ramda';
 import * as Rx from 'rxjs';
 import * as o from 'rxjs/operators';
 
+import { bind } from 'proxy-bind';
+
 
 
 
@@ -419,6 +421,20 @@ export function DoH (endpoint: string, path = 'dohdec') {
 
 export const onceErr: Fn<NodeJS.EventEmitter, Promise<[ Error ]>>
     = R.flip(once)('error') as any;
+
+
+
+
+
+const { has: errSetHas, add: errSetAdd } = bind(new WeakSet());
+
+export const mountErrOf = R.unless(
+    errSetHas,
+    R.o(
+        R.tap(errSetAdd),
+        R.tap(onceErr),
+    ),
+) as typeof R.identity;
 
 
 
