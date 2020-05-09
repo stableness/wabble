@@ -63,7 +63,7 @@ jobs:
       - uses: actions/upload-artifact@v1
         with:
           path: dist/artifacts
-          name: stableness-wabble-${{ steps.release.outputs.ver }}
+          name: wabble-${{ steps.release.outputs.ver }}
 
 
 
@@ -84,7 +84,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.draft.outputs.upload_url }}
-          asset_path: dist/artifacts/stableness-wabble-${{ steps.release.outputs.ver }}.tgz
+          asset_path: dist/artifacts/wabble-${{ steps.release.outputs.ver }}.tgz
           asset_name: wabble-${{ steps.release.outputs.ver }}.tgz
           asset_content_type: application/gzip
 
