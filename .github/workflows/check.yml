@@ -39,4 +39,6 @@ jobs:
       - run: npm run bundle
 
       - run: ls -lh dist/{index,bin}*
+      
+      - uses: codecov/codecov-action@v1.0.7
 
