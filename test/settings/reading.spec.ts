@@ -1,10 +1,41 @@
 import * as R from 'ramda';
 
+import { option as O } from 'fp-ts';
+
 import {
 
     filterTags,
+    readDoH,
+    CF_DOH_ENDPOINT,
 
 } from '../../src/settings/reading';
+
+
+
+
+
+describe('readDoH', () => {
+
+    test.each([
+        42,
+        'wat',
+        null,
+        undefined,
+        false,
+    ])('%s', value => {
+        expect(readDoH(value)).toBe(O.none);
+    });
+
+    test('true', () => {
+        expect(readDoH(true)).toStrictEqual(O.some(CF_DOH_ENDPOINT));
+    })
+
+    test('costume', () => {
+        const DOH = 'https://ecs-doh.dnswarden.com/uncensored-ecs';
+        expect(readDoH(DOH)).toStrictEqual(O.some(DOH));
+    })
+
+});
 
 
 

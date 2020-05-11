@@ -127,6 +127,31 @@ export function convert (obj: unknown): Config {
 
 
 
+export const CF_DOH_ENDPOINT = 'https://cloudflare-dns.com/dns-query';
+
+export const readDoH = F.flow(
+    O.fromNullable,
+    O.filter(R.either(
+        R.is(Boolean),
+        R.both(
+            R.is(String),
+            R.either(
+                R.startsWith('http://'),  // TODO: should disallowing?
+                R.startsWith('https://'),
+            ),
+        ),
+    )),
+    O.chain(R.cond([
+        [ R.equals(true),  R.always(O.some(CF_DOH_ENDPOINT)) ],
+        [ R.equals(false), R.always(O.none) ],
+        [ R.T,             O.some ],
+    ]) as Fn<unknown, O.Option<string>>),
+);
+
+
+
+
+
 type TagsOnlyRemote = Partial<Remote> & Pick<Remote, 'tags'>;
 
 export function filterTags <T extends TagsOnlyRemote> (tags: unknown, servers: T[]) {
