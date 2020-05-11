@@ -108,16 +108,7 @@ export function convert (obj: unknown): Config {
 
     }(raw.rules));
 
-    const doh = (function (doh: unknown) {
-
-        return P.pipe(
-            O.fromNullable(doh as string),
-            O.filter(R.is(String)),
-            O.filter(R.startsWith('https://')),
-            O.alt(F.constant(O.some('https://cloudflare-dns.com/dns-query'))),
-        );
-
-    }(raw.doh));
+    const doh = readDoH(raw.doh);
 
     return { services, doh, servers, rules } as const;
 
