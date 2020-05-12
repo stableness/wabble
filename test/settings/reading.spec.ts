@@ -7,6 +7,7 @@ import {
     filterTags,
     readDoH,
     CF_DOH_ENDPOINT,
+    assertBaseArray,
 
 } from '../../src/settings/reading';
 
@@ -34,6 +35,29 @@ describe('readDoH', () => {
         const DOH = 'https://ecs-doh.dnswarden.com/uncensored-ecs';
         expect(readDoH(DOH)).toStrictEqual(O.some(DOH));
     })
+
+});
+
+
+
+
+
+describe('assertBaseArray', () => {
+
+    test.each([
+        null,
+        [],
+        {},
+        [ {} ],
+        [ 42 ],
+        [ null ],
+    ])('invalid: %p', value => {
+        expect(() => assertBaseArray(value)).toThrow();
+    });
+
+    test('valid', () => {
+        expect(() => assertBaseArray([ { uri: 'http://localhost' } ])).not.toThrow();
+    });
 
 });
 
