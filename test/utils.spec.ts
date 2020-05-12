@@ -19,6 +19,8 @@ import {
     incrementLE,
     rules,
     mountErrOf,
+    HKDF_SHA1,
+    Fn,
 
 } from '../src/utils';
 
@@ -330,7 +332,23 @@ describe('genLooping', () => {
 
 describe('HKDF_SHA1', () => {
 
-    test.todo('');
+    test.each([
+
+        [   42,
+            '0b0b0b0b0b0b0b0b0b0b0b',
+            '000102030405060708090a0b0c',
+            'f0f1f2f3f4f5f6f7f8f9',
+            '085a01ea1b10f36933068b56efa5ad81a4f14b822f5b091568a9cdd4f155fda2c22e422478d305f3f896',
+        ],
+
+    ])('%p', (length, key, salt, info, hash) => {
+        expect(HKDF_SHA1(h(key), h(salt), length, h(info))).toStrictEqual(h(hash));
+    });
+
+    const h = R.o(
+        R.curryN(2, Buffer.from)(R.__, 'hex') as Fn<string, Buffer>,
+        R.replace(/\s+/g, ''),
+    );
 
 });
 
