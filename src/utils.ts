@@ -248,7 +248,7 @@ export function HKDF_SHA1 (
         key: Buffer | string,
         salt: Buffer,
         length: number,
-        info = 'ss-subkey',
+        info: Buffer | string = 'ss-subkey',
 ) {
     return HKDF(key, length, { info, salt, hash: 'sha1' });
 }
