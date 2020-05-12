@@ -100,8 +100,17 @@ const config$ = loader$.pipe(
     o.refCount(),
 );
 
-const chinaList$ = u.sieve('@stableness/sieve-tray/lib/china-list');
-const blockList$ = u.sieve('@stableness/sieve-tray/lib/block-list');
+const directList$ = config$.pipe(
+    o.pluck('sieve', 'direct'),
+    o.map(O.getOrElse(F.constant('@stableness/sieve-tray/lib/china-list'))),
+    o.flatMap(u.sieve),
+);
+
+const rejectList$ = config$.pipe(
+    o.pluck('sieve', 'reject'),
+    o.map(O.getOrElse(F.constant('@stableness/sieve-tray/lib/block-list'))),
+    o.flatMap(u.sieve),
+);
 
 const rules$ = config$.pipe(
     o.pluck('rules'),
@@ -110,17 +119,17 @@ const rules$ = config$.pipe(
         direct: u.rules.DOH,
         reject: u.rules.NOT,
     })),
-    o.withLatestFrom(blockList$, chinaList$, (rules, block, china) => ({
+    o.withLatestFrom(rejectList$, directList$, (rules, reject, direct) => ({
         reject: R.either(
             rules.reject.yes,
             R.both(
                 R.complement(rules.reject.not),
-                block,
+                reject,
             ),
         ),
         direct: R.both(
             R.complement(rules.proxy.all),
-            R.anyPass([ rules.direct.all, china, u.isPrivateIP ]),
+            R.anyPass([ rules.direct.all, direct, u.isPrivateIP ]),
         ),
         doh: R.either(rules.direct.doh, rules.proxy.doh),
     })),

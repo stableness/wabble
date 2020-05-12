@@ -108,11 +108,27 @@ export function convert (obj: unknown): Config {
 
     }(raw.rules));
 
+    const sieve = {
+        direct: readOptionalString(R.path([ 'sieve', 'direct' ], raw)),
+        reject: readOptionalString(R.path([ 'sieve', 'reject' ], raw)),
+    };
+
     const doh = readDoH(raw.doh);
 
-    return { services, doh, servers, rules } as const;
+    return { services, doh, servers, rules, sieve } as const;
 
 }
+
+
+
+
+
+export const readOptionalString = F.flow(
+    O.fromNullable,
+    O.filter(R.is(String)),
+    O.map(R.trim),
+    O.filter(R.complement(R.equals(''))),
+) as Fn<unknown, O.Option<string>>;
 
 
 
