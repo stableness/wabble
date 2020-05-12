@@ -211,7 +211,7 @@ function assertObject (obj: unknown): asserts obj is object {
 
 
 
-function assertBaseArray (obj: unknown): asserts obj is Base[] {
+export function assertBaseArray (obj: unknown): asserts obj is Base[] {
 
     if (!(obj instanceof Array) || obj == null) {
         fail('not array');
