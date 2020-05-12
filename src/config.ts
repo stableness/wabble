@@ -105,5 +105,7 @@ export interface Config {
 
     rules: Record<'direct' | 'reject' | 'proxy', ReadonlyArray<string>>;
 
+    sieve: Record<'direct' | 'reject', O.Option<string>>;
+
 }
 
