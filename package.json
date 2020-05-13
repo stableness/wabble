@@ -31,6 +31,7 @@
     "basic-auth": "github:stableness/basic-auth",
     "buffer-pond": "~0.8.0",
     "command-line-args": "^5.1.1",
+    "dohdec": "^2.1.0",
     "fp-ts": "^2.5.4",
     "futoin-hkdf": "^1.2.1",
     "ip": "^1.1.5",
