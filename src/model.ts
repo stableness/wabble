@@ -150,7 +150,7 @@ const dealer$ = config$.pipe(
 
 const dns$ = config$.pipe(
     o.pluck('doh'),
-    o.map(O.map(u.DoH)),
+    o.map(O.map(R.unary(u.DoH))),
 );
 
 const services$ = config$.pipe(
