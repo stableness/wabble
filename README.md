@@ -16,9 +16,9 @@ version: 1.0
 
 
 
-doh: on # 1) [on] enables DoH (via https://cloudflare-dns.com/dns-query)
-        # 2) [off] disables DoH
-        # 3) or specify another provider's endpoint
+doh: true # 1) [true] enables DoH (via https://cloudflare-dns.com/dns-query)
+          # 2) [false] disables DoH
+          # 3) or specify another provider's endpoint
 
 
 
