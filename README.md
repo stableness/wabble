@@ -76,7 +76,7 @@ rules:
 
   reject:
 
-    # prefix with NOT to make sure it doesn't gets dropped accidentally
+    # perpend with NOT to make sure it doesn't gets dropped accidentally
     - NOT,END,.org
 
     - safebrowsing.urlsec.qq.com
@@ -91,5 +91,5 @@ rules:
 
 ## Templates
 
-- https://github.com/stableness/joggle
+- https://github.com/stableness/joggle ([create](https://github.com/stableness/joggle/generate))
 
