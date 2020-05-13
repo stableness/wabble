@@ -341,7 +341,7 @@ describe('HKDF_SHA1', () => {
             '085a01ea1b10f36933068b56efa5ad81a4f14b822f5b091568a9cdd4f155fda2c22e422478d305f3f896',
         ],
 
-    ])('%p', (length, key, salt, info, hash) => {
+    ])('%i - %s', (length, key, salt, info, hash) => {
         expect(HKDF_SHA1(h(key), h(salt), length, h(info))).toStrictEqual(h(hash));
     });
 
