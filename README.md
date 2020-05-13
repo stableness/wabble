@@ -68,15 +68,15 @@ rules:
 
   direct:
 
-   - END,.cn
-   - FULL,localhost
+    - END,.cn
+    - FULL,localhost
 
-   # perpend with DOH, to enable DNS over Https
-   - DOH,END,cdninstagram.com
+    # prepend with DOH, to enable DNS over Https
+    - DOH,END,cdninstagram.com
 
   reject:
 
-    # perpend with NOT to make sure it doesn't gets dropped accidentally
+    # prepend with NOT to make sure it doesn't gets dropped accidentally
     - NOT,END,.org
 
     - safebrowsing.urlsec.qq.com
