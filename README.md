@@ -91,5 +91,5 @@ rules:
 
 ## Templates
 
-- https://github.com/stableness/joggle ([create](https://github.com/stableness/joggle/generate))
+- https://github.com/stableness/joggle ([create](https://github.com/stableness/joggle/generate), [download](https://github.com/stableness/joggle/archive/master.zip))
 
