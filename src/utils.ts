@@ -203,10 +203,13 @@ export function loopNext <T> (list: ArrayLike<T>) {
 
 export namespace hash {
 
+    type Alg = 'md4' | 'md5' | 'sha1' | 'sha224' | 'sha256' | 'sha512';
+
     export const md5 = hashFactor('md5');
     export const sha1 = hashFactor('sha1');
+    export const sha224 = hashFactor('sha224');
 
-    function hashFactor (algorithm: 'md4' | 'md5' | 'sha1' | 'sha256' | 'sha512') {
+    function hashFactor (algorithm: Alg) {
 
         type Data = string | Buffer | NodeJS.TypedArray | DataView;
 
