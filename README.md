@@ -24,13 +24,13 @@ doh: true # 1) [true] enables DoH (via https://cloudflare-dns.com/dns-query)
 
 services: # local
 
-  # A http proxy
+  # http proxy
   - uri: http://localhost:3000
 
   # with basic auth - username: admin, password: 123
   - uri: http://admin:123@localhost:3001
 
-  # A socks5 proxy
+  # socks5 proxy
   - uri: socks5://127.0.0.1:3002
 
   # binding 0.0.0.0 to accept connection from other devices
