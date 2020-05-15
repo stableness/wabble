@@ -19,7 +19,7 @@
     "dist/bin.cjs",
     "dist/index.cjs"
   ],
-  "repository": "stableness/wabble",
+  "repository": "github:stableness/wabble",
   "homepage": "https://github.com/stableness/wabble",
   "bugs": {
     "url": "https://github.com/stableness/wabble/issues"
