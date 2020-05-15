@@ -183,5 +183,5 @@ export const netConnectTo = R.compose(
         allowHalfOpen: true,
     }),
 
-) as Fn<net.NetConnectOpts, net.Socket>;
+) as Fn<net.TcpNetConnectOpts, net.Socket>;
 
