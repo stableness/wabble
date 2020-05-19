@@ -10,7 +10,7 @@ import type { ShadowSocks } from './settings/utils';
 
 interface Base {
 
-    protocol: 'socks5' | 'http' | 'https' | 'ss';
+    protocol: 'socks5' | 'http' | 'https' | 'ss' | 'trojan';
 
     host: string;
     port: number;
@@ -34,6 +34,22 @@ export interface Socks5 extends Base {
 export interface Http extends Base {
 
     protocol: 'http' | 'https';
+
+}
+
+export interface Trojan extends Base {
+
+    protocol: 'trojan';
+
+    password: string;
+
+    ssl: {
+        verify: boolean;
+        verify_hostname: boolean;
+        sni?: string;
+        alpn?: Array<string>;
+        ciphers?: string;
+    };
 
 }
 
@@ -69,7 +85,7 @@ interface AEAD {
 
 }
 
-export type Remote = Http | Socks5 | ShadowSocks;
+export type Remote = Http | Socks5 | ShadowSocks | Trojan;
 
 
 
