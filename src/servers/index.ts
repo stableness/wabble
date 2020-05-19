@@ -22,6 +22,7 @@ import type { Hook } from '../services/index';
 
 import { chain as chainHttp } from './http';
 import { chain as chainSocks5 } from './socks5';
+import { chain as chainTrojan } from './trojan';
 import { chain as chainShadowSocks } from './shadowsocks';
 
 
@@ -143,6 +144,10 @@ export function connect ({ host, port, hook, dns, doh, logger }: Opts) {
 
                 if (remote.protocol === 'socks5') {
                     return chainSocks5(opts, remote);
+                }
+
+                if (remote.protocol === 'trojan') {
+                    return chainTrojan(opts, remote);
                 }
 
                 if (remote.protocol === 'ss') {
