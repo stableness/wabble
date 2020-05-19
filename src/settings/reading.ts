@@ -7,9 +7,9 @@ import { eq as Eq, option as O, pipeable as P, function as F } from 'fp-ts';
 
 import type { Config, Basic, Remote } from '../config';
 
-import type { Fn } from '../utils';
+import { Fn, readOptionalString } from '../utils';
 
-import { ShadowSocks } from './utils';
+import { ShadowSocks, Trojan } from './utils';
 
 
 
@@ -81,6 +81,16 @@ export function convert (obj: unknown): Config {
 
         }
 
+        if (proto === 'trojan') {
+
+            const config = Trojan.parse(server);
+
+            if (config) {
+                return baseWith({ ...config, protocol: proto } as const);
+            }
+
+        }
+
         if (proto === 'socks5') {
 
             return baseWith({ protocol: proto } as const);
@@ -118,17 +128,6 @@ export function convert (obj: unknown): Config {
     return { services, doh, servers, rules, sieve } as const;
 
 }
-
-
-
-
-
-export const readOptionalString = F.flow(
-    O.fromNullable,
-    O.filter(R.is(String)),
-    O.map(R.trim),
-    O.filter(R.complement(R.equals(''))),
-) as Fn<unknown, O.Option<string>>;
 
 
 
