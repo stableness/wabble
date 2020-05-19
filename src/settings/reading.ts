@@ -123,17 +123,6 @@ export function convert (obj: unknown): Config {
 
 
 
-export const readOptionalString = F.flow(
-    O.fromNullable,
-    O.filter(R.is(String)),
-    O.map(R.trim),
-    O.filter(R.complement(R.equals(''))),
-) as Fn<unknown, O.Option<string>>;
-
-
-
-
-
 export const CF_DOH_ENDPOINT = 'https://cloudflare-dns.com/dns-query';
 
 export const readDoH = F.flow(

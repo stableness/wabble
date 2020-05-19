@@ -302,6 +302,17 @@ export const isPrivateIP = R.both(
 
 
 
+export const readOptionalString = F.flow(
+    O.fromNullable,
+    O.filter(R.is(String)),
+    O.map(R.trim),
+    O.filter(R.complement(R.equals(''))),
+) as Fn<unknown, O.Option<string>>;
+
+
+
+
+
 export namespace basicInfo {
 
     export const auth = infoBy('authorization');
