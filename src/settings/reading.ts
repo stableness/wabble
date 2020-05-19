@@ -7,9 +7,9 @@ import { eq as Eq, option as O, pipeable as P, function as F } from 'fp-ts';
 
 import type { Config, Basic, Remote } from '../config';
 
-import type { Fn } from '../utils';
+import { Fn, readOptionalString } from '../utils';
 
-import { ShadowSocks } from './utils';
+import { ShadowSocks, Trojan } from './utils';
 
 
 
@@ -74,6 +74,16 @@ export function convert (obj: unknown): Config {
         if (proto === 'ss') {
 
             const config = ShadowSocks.parse(server);
+
+            if (config) {
+                return baseWith({ ...config, protocol: proto } as const);
+            }
+
+        }
+
+        if (proto === 'trojan') {
+
+            const config = Trojan.parse(server);
 
             if (config) {
                 return baseWith({ ...config, protocol: proto } as const);
