@@ -25,7 +25,7 @@ import { ChainOpts, netConnectTo } from './index';
 
 export function chain ({ ipOrHost, port, logger, hook }: ChainOpts, remote: SS) {
 
-    const knock = u.socks5Handshake(ipOrHost, port).slice(3);
+    const knock = u.socks5Handshake(ipOrHost, port).subarray(3);
 
     return P.pipe(
 
@@ -225,12 +225,12 @@ export function DecryptAEAD (
         while (true) {
 
             const sizing = await read(2 + tagSize);
-            const lengthBuffer = decrypt(sizing.slice(0, 2), sizing.slice(2));
+            const lengthBuffer = decrypt(sizing.subarray(0, 2), sizing.subarray(2));
 
             const length = lengthBuffer.readUInt16BE(0);
 
             const data = await read(length + tagSize);
-            const plainText = decrypt(data.slice(0, length), data.slice(length));
+            const plainText = decrypt(data.subarray(0, length), data.subarray(length));
 
             yield plainText;
 
@@ -327,13 +327,13 @@ export function DecryptStream (
                     return cb();
                 }
 
-                decipher = crypto.createDecipheriv(algorithm, key, chunk.slice(0, ivLength));
+                decipher = crypto.createDecipheriv(algorithm, key, chunk.subarray(0, ivLength));
 
                 if (chunk.length === ivLength) {
                     return cb();
                 }
 
-                chunk = chunk.slice(ivLength);
+                chunk = chunk.subarray(ivLength);
 
             }
 

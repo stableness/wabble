@@ -140,8 +140,8 @@ export const noop = F.constVoid;
 export async function* chop (max: number, chunk: Uint8Array) {
 
     while (chunk.length > max) {
-        yield chunk.slice(0, max);
-        chunk = chunk.slice(max);
+        yield chunk.subarray(0, max);
+        chunk = chunk.subarray(max);
     }
 
     if (chunk.length > 0) {
