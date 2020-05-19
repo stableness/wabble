@@ -419,6 +419,12 @@ export function DoH (endpoint: string, path = 'dohdec') {
 
 
 
+export const constErr = R.o(R.always, Error);
+
+
+
+
+
 export const onceErr: Fn<NodeJS.EventEmitter, Promise<[ Error ]>>
     = R.flip(once)('error') as any;
 

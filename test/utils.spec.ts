@@ -21,6 +21,7 @@ import {
     mountErrOf,
     HKDF_SHA1,
     Fn,
+    constErr,
 
 } from '../src/utils';
 
@@ -302,6 +303,23 @@ describe('mountErrOf', () => {
     test('identical returning', () => {
         expect(mountErrOf(emitter)).toBe(emitter);
         expect(mountErrOf(emitter)).toBe(emitter);
+    });
+
+});
+
+
+
+
+
+describe('constErr', () => {
+
+    const msg = 'o_O';
+    const lazyErr = constErr(msg);
+
+    test('', () => {
+        expect(lazyErr).not.toThrow();
+        expect(lazyErr).toBeInstanceOf(Function);
+        expect(lazyErr()).toStrictEqual(new Error(msg));
     });
 
 });
