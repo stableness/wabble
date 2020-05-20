@@ -175,7 +175,7 @@ function genAEADEncrypt (
     return function (chunk: Uint8Array) {
 
         const cipher = crypto.createCipheriv(
-            algorithm as crypto.CipherCCMTypes,
+            algorithm as crypto.CipherGCMTypes,
             subKey,
             nonce,
             { authTagLength },
