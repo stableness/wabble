@@ -137,7 +137,7 @@ export namespace ShadowSocks {
 
 export namespace Trojan {
 
-    const list = R.compose(R.join(':'), R.split(/\s+/), R.trim);
+    const list = R.o(R.split(/\s+/), R.trim);
 
     const CIPHER = list(`
         ECDHE-ECDSA-AES128-GCM-SHA256
@@ -183,10 +183,17 @@ export namespace Trojan {
             O.toUndefined,
         );
 
-        const ciphers = R.join(':', [
-            gets('cipher', CIPHER),
-            gets('cipher_tls13', CIPHER_TLS13),
-        ]);
+        const ciphers = P.pipe(
+            A.flatten([
+                gets('cipher', CIPHER),
+                gets('cipher_tls13', CIPHER_TLS13),
+            ]),
+            A.map(readOptionalString),
+            A.compact,
+            NEA.fromArray,
+            O.map(R.join(':')),
+            O.toUndefined,
+        );
 
 
 
