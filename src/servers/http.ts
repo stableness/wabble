@@ -25,7 +25,9 @@ export function chain ({ ipOrHost, port, logger, hook }: ChainOpts, remote: Http
 
     return P.pipe(
 
-        TE.rightIO(() => {
+        TE.right(R.join(':', [ ipOrHost, port ])),
+
+        TE.map(R.tap(() => {
 
             if (R.not(logLevel.on.trace)) {
                 return;
@@ -38,14 +40,11 @@ export function chain ({ ipOrHost, port, logger, hook }: ChainOpts, remote: Http
                 .trace('proxy through http')
             ;
 
-        }),
+        })),
 
-        TE.chain(() =>
-            TE.tryCatch(
-                async () => hook(await tunnel(remote, R.join(':', [ ipOrHost, port ]))),
-                E.toError,
-            ),
-        ),
+        TE.chain(path => TE.tryCatch(async () => {
+            return hook(await tunnel(remote, path));
+        }, E.toError)),
 
         TE.mapLeft(R.tap(() => hook())),
 

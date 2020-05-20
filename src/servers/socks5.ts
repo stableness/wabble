@@ -20,14 +20,9 @@ import { ChainOpts, netConnectTo } from './index';
 
 export function chain ({ ipOrHost, port, logger, hook }: ChainOpts, remote: Socks5) {
 
-    const knock = socks5Handshake(ipOrHost, port);
-
     return P.pipe(
 
-        TE.tryCatch(
-            () => encase(netConnectTo(remote), knock),
-            E.toError,
-        ),
+        TE.right(socks5Handshake(ipOrHost, port)),
 
         TE.map(R.tap(() => {
 
@@ -44,12 +39,9 @@ export function chain ({ ipOrHost, port, logger, hook }: ChainOpts, remote: Sock
 
         })),
 
-        TE.chain(conn =>
-            TE.tryCatch(
-                () => hook(conn),
-                E.toError,
-            ),
-        ),
+        TE.chain(knock => TE.tryCatch(async () => {
+            return hook(await encase(netConnectTo(remote), knock));
+        }, E.toError)),
 
         TE.mapLeft(R.tap(() => hook())),
 

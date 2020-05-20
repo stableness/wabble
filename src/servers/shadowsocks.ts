@@ -5,6 +5,7 @@ import * as R from 'ramda';
 
 import {
     either as E,
+    io as IO,
     taskEither as TE,
     pipeable as P,
 } from 'fp-ts';
@@ -25,15 +26,15 @@ import { ChainOpts, netConnectTo } from './index';
 
 export function chain ({ ipOrHost, port, logger, hook }: ChainOpts, remote: SS) {
 
-    const knock = u.socks5Handshake(ipOrHost, port).subarray(3);
-
     return P.pipe(
 
-        cryptoPairs(remote, knock),
+        IO.of(u.socks5Handshake(ipOrHost, port).subarray(3)),
+        IO.map(knock => cryptoPairs(remote, knock)),
+        IO.map(E.fromNullable(Error('Has no crypto to perform'))),
 
-        E.fromNullable(Error('Has no crypto to perform')),
+        TE.fromIOEither,
 
-        E.map(R.tap(() => {
+        TE.map(R.tap(() => {
 
             if (R.not(logLevel.on.trace)) {
                 return;
@@ -51,14 +52,9 @@ export function chain ({ ipOrHost, port, logger, hook }: ChainOpts, remote: SS) 
 
         })),
 
-        TE.fromEither,
-
-        TE.chain(({ enc, dec }) =>
-            TE.tryCatch(
-                () => hook(enc, netConnectTo(remote), dec),
-                E.toError,
-            ),
-        ),
+        TE.chain(({ enc, dec }) => TE.tryCatch(() => {
+            return hook(enc, netConnectTo(remote), dec);
+        }, E.toError)),
 
         TE.mapLeft(R.tap(() => hook())),
 
