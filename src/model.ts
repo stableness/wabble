@@ -5,7 +5,6 @@ import { safeLoad } from 'js-yaml';
 import * as R from 'ramda';
 
 import {
-    taskEither as TE,
     either as E,
     option as O,
     function as F,
@@ -232,7 +231,7 @@ const runner$ = services$.pipe(
 
             if (direction) {
 
-                TE.tryCatch(async () => {
+                u.tryCatchToError(async () => {
 
                     const conn = await hopTo('nothing');
 
@@ -240,7 +239,7 @@ const runner$ = services$.pipe(
 
                     return conn();
 
-                }, E.toError)();
+                })();
 
                 return false;
 
@@ -252,7 +251,7 @@ const runner$ = services$.pipe(
 
         o.withLatestFrom(dealer$, ({ log, hopTo }, dealer) => {
 
-            const task = TE.tryCatch(async () => {
+            const task = u.tryCatchToError(async () => {
 
                 const conn = await hopTo(dealer.hit());
 
@@ -260,7 +259,7 @@ const runner$ = services$.pipe(
 
                 return conn();
 
-            }, E.toError);
+            });
 
             return { task, log };
 

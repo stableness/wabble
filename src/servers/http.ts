@@ -7,13 +7,13 @@ import { once } from 'events';
 import * as R from 'ramda';
 
 import {
-    either as E,
     taskEither as TE,
     pipeable as P,
 } from 'fp-ts';
 
 import { logLevel } from '../model';
 import type { Http } from '../config';
+import { tryCatchToError } from '../utils';
 
 import type { ChainOpts } from './index';
 
@@ -42,9 +42,9 @@ export function chain ({ ipOrHost, port, logger, hook }: ChainOpts, remote: Http
 
         })),
 
-        TE.chain(path => TE.tryCatch(async () => {
+        TE.chain(path => tryCatchToError(async () => {
             return hook(await tunnel(remote, path));
-        }, E.toError)),
+        })),
 
         TE.mapLeft(R.tap(() => hook())),
 

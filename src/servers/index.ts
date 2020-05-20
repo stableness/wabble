@@ -16,7 +16,7 @@ import {
 } from 'fp-ts';
 
 import type { Remote } from '../config';
-import { DoH, Fn } from '../utils';
+import { DoH, Fn, tryCatchToError } from '../utils';
 import { logLevel } from '../model';
 import type { Hook } from '../services/index';
 
@@ -119,9 +119,8 @@ export function connect ({ host, port, hook, dns, doh, logger }: Opts) {
         if (server === 'nothing') {
 
             return P.pipe(
-                TE.tryCatch(
-                    () => hook(netConnectTo({ port, host: ipOrHost })),
-                    E.toError,
+                tryCatchToError(() =>
+                    hook(netConnectTo({ port, host: ipOrHost })),
                 ),
                 TE.mapLeft(R.tap(() => hook())),
             );

@@ -1,7 +1,6 @@
 import * as R from 'ramda';
 
 import {
-    either as E,
     taskEither as TE,
     pipeable as P,
 } from 'fp-ts';
@@ -10,7 +9,7 @@ import { asyncReadable } from 'async-readable';
 
 import { logLevel } from '../model';
 import type { Socks5 } from '../config';
-import { socks5Handshake } from '../utils';
+import { socks5Handshake, tryCatchToError } from '../utils';
 
 import { ChainOpts, netConnectTo } from './index';
 
@@ -39,9 +38,9 @@ export function chain ({ ipOrHost, port, logger, hook }: ChainOpts, remote: Sock
 
         })),
 
-        TE.chain(knock => TE.tryCatch(async () => {
+        TE.chain(knock => tryCatchToError(async () => {
             return hook(await encase(netConnectTo(remote), knock));
-        }, E.toError)),
+        })),
 
         TE.mapLeft(R.tap(() => hook())),
 

@@ -5,7 +5,6 @@ import { once } from 'events';
 import * as R from 'ramda';
 
 import {
-    either as E,
     taskEither as TE,
     pipeable as P,
     function as F,
@@ -40,7 +39,7 @@ export function chain ({ ipOrHost, port, logger, hook }: ChainOpts, remote: Troj
 
         }),
 
-        TE.chain(() => TE.tryCatch(async () => {
+        TE.chain(() => u.tryCatchToError(async () => {
 
             const socket = await tunnel(remote);
 
@@ -48,7 +47,7 @@ export function chain ({ ipOrHost, port, logger, hook }: ChainOpts, remote: Troj
 
             return hook(socket);
 
-        }, E.toError)),
+        })),
 
         TE.mapLeft(R.tap(() => hook())),
 

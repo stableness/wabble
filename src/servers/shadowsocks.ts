@@ -52,9 +52,9 @@ export function chain ({ ipOrHost, port, logger, hook }: ChainOpts, remote: SS) 
 
         })),
 
-        TE.chain(({ enc, dec }) => TE.tryCatch(() => {
+        TE.chain(({ enc, dec }) => u.tryCatchToError(() => {
             return hook(enc, netConnectTo(remote), dec);
-        }, E.toError)),
+        })),
 
         TE.mapLeft(R.tap(() => hook())),
 

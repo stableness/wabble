@@ -399,14 +399,14 @@ export function DoH (endpoint: string, path = 'dohdec') {
         getJSON (opts: { name: string }): Promise<Response>;
     }
 
-    const doh = TE.tryCatch(async () => {
+    const doh = tryCatchToError(async () => {
         const pkg: { DNSoverHTTPS: Class } = await import(path);
         return new pkg.DNSoverHTTPS({ url: endpoint });
-    }, E.toError)();
+    })();
 
     return function (name: string) {
 
-        return TE.tryCatch(async () => {
+        return tryCatchToError(async () => {
 
             const dns = P.pipe(
                 await doh,
@@ -423,7 +423,7 @@ export function DoH (endpoint: string, path = 'dohdec') {
 
             return list;
 
-        }, E.toError);
+        });
 
     };
 
@@ -434,6 +434,12 @@ export function DoH (endpoint: string, path = 'dohdec') {
 
 
 export const constErr = R.o(R.always, Error);
+
+
+
+
+
+export const tryCatchToError = <A> (f: F.Lazy<Promise<A>>) => TE.tryCatch(f, E.toError);
 
 
 
