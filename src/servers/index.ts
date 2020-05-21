@@ -78,7 +78,10 @@ export function connect ({ host, port, hook, dns, doh, logger }: Opts) {
                 TE.alt(F.constant(task)),
             )),
             O.map(TE.map(F.flow(
-                A.findFirst(({ type, data }) => type === 1 && R.is (String) (data)),
+                A.findFirst(R.where({
+                    type: R.equals(1),
+                    data: R.is(String),
+                })),
                 O.map(R.tap(({ data, TTL }) => {
                     P.pipe(
                         ipCache,
