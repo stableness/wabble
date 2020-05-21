@@ -83,13 +83,12 @@ export function connect ({ host, port, hook, dns, doh, logger }: Opts) {
                     data: R.is(String),
                 })),
                 O.map(R.tap(({ data, TTL }) => {
-                    P.pipe(
-                        ipCache,
-                        O.fold(() => {
-                            dnsCache.set(host, data);
-                            setTimeout(() => dnsCache.delete(host), TTL * 1000);
-                        }, F.constVoid),
-                    );
+
+                    if (O.isNone(ipCache)) {
+                        dnsCache.set(host, data);
+                        setTimeout(() => dnsCache.delete(host), TTL * 1000);
+                    }
+
                 })),
                 O.map(R.prop('data')),
                 O.map(R.tap(ip => {
