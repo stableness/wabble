@@ -1,6 +1,5 @@
-import type { Socket } from 'net';
 import https from 'https';
-import http, { IncomingMessage } from 'http';
+import http from 'http';
 
 import { once } from 'events';
 
@@ -13,7 +12,7 @@ import {
 
 import { logLevel } from '../model';
 import type { Http } from '../config';
-import { tryCatchToError } from '../utils';
+import { tryCatchToError, mountErrOf } from '../utils';
 
 import type { ChainOpts } from './index';
 
@@ -58,7 +57,7 @@ export function chain ({ ipOrHost, port, logger, hook }: ChainOpts, remote: Http
 
 const TIMEOUT = 1000 * 5;
 
-export function tunnel ({ protocol, host, port, ssl }: Http, path: string) {
+export async function tunnel ({ protocol, host, port, ssl }: Http, path: string) {
 
     const connect = protocol === 'http' ? http.request : https.request;
 
@@ -79,9 +78,15 @@ export function tunnel ({ protocol, host, port, ssl }: Http, path: string) {
 
     req.flushHeaders();
 
-    const socket = once(req, 'connect') as Promise<[ IncomingMessage, Socket ]>;
+    await Promise.race([
+        once(req, 'connect'),
+        new Promise((_res, rej) =>
+            setTimeout(() =>
+                rej(new Error('timeout')), TIMEOUT)
+        ),
+    ]);
 
-    return socket.then(R.nth(1) as <_0, _1> (args: [ _0, _1 ]) => _1);
+    return mountErrOf(req.socket);
 
 }
 
