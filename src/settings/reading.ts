@@ -102,7 +102,9 @@ export function convert (obj: unknown): Config {
 
         if (proto === 'http' || proto === 'https') {
 
-            return baseWith({ protocol: proto } as const);
+            const verify = R.pathOr(true, [ 'ssl', 'verify' ], server);
+
+            return baseWith({ protocol: proto, ssl: { verify } } as const);
 
         }
 

@@ -35,6 +35,10 @@ export interface Http extends Base {
 
     protocol: 'http' | 'https';
 
+    ssl: {
+        verify: boolean;
+    };
+
 }
 
 export interface Trojan extends Base {
