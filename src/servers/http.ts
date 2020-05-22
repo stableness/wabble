@@ -56,7 +56,7 @@ export function chain ({ ipOrHost, port, logger, hook }: ChainOpts, remote: Http
 
 
 
-export function tunnel ({ protocol, host, port }: Http, path: string) {
+export function tunnel ({ protocol, host, port, ssl }: Http, path: string) {
 
     const connect = protocol === 'http' ? http.request : https.request;
 
@@ -64,6 +64,7 @@ export function tunnel ({ protocol, host, port }: Http, path: string) {
         host,
         port,
         path,
+        rejectUnauthorized: ssl.verify,
         method: 'CONNECT',
         headers: {
             Host: path,
