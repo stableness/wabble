@@ -24,7 +24,9 @@ export function chain ({ ipOrHost, port, logger, hook }: ChainOpts, remote: Troj
 
     return P.pipe(
 
-        TE.rightIO(() => {
+        TE.right(makeHead(remote.password, ipOrHost, port)),
+
+        TE.map(R.tap(() => {
 
             if (R.not(logLevel.on.trace)) {
                 return;
@@ -37,13 +39,13 @@ export function chain ({ ipOrHost, port, logger, hook }: ChainOpts, remote: Troj
                 .trace('proxy through trojan')
             ;
 
-        }),
+        })),
 
-        TE.chain(() => u.tryCatchToError(async () => {
+        TE.chain(head => u.tryCatchToError(async () => {
 
             const socket = await tunnel(remote);
 
-            socket.write(makeHead(remote.password, ipOrHost, port));
+            socket.write(head);
 
             return hook(socket);
 
