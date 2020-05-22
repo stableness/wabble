@@ -69,7 +69,6 @@ export function tunnel ({ protocol, host, port, ssl }: Http, path: string) {
         rejectUnauthorized: ssl.verify,
         method: 'CONNECT',
         headers: {
-            Host: path,
             'Proxy-Connection': 'Keep-Alive',
         },
     });
