@@ -56,6 +56,8 @@ export function chain ({ ipOrHost, port, logger, hook }: ChainOpts, remote: Http
 
 
 
+const TIMEOUT = 1000 * 5;
+
 export function tunnel ({ protocol, host, port, ssl }: Http, path: string) {
 
     const connect = protocol === 'http' ? http.request : https.request;
@@ -73,7 +75,7 @@ export function tunnel ({ protocol, host, port, ssl }: Http, path: string) {
     });
 
     req.setNoDelay(true);
-    req.setTimeout(1000 * 5);
+    req.setTimeout(TIMEOUT);
     req.setSocketKeepAlive(true, 1000 * 60);
 
     req.flushHeaders();
