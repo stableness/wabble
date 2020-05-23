@@ -348,6 +348,16 @@ export const option2B = O.fold(F.constFalse, F.constTrue);
 
 
 
+export const toBasicCredentials = R.memoizeWith(R.identity as typeof String, R.compose(
+    R.concat('Basic '),
+    R.invoker(1, 'toString')('base64'),
+    Buffer.from,
+));
+
+
+
+
+
 export const headerJoin = R.o(
     R.flip(R.concat)('\r\n\r\n'),
     R.join('\r\n'),
