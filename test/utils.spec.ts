@@ -22,6 +22,7 @@ import {
     HKDF_SHA1,
     Fn,
     constErr,
+    toBasicCredentials,
 
 } from '../src/utils';
 
@@ -320,6 +321,22 @@ describe('constErr', () => {
         expect(lazyErr).not.toThrow();
         expect(lazyErr).toBeInstanceOf(Function);
         expect(lazyErr()).toStrictEqual(new Error(msg));
+    });
+
+});
+
+
+
+
+
+describe('toBasicCredentials', () => {
+
+    test.each([
+        [ 'a:b', 'YTpi' ],
+        [ 'a:',  'YTo=' ],
+        [  ':b', 'OmI=' ],
+    ])('%p', (auth, result) => {
+        expect(toBasicCredentials(auth)).toBe(R.concat('Basic ', result));
     });
 
 });
