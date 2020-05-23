@@ -35,6 +35,8 @@ export interface Http extends Base {
 
     protocol: 'http' | 'https';
 
+    auth: O.Option<string>;
+
     ssl: {
         verify: boolean;
     };
