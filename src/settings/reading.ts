@@ -64,7 +64,7 @@ export function convert (obj: unknown): Config {
 
         const url = new URL(uri);
 
-        const { protocol, hostname } = url;
+        const { protocol, hostname, username, password } = url;
         const port = portNormalize(url);
         const proto = R.init(protocol);
 
@@ -104,7 +104,12 @@ export function convert (obj: unknown): Config {
 
             const verify = R.pathOr(true, [ 'ssl', 'verify' ], server);
 
-            return baseWith({ protocol: proto, ssl: { verify } } as const);
+            const auth = username === password && password === ''
+                ? O.none
+                : O.some(R.join(':', [ username, password ]))
+            ;
+
+            return baseWith({ protocol: proto, ssl: { verify }, auth } as const);
 
         }
 
