@@ -341,6 +341,13 @@ export namespace basicInfo {
 
 
 
+export const either2B = E.fold(F.constFalse, F.constTrue);
+export const option2B = O.fold(F.constFalse, F.constTrue);
+
+
+
+
+
 export const headerJoin = R.o(
     R.flip(R.concat)('\r\n\r\n'),
     R.join('\r\n'),

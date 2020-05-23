@@ -15,7 +15,7 @@ import * as o from 'rxjs/operators';
 
 import { logger, logLevel } from '../model';
 import type { Service } from '../config';
-import { pump, mountErrOf } from '../utils';
+import { pump, mountErrOf, option2B } from '../utils';
 
 
 
@@ -213,10 +213,4 @@ export function socks5Proxy ({ port, host, auth }: Service) {
     );
 
 }
-
-
-
-
-
-export const option2B = O.fold(F.constFalse, F.constTrue);
 
