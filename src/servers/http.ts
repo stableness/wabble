@@ -7,12 +7,14 @@ import * as R from 'ramda';
 
 import {
     taskEither as TE,
+    option as O,
+    function as F,
     pipeable as P,
 } from 'fp-ts';
 
 import { logLevel } from '../model';
 import type { Http } from '../config';
-import { tryCatchToError, mountErrOf } from '../utils';
+import { tryCatchToError, mountErrOf, option2B, toBasicCredentials } from '../utils';
 
 import type { ChainOpts } from './index';
 
@@ -57,11 +59,14 @@ export function chain ({ ipOrHost, port, logger, hook }: ChainOpts, remote: Http
 
 const TIMEOUT = 1000 * 5;
 
-export async function tunnel ({ protocol, host, port, ssl }: Http, path: string) {
+export async function tunnel ({ protocol, host, port, ssl, auth }: Http, path: string) {
+
+    const hasAuth = option2B(auth);
 
     const connect = protocol === 'http' ? http.request : https.request;
 
     const req = connect({
+
         host,
         port,
         path,
@@ -69,6 +74,7 @@ export async function tunnel ({ protocol, host, port, ssl }: Http, path: string)
         method: 'CONNECT',
         headers: {
             'Proxy-Connection': 'Keep-Alive',
+            ...(hasAuth && { 'proxy-authorization': authToCredentials(auth) } ),
         },
     });
 
@@ -89,4 +95,13 @@ export async function tunnel ({ protocol, host, port, ssl }: Http, path: string)
     return mountErrOf(req.socket);
 
 }
+
+
+
+
+
+export const authToCredentials = O.fold(
+    F.constant(''),
+    toBasicCredentials,
+);
 
