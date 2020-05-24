@@ -74,7 +74,7 @@ export async function tunnel ({ protocol, host, port, ssl, auth }: Http, path: s
         method: 'CONNECT',
         headers: {
             'Proxy-Connection': 'Keep-Alive',
-            ...(hasAuth && { 'proxy-authorization': authToCredentials(auth) } ),
+            ...(hasAuth && { 'Proxy-Authorization': authToCredentials(auth) } ),
         },
     });
 
