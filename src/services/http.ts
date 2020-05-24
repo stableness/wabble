@@ -33,7 +33,7 @@ type Connect = ReturnType<typeof mapConnect>;
 
 export function httpProxy ({ port, host, auth }: Service) {
 
-    const authRequired = option2B(auth);
+    const authRequired = u.option2B(auth);
 
     const conn$ = new Rx.Observable<Knock>(subject => {
 
@@ -128,7 +128,7 @@ export function httpProxy ({ port, host, auth }: Service) {
 
                 }),
 
-                either2B,
+                u.either2B,
 
             );
 
@@ -273,11 +273,4 @@ export const omitHopHeaders = R.omit([
     'trailer',
     'te',
 ]);
-
-
-
-
-
-export const option2B = O.fold(F.constFalse, F.constTrue);
-export const either2B = E.fold(F.constFalse, F.constTrue);
 

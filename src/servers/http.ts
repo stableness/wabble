@@ -1,6 +1,5 @@
-import type { Socket } from 'net';
 import https from 'https';
-import http, { IncomingMessage } from 'http';
+import http from 'http';
 
 import { once } from 'events';
 
@@ -8,12 +7,14 @@ import * as R from 'ramda';
 
 import {
     taskEither as TE,
+    option as O,
+    function as F,
     pipeable as P,
 } from 'fp-ts';
 
 import { logLevel } from '../model';
 import type { Http } from '../config';
-import { tryCatchToError } from '../utils';
+import { tryCatchToError, mountErrOf, option2B, toBasicCredentials } from '../utils';
 
 import type { ChainOpts } from './index';
 
@@ -56,30 +57,51 @@ export function chain ({ ipOrHost, port, logger, hook }: ChainOpts, remote: Http
 
 
 
-export function tunnel ({ protocol, host, port }: Http, path: string) {
+const TIMEOUT = 1000 * 5;
+
+export async function tunnel ({ protocol, host, port, ssl, auth }: Http, path: string) {
+
+    const hasAuth = option2B(auth);
 
     const connect = protocol === 'http' ? http.request : https.request;
 
     const req = connect({
+
         host,
         port,
         path,
+        rejectUnauthorized: ssl.verify,
         method: 'CONNECT',
         headers: {
-            Host: path,
             'Proxy-Connection': 'Keep-Alive',
+            ...(hasAuth && { 'proxy-authorization': authToCredentials(auth) } ),
         },
     });
 
     req.setNoDelay(true);
-    req.setTimeout(1000 * 5);
+    req.setTimeout(TIMEOUT);
     req.setSocketKeepAlive(true, 1000 * 60);
 
     req.flushHeaders();
 
-    const socket = once(req, 'connect') as Promise<[ IncomingMessage, Socket ]>;
+    await Promise.race([
+        once(req, 'connect'),
+        new Promise((_res, rej) =>
+            setTimeout(() =>
+                rej(new Error('timeout')), TIMEOUT)
+        ),
+    ]);
 
-    return socket.then(R.nth(1) as <_0, _1> (args: [ _0, _1 ]) => _1);
+    return mountErrOf(req.socket);
 
 }
+
+
+
+
+
+export const authToCredentials = O.fold(
+    F.constant(''),
+    toBasicCredentials,
+);
 

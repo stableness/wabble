@@ -7,7 +7,7 @@ import { eq as Eq, option as O, pipeable as P, function as F } from 'fp-ts';
 
 import type { Config, Basic, Remote } from '../config';
 
-import { Fn, readOptionalString } from '../utils';
+import { Fn, readOptionalString, portNormalize } from '../utils';
 
 import { ShadowSocks, Trojan } from './utils';
 
@@ -62,7 +62,10 @@ export function convert (obj: unknown): Config {
 
         const { uri, tags } = { tags: [], ...server };
 
-        const { protocol, port, hostname } = new URL(uri);
+        const url = new URL(uri);
+
+        const { protocol, hostname, username, password } = url;
+        const port = portNormalize(url);
         const proto = R.init(protocol);
 
         const baseWith = R.mergeLeft({
@@ -99,7 +102,14 @@ export function convert (obj: unknown): Config {
 
         if (proto === 'http' || proto === 'https') {
 
-            return baseWith({ protocol: proto } as const);
+            const verify = R.pathOr(true, [ 'ssl', 'verify' ], server);
+
+            const auth = username === password && password === ''
+                ? O.none
+                : O.some(R.join(':', [ username, password ]))
+            ;
+
+            return baseWith({ protocol: proto, ssl: { verify }, auth } as const);
 
         }
 
