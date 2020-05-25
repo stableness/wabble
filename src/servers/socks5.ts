@@ -2,14 +2,16 @@ import * as R from 'ramda';
 
 import {
     taskEither as TE,
+    option as O,
+    function as F,
     pipeable as P,
 } from 'fp-ts';
 
 import { asyncReadable } from 'async-readable';
 
 import { logLevel } from '../model';
-import type { Socks5 } from '../config';
-import { socks5Handshake, tryCatchToError } from '../utils';
+import type { Socks5, Basic } from '../config';
+import { socks5Handshake, tryCatchToError, Fn } from '../utils';
 
 import { ChainOpts, netConnectTo } from './index';
 
@@ -39,7 +41,7 @@ export function chain ({ ipOrHost, port, logger, hook }: ChainOpts, remote: Sock
         })),
 
         TE.chain(knock => tryCatchToError(async () => {
-            return hook(await encase(netConnectTo(remote), knock));
+            return hook(await tunnel(remote, knock));
         })),
 
         TE.mapLeft(R.tap(() => hook())),
@@ -52,22 +54,42 @@ export function chain ({ ipOrHost, port, logger, hook }: ChainOpts, remote: Sock
 
 
 
-const noAuth = Buffer.from([ 0x05, 0x01, 0x00 ]);
+export async function tunnel ({ host, port, auth }: Socks5, head: Uint8Array) {
 
-export async function encase (socket: NodeJS.ReadWriteStream, head: Uint8Array) {
+    const socket = netConnectTo({ host, port });
 
     const { read, off } = asyncReadable(socket);
     const exit = R.o(Error, R.tap(off));
 
     auth: {
 
-        socket.write(noAuth);
+        socket.write(make(auth));
 
         const [ VER, METHOD ] = await read(2);
 
-        if (VER !== 0x05 || METHOD !== 0x00) {
+        if (VER !== 0x05 || METHOD === 0xFF) {
             throw exit(`VER [${ VER }] METHOD [${ METHOD }]`);
         }
+
+        if (METHOD === 0x00) {
+            break auth;
+        }
+
+        if (METHOD === 0x02 && O.isSome(auth)) {
+
+            socket.write(encode(auth));
+
+            const [ VER, STATUS ] = await read(2);
+
+            if (VER !== 0x01 || STATUS !== 0x00) {
+                throw exit(`VER [${ VER }] STATUS [${ STATUS }]`);
+            }
+
+            break auth;
+
+        }
+
+        throw exit(`METHOD [${ METHOD }]`);
 
     }
 
@@ -99,4 +121,28 @@ export async function encase (socket: NodeJS.ReadWriteStream, head: Uint8Array) 
     return socket;
 
 }
+
+
+
+
+
+const make = O.fold(
+    F.constant(Buffer.from([ 0x05, 0x01, 0x00 ])),
+    F.constant(Buffer.from([ 0x05, 0x02, 0x00, 0x02 ])),
+);
+
+export const encode = O.fold(Uint8Array.of, R.memoizeWith(
+
+    R.o(
+        R.join(':'),
+        R.props([ 'username', 'password' ]) as Fn<Basic, string[]>,
+    ),
+
+    ({ username, password }: Basic) => Uint8Array.from([
+        0x01,
+        username.length, ...Buffer.from(username),
+        password.length, ...Buffer.from(password),
+    ]),
+
+));
 
