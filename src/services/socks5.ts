@@ -104,14 +104,14 @@ export function socks5Proxy ({ port, host, auth }: Service) {
 
                         const [ VER, ULEN ] = await read(2);
 
-                        if (VER !== 0x01 || ULEN < 1) {
+                        if (VER !== 0x01 || ULEN < 1 || ULEN > 255) {
                             socket.end(AUTH_ERR);
                             throw exit(`VER [${ VER }] ULEN [${ ULEN }]`);
                         }
 
                         const info = O.some({
                             username: (await read(ULEN)).toString(),
-                            password: (await read((await read(1))[0])).toString(),
+                            password: (await read(Math.min(255, (await read(1))[0]))).toString(),
                         });
 
                         const result = P.pipe(

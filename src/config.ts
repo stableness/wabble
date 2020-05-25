@@ -29,6 +29,8 @@ export interface Socks5 extends Base {
 
     protocol: 'socks5';
 
+    auth: O.Option<Basic>;
+
 }
 
 export interface Http extends Base {

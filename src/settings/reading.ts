@@ -96,7 +96,12 @@ export function convert (obj: unknown): Config {
 
         if (proto === 'socks5') {
 
-            return baseWith({ protocol: proto } as const);
+            const auth = username === password && password === ''
+                ? O.none
+                : O.some({ username, password })
+            ;
+
+            return baseWith({ protocol: proto, auth } as const);
 
         }
 
