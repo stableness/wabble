@@ -1,5 +1,6 @@
 import https from 'https';
 import http from 'http';
+import type { Socket } from 'net';
 
 import { once } from 'events';
 
@@ -84,6 +85,10 @@ export async function tunnel ({ protocol, host, port, ssl, auth }: Http, path: s
 
     req.flushHeaders();
 
+    const [ socket ] = await once(req, 'socket') as [ Socket ];
+
+    mountErrOf(socket);
+
     try {
 
         await Promise.race([
@@ -99,7 +104,7 @@ export async function tunnel ({ protocol, host, port, ssl, auth }: Http, path: s
         throw err;
     }
 
-    return mountErrOf(req.socket);
+    return socket;
 
 }
 
