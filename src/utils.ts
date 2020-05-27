@@ -469,15 +469,17 @@ export const onceErr: Fn<NodeJS.EventEmitter, Promise<[ Error ]>>
 
 
 
-const { has: errSetHas, add: errSetAdd } = bind(new WeakSet());
+const { has: errSetHas, add: errSetAdd, delete: errSetDel } = bind(new WeakSet());
 
 export const mountErrOf = R.unless(
     errSetHas,
     R.o(
         R.tap(errSetAdd),
-        R.tap(onceErr),
+        R.tap((socket: NodeJS.EventEmitter) => {
+            socket.once('error', _err => errSetDel(socket));
+        }),
     ),
-) as typeof R.identity;
+) as Fn<NodeJS.EventEmitter>;
 
 
 
