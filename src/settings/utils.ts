@@ -140,21 +140,14 @@ export namespace Trojan {
     const list = R.o(R.split(/\s+/), R.trim);
 
     const CIPHER = list(`
-        ECDHE-ECDSA-AES128-GCM-SHA256
-        ECDHE-RSA-AES128-GCM-SHA256
-        ECDHE-ECDSA-CHACHA20-POLY1305
-        ECDHE-RSA-CHACHA20-POLY1305
         ECDHE-ECDSA-AES256-GCM-SHA384
+        ECDHE-ECDSA-CHACHA20-POLY1305
         ECDHE-RSA-AES256-GCM-SHA384
+        ECDHE-RSA-CHACHA20-POLY1305
         ECDHE-ECDSA-AES256-SHA
-        ECDHE-ECDSA-AES128-SHA
-        ECDHE-RSA-AES128-SHA
         ECDHE-RSA-AES256-SHA
-        DHE-RSA-AES128-SHA
         DHE-RSA-AES256-SHA
-        AES128-SHA
         AES256-SHA
-        DES-CBC3-SHA
     `);
 
     const CIPHER_TLS13 = list(`
