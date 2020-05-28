@@ -38,6 +38,10 @@ process.env.NODE_ENV = R.ifElse(
     R.identity,
 )(process.env.NODE_ENV || '<%=NODE_ENV=>');
 
+process.on('uncaughtException', err => {
+    console.error('uncaughtException', err);
+});
+
 
 
 
