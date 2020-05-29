@@ -61,7 +61,9 @@ export function chain ({ ipOrHost, port, logger, hook }: ChainOpts, remote: Troj
 
 
 
-export function tunnel ({ host, port, ssl }: Trojan) {
+const TIMEOUT = 1000 * 5;
+
+export async function tunnel ({ host, port, ssl }: Trojan) {
 
     const {
                 ciphers,
@@ -85,7 +87,26 @@ export function tunnel ({ host, port, ssl }: Trojan) {
 
     });
 
-    return once(tls, 'secureConnect').then(F.constant(tls));
+    tls.setNoDelay(true);
+    tls.setTimeout(TIMEOUT);
+    tls.setKeepAlive(true, 1000 * 60);
+
+    try {
+
+        await Promise.race([
+            once(tls, 'secureConnect'),
+            new Promise((_res, rej) =>
+                setTimeout(() =>
+                    rej(new Error('timeout')), TIMEOUT)
+            ),
+        ]);
+
+    } catch (err) {
+        tls.destroy();
+        throw err;
+    }
+
+    return tls;
 
 }
 
