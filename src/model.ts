@@ -38,10 +38,6 @@ process.env.NODE_ENV = R.ifElse(
     R.identity,
 )(process.env.NODE_ENV || '<%=NODE_ENV=>');
 
-process.on('uncaughtException', err => {
-    console.error('uncaughtException', err);
-});
-
 
 
 
@@ -87,6 +83,21 @@ export namespace logLevel {
     };
 
 }
+
+
+
+
+
+process.on('uncaughtException', R.cond([
+
+    [
+        R.propEq('code', 'ECONNRESET'),
+        R.when(() => logLevel.on.error === true, logger.error),
+    ],
+
+    [ R.T, F.constVoid ],
+
+]) as unknown as u.Fn<Error, void>);
 
 
 
