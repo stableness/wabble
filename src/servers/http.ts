@@ -14,7 +14,7 @@ import {
 
 import { logLevel } from '../model';
 import type { Http } from '../config';
-import { tryCatchToError, mountErrOf, option2B, toBasicCredentials } from '../utils';
+import { tryCatchToError, option2B, toBasicCredentials } from '../utils';
 
 import type { ChainOpts } from './index';
 
@@ -99,7 +99,7 @@ export async function tunnel ({ protocol, host, port, ssl, auth }: Http, path: s
         throw err;
     }
 
-    return mountErrOf(req.socket);
+    return req.socket;
 
 }
 
