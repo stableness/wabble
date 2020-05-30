@@ -92,7 +92,7 @@ process.on('uncaughtException', R.cond([
 
     [
         R.propEq('code', 'ECONNRESET'),
-        R.when(() => logLevel.on.error === true, logger.error),
+        R.when(() => logLevel.on.error === true, bind(logger).error),
     ],
 
     [ R.T, F.constVoid ],
@@ -192,7 +192,7 @@ export function load ({ version, setting, logging = '', quiet = false }: Options
         logger.level = 'silent';
     }
 
-    runner$.subscribe(u.noop, logger.error);
+    runner$.subscribe(u.noop, bind(logger).error);
 
     loader$.next(setting);
 
