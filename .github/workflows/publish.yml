@@ -30,7 +30,7 @@ jobs:
 
 
 
-      - run: npm install --no-save --no-update-notifier
+      - run: npm install --no-save --no-update-notifier --ignore-scripts
         env:
           ADBLOCK: true
           DISABLE_OPENCOLLECTIVE: true
