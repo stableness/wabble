@@ -498,6 +498,7 @@ type RS = NodeJS.ReadableStream;
 type WS = NodeJS.WritableStream;
 type RWS = NodeJS.ReadWriteStream;
 
+// TODO: https://github.com/microsoft/TypeScript/pull/39094
 interface Pump {
     (readable: RS, writable: WS): Promise<void>;
     (readable: RS, ...trans: RWS[]): Promise<void>;
