@@ -129,7 +129,7 @@ export const memHash = R.memoizeWith(
 
 export function makeHead (password: string, host: string, port: number) {
 
-    return Buffer.from([
+    return Uint8Array.from([
 
         ...memHash(password),
 

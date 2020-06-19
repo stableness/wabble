@@ -127,8 +127,8 @@ export async function tunnel ({ host, port, auth }: Socks5, head: Uint8Array) {
 
 
 const make = O.fold(
-    F.constant(Buffer.from([ 0x05, 0x01, 0x00 ])),
-    F.constant(Buffer.from([ 0x05, 0x02, 0x00, 0x02 ])),
+    F.constant(Uint8Array.from([ 0x05, 0x01, 0x00 ])),
+    F.constant(Uint8Array.from([ 0x05, 0x02, 0x00, 0x02 ])),
 );
 
 export const encode = O.fold(Uint8Array.of, R.memoizeWith(
