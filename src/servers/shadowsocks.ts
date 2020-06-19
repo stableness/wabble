@@ -1,5 +1,5 @@
 import crypto from 'crypto';
-import { Transform, TransformCallback } from 'stream';
+import { Transform, TransformCallback, Readable } from 'stream';
 
 import * as R from 'ramda';
 
@@ -130,7 +130,7 @@ export function EncryptAEAD (
 
     return init(new Transform({
 
-        async transform (chunk: Buffer, _enc: string, cb: TransformCallback) {
+        async transform (this: Readable, chunk: Buffer, _enc: string, cb: TransformCallback) {
 
             if (chunk.length <= MAX) {
                 return cb(undefined, pack(chunk));
