@@ -29,7 +29,7 @@ export function chain ({ ipOrHost, port, logger, hook }: ChainOpts, remote: SS) 
     return P.pipe(
 
         IO.of(u.socks5Handshake(ipOrHost, port).subarray(3)),
-        IO.map(knock => cryptoPairs(remote, knock)),
+        IO.map(cryptoPairsC(remote)),
         IO.map(E.fromNullable(Error('Has no crypto to perform'))),
 
         TE.fromIOEither,
@@ -65,6 +65,8 @@ export function chain ({ ipOrHost, port, logger, hook }: ChainOpts, remote: SS) 
 
 
 
+
+const cryptoPairsC = R.curry(cryptoPairs);
 
 export function cryptoPairs (server: SS, head: Uint8Array) {
 
