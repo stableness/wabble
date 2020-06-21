@@ -23,7 +23,6 @@ import { ChainOpts, netConnectTo } from './index';
 
 
 
-
 export function chain ({ ipOrHost, port, logger, hook }: ChainOpts, remote: SS) {
 
     return P.pipe(
