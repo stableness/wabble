@@ -29,12 +29,12 @@ describe('readDoH', () => {
 
     test('true', () => {
         expect(readDoH(true)).toStrictEqual(O.some(CF_DOH_ENDPOINT));
-    })
+    });
 
     test('custom', () => {
         const DOH = 'https://ecs-doh.dnswarden.com/uncensored-ecs';
         expect(readDoH(DOH)).toStrictEqual(O.some(DOH));
-    })
+    });
 
 });
 
