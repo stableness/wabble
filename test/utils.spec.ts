@@ -63,11 +63,11 @@ describe('numberToUInt16BE', () => {
 
     test('overflow', () => {
         expect(numberToUInt16BE(0xFFFF + 1)).toEqual(h('FFFF'));
-    })
+    });
 
     test('negative', () => {
         expect(numberToUInt16BE(-1)).toEqual(h('0000'));
-    })
+    });
 
 
 
