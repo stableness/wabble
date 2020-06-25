@@ -231,7 +231,7 @@ export const connectOn = Rx.pipe(
 export function mapRequest (request: IncomingMessage, response: ServerResponse) {
     return {
         type: 'request' as 'request',
-        url: mapURL(request.url),
+        url: mapURL(request.url || ''),
         request,
         response,
     };
@@ -255,9 +255,10 @@ export function mapConnect (request: IncomingMessage, socket: Socket, head: Buff
 
 
 
-export function mapURL (sample = '') {
-    return new URL(sample);
-}
+export const mapURL = R.memoizeWith(
+    R.identity,
+    R.constructN(1, URL) as u.Fn<string, URL>,
+);
 
 
 
