@@ -17,7 +17,7 @@ import {
     pipeable as P,
 } from 'fp-ts';
 
-import { parse as parseBasicAuth } from 'basic-auth';
+import { parse as parseBasicAuth } from '@stableness/basic-auth';
 
 import HKDF from 'futoin-hkdf';
 
@@ -406,7 +406,7 @@ export function sieve (list: string) {
 
 
 
-export function DoH (endpoint: string, path = 'dohdec') {
+export function DoH (endpoint: string, path = '@stableness/dohdec') {
 
     type Result = { name: string, type: 1 | 28 | 5, TTL: number, data: string };
     type Response = Partial<Record<'answers' | 'Answer', Result[]>>;
