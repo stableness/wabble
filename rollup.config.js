@@ -58,7 +58,7 @@ const config = [
         external: extendsBuiltin(dev(`
             | proxy-bind | buffer-pond | async-readable |
             | ramda | ip | futoin-hkdf |
-            | js-yaml | pino | command-line-args | basic-auth |
+            | js-yaml | pino | command-line-args | @stableness/basic-auth |
 
             | rxjs
             | rxjs/operators
