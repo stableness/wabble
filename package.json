@@ -27,11 +27,11 @@
   "license": "GPL-3.0",
   "sideEffects": false,
   "dependencies": {
+    "@stableness/basic-auth": "^102.0.1",
+    "@stableness/dohdec": "^102.1.0",
     "async-readable": "~0.2.2",
-    "basic-auth": "github:stableness/basic-auth",
     "buffer-pond": "~0.8.0",
     "command-line-args": "^5.1.1",
-    "dohdec": "github:stableness/dohdec",
     "fp-ts": "^2.6.6",
     "futoin-hkdf": "^1.2.1",
     "ip": "^1.1.5",
