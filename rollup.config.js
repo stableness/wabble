@@ -102,15 +102,6 @@ const config = [
                     'node_modules/pino-pretty/**',
                 ],
                 sourceMap: false,
-                namedExports: {
-                    'js-yaml': list(`
-                            load |     loadAll |     dump
-                        safeLoad | safeLoadAll | safeDump
-                    `),
-                    'ip': list(`
-                        toBuffer | isPrivate | fromLong | toString
-                    `),
-                }
             }),
             json(),
             visualizer({
