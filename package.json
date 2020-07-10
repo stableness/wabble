@@ -16,6 +16,11 @@
     "wabble": "dist/bin.cjs"
   },
   "files": [
+    "dist/utils.js",
+    "dist/model.js",
+    "dist/servers/shadowsocks.js",
+    "dist/services/socks5.js",
+    "dist/settings/utils.js",
     "dist/bin.cjs",
     "dist/index.cjs"
   ],
