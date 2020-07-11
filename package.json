@@ -16,6 +16,7 @@
     "wabble": "dist/bin.cjs"
   },
   "files": [
+    "tsconfig.json",
     "dist/utils.js",
     "dist/model.js",
     "dist/servers/shadowsocks.js",
