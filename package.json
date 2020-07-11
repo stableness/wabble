@@ -17,6 +17,7 @@
   },
   "files": [
     "tsconfig.json",
+    "dist/extra.cjs",
     "dist/bin.cjs",
     "dist/index.cjs"
   ],
