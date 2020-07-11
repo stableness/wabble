@@ -150,6 +150,44 @@ const config = [
 
     }),
 
+    {
+
+        input: dist('extra.js'),
+
+        external: extendsBuiltin(`
+            | proxy-bind | buffer-pond | async-readable |
+            | ramda | ip | futoin-hkdf |
+            | js-yaml | pino | command-line-args | @stableness/basic-auth |
+
+            | rxjs
+            | rxjs/operators
+
+            | fp-ts
+        `),
+
+        output: {
+            file: dist('extra.mjs'),
+            format: 'esm',
+        },
+
+        onwarn (warning, warn) {
+            R.ifElse(
+                R.propSatisfies(R.flip(R.includes)(list(`
+                    CIRCULAR_DEPENDENCY
+                    UNUSED_EXTERNAL_IMPORT
+                `)), 'code'),
+                R.F,
+                warn,
+            )(warning);
+        },
+
+        treeshake: {
+            moduleSideEffects: false,
+            propertyReadSideEffects: false,
+        },
+
+    },
+
 ];
 
 
