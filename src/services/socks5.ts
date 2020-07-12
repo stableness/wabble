@@ -13,7 +13,7 @@ import * as R from 'ramda';
 import * as Rx from 'rxjs';
 import * as o from 'rxjs/operators';
 
-import { logger, logLevel } from '../model';
+import type { Logging } from '../model';
 import type { Service } from '../config';
 import { pump, mountErrOf, option2B } from '../utils';
 
@@ -36,7 +36,9 @@ const CONTINUE  = Uint8Array.from([ 0x05, 0x00, ...reply ]);
 
 
 
-export function socks5Proxy ({ port, host, auth }: Service) {
+export const socks5Proxy = ({ port, host, auth }: Service) => (logging: Logging) => {
+
+    const { logLevel, logger } = logging;
 
     const authRequired = option2B(auth);
 
@@ -212,5 +214,5 @@ export function socks5Proxy ({ port, host, auth }: Service) {
 
     );
 
-}
+};
 
