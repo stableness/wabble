@@ -14,7 +14,7 @@ import * as R from 'ramda';
 import * as Rx from 'rxjs';
 import * as o from 'rxjs/operators';
 
-import { logger, logLevel } from '../model';
+import type { Logging } from '../model';
 import type { Service } from '../config';
 import * as u from '../utils';
 
@@ -31,7 +31,9 @@ type Connect = ReturnType<typeof mapConnect>;
 
 
 
-export function httpProxy ({ port, host, auth }: Service) {
+export const httpProxy = ({ port, host, auth }: Service) => (logging: Logging) => {
+
+    const { logLevel, logger } = logging;
 
     const authRequired = u.option2B(auth);
 
@@ -143,7 +145,7 @@ export function httpProxy ({ port, host, auth }: Service) {
         connectOn(conn$),
     );
 
-}
+};
 
 
 
