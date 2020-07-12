@@ -1,5 +1,6 @@
 import * as Rx from 'rxjs';
 
+import type { Logging } from '../model';
 import type { Service } from '../config';
 
 import { httpProxy } from './http';
@@ -9,7 +10,7 @@ import { socks5Proxy } from './socks5';
 
 
 
-type Proxy = typeof httpProxy | typeof socks5Proxy;
+type Proxy = ReturnType<typeof httpProxy> | ReturnType<typeof socks5Proxy>;
 
 export type Hook = Rx.ObservedValueOf<ReturnType<Proxy>>['hook'];
 
@@ -17,7 +18,7 @@ export type Hook = Rx.ObservedValueOf<ReturnType<Proxy>>['hook'];
 
 
 
-export function combine (services: readonly Service[]) {
+export const combine = (logging: Logging) => (services: readonly Service[]) => {
 
     const { length, 0: head } = services;
 
@@ -26,12 +27,12 @@ export function combine (services: readonly Service[]) {
     }
 
     if (length === 1) {
-        return box(head);
+        return box (head) (logging);
     }
 
-    return Rx.merge(...services.map(box));
+    return Rx.merge(...services.map(service => box (service) (logging)));
 
-}
+};
 
 
 

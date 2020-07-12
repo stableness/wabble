@@ -217,7 +217,7 @@ const runner$ = services$.pipe(
         console.info('listening on [%s:%d] by [%s]', host, port, protocol);
     })),
 
-    o.switchMap(combine),
+    o.switchMap(combine(logging)),
 
     o.publish(Rx.pipe(
 
