@@ -70,9 +70,9 @@ export const logger = pino({
     level: readLevel(process.env),
 });
 
-export namespace logLevel {
+export const logLevel = {
 
-    export const on = {
+    on: {
         get trace () { return logger.isLevelEnabled('trace') },
         get debug () { return logger.isLevelEnabled('debug') },
         get info () { return logger.isLevelEnabled('info') },
@@ -80,9 +80,13 @@ export namespace logLevel {
         get error () { return logger.isLevelEnabled('error') },
         get fatal () { return logger.isLevelEnabled('fatal') },
         get silent () { return logger.isLevelEnabled('silent') },
-    };
+    },
 
-}
+};
+
+export type Logging = typeof logging;
+
+export const logging = { logger, logLevel };
 
 
 
