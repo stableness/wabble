@@ -1,5 +1,9 @@
 import * as Rx from 'rxjs';
 
+import {
+    readonlyNonEmptyArray as RNEA,
+} from 'fp-ts';
+
 import type { Logging } from '../model';
 import type { Service } from '../config';
 
@@ -18,13 +22,9 @@ export type Hook = Rx.ObservedValueOf<ReturnType<Proxy>>['hook'];
 
 
 
-export const combine = (logging: Logging) => (services: readonly Service[]) => {
+export const combine = (logging: Logging) => (services: RNEA.ReadonlyNonEmptyArray<Service>) => {
 
     const { length, 0: head } = services;
-
-    if (length < 1) {
-        throw new Error('No service to provide');
-    }
 
     if (length === 1) {
         return box (head) (logging);

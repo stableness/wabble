@@ -9,6 +9,7 @@ import {
     option as O,
     function as F,
     pipeable as P,
+    readonlyNonEmptyArray as RNEA,
 } from 'fp-ts';
 
 import * as Rx from 'rxjs';
@@ -216,6 +217,14 @@ const runner$ = services$.pipe(
     o.tap(R.forEach(({ host, port, protocol }) => {
         console.info('listening on [%s:%d] by [%s]', host, port, protocol);
     })),
+
+    o.flatMap(F.flow(
+        RNEA.fromReadonlyArray,
+        O.fold(
+            F.constant(Rx.throwError(Error('No service to provide'))),
+            Rx.of,
+        ),
+    )),
 
     o.switchMap(combine(logging)),
 
