@@ -304,12 +304,6 @@ const runner$ = services$.pipe(
 
         o.ignoreElements(),
 
-        o.tap({
-            error (err) {
-                logger.error(err);
-            },
-        }),
-
         o.retryWhen(Rx.pipe(o.delay(1))),
 
     )),
