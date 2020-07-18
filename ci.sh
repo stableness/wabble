@@ -21,7 +21,7 @@ release()
 
     echo ::set-output name=ver::${VER}
 
-    npm run -s bundle && rm dist/{index,extra}.cjs
+    npm run -s bundle && rm dist/index.cjs dist/extra.cjs
 
     npm shrinkwrap && mv npm-shrinkwrap.json dist/shrinkwrap.json
 
