@@ -16,7 +16,7 @@ import pkg from './package.json';
 
 
 
-const { OUT = './dist', BUILD = 'dev', NODE_ENV } = process.env;
+const { OUT = './dist', BUILD = 'dev', NODE_ENV, EXTRA } = process.env;
 
 export const logs = R.tap(console.log);
 export const path = R.compose(R.replace(/\/\/+/g, '/'), R.join('/'));
@@ -37,6 +37,9 @@ const dev = devOrProd(R.always(BUILD !== 'prod'));
 /** @type { <T> (v: T) => T } */
 // @ts-ignore
 const prod = devOrProd(R.always(BUILD === 'prod'));
+/** @type { <T> (v: T) => T } */
+// @ts-ignore
+const extra = devOrProd(R.always(Boolean(EXTRA)));
 
 const common = {
     format: 'cjs',
@@ -151,7 +154,7 @@ const config = [
     }),
 
     // @ts-ignore
-    prod({
+    extra({
 
         input: dist('extra.js'),
 

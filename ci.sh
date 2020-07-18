@@ -6,7 +6,7 @@ set -eu
 
 build()
 {
-    npm run -s build
+    npm run -s build -- --environment EXTRA
     echo '#!/usr/bin/env node' > dist/bin.cjs
     cat dist/bin.js >> dist/bin.cjs
 }
