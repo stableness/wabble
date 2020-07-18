@@ -9,6 +9,7 @@ import {
     option as O,
     function as F,
     pipeable as P,
+    readonlyNonEmptyArray as RNEA,
 } from 'fp-ts';
 
 import * as Rx from 'rxjs';
@@ -70,9 +71,9 @@ export const logger = pino({
     level: readLevel(process.env),
 });
 
-export namespace logLevel {
+export const logLevel = {
 
-    export const on = {
+    on: {
         get trace () { return logger.isLevelEnabled('trace') },
         get debug () { return logger.isLevelEnabled('debug') },
         get info () { return logger.isLevelEnabled('info') },
@@ -80,9 +81,13 @@ export namespace logLevel {
         get error () { return logger.isLevelEnabled('error') },
         get fatal () { return logger.isLevelEnabled('fatal') },
         get silent () { return logger.isLevelEnabled('silent') },
-    };
+    },
 
-}
+};
+
+export type Logging = typeof logging;
+
+export const logging = { logger, logLevel };
 
 
 
@@ -213,7 +218,15 @@ const runner$ = services$.pipe(
         console.info('listening on [%s:%d] by [%s]', host, port, protocol);
     })),
 
-    o.switchMap(combine),
+    o.flatMap(F.flow(
+        RNEA.fromReadonlyArray,
+        O.fold(
+            F.constant(Rx.throwError(Error('No service to provide'))),
+            Rx.of,
+        ),
+    )),
+
+    o.switchMap(combine(logging)),
 
     o.publish(Rx.pipe(
 
@@ -303,12 +316,6 @@ const runner$ = services$.pipe(
         }, F.constVoid)),
 
         o.ignoreElements(),
-
-        o.tap({
-            error (err) {
-                logger.error(err);
-            },
-        }),
 
         o.retryWhen(Rx.pipe(o.delay(1))),
 
