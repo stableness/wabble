@@ -14,7 +14,7 @@ import { socks5Proxy } from './socks5';
 
 
 
-type Proxy = ReturnType<typeof httpProxy> | ReturnType<typeof socks5Proxy>;
+type Proxy = ReturnType<typeof httpProxy | typeof socks5Proxy>;
 
 export type Hook = Rx.ObservedValueOf<ReturnType<Proxy>>['hook'];
 
