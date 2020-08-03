@@ -387,6 +387,10 @@ export function readFile (filename: PathLike, encoding?: string) {
     return Rx.defer(() => fs.readFile(filename, encoding));
 }
 
+export const readFileInStringOf = (encoding: BufferEncoding) => (filename: PathLike) => {
+    return readFile(filename, encoding);
+}
+
 
 
 
