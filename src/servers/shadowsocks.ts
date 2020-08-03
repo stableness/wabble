@@ -65,7 +65,7 @@ export function chain ({ ipOrHost, port, logger, hook }: ChainOpts, remote: SS) 
 
 
 
-export const cryptoPairsC = R.curry(cryptoPairs);
+export const cryptoPairsC = (server: SS) => (head: Uint8Array) => cryptoPairs(server, head);
 
 export function cryptoPairs (server: SS, head: Uint8Array) {
 
