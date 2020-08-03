@@ -111,7 +111,7 @@ process.on('uncaughtException', R.cond([
 const loader$ = new Rx.ReplaySubject<string>(1);
 
 const config$ = loader$.pipe(
-    o.switchMap(R.curry(u.readFile)(R.__, 'utf8')),
+    o.switchMap(u.readFileInStringOf('utf8')),
     o.map(R.unary(safeLoad)),
     o.map(convert),
     o.catchError(R.o(R.always(Rx.EMPTY), bind(logger).error)),
