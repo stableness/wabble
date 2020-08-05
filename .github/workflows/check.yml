@@ -40,6 +40,6 @@ jobs:
 
       - run: ls -lh dist/{index,bin}*
 
-      - uses: codecov/codecov-action@v1.0.7
+      - uses: codecov/codecov-action@v1
         timeout-minutes: 1
 
