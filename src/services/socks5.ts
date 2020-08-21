@@ -76,8 +76,8 @@ export const socks5Proxy = ({ port, host, auth }: Service) => (logging: Logging)
 
             try {
 
-                const { read, off } = asyncReadable(socket);
-                const exit = R.o(Error, R.tap(off));
+                const { read } = asyncReadable(socket);
+                const exit = R.construct(Error);
 
                 init: {
 
@@ -164,8 +164,6 @@ export const socks5Proxy = ({ port, host, auth }: Service) => (logging: Logging)
                     }
 
                     const port = (await read(2)).readUInt16BE(0);
-
-                    off();
 
                     return { socket, host, port };
 

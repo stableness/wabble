@@ -58,8 +58,8 @@ export async function tunnel ({ host, port, auth }: Socks5, head: Uint8Array) {
 
     const socket = netConnectTo({ host, port });
 
-    const { read, off } = asyncReadable(socket);
-    const exit = R.o(Error, R.tap(off));
+    const { read } = asyncReadable(socket);
+    const exit = R.construct(Error);
 
     auth: {
 
@@ -115,8 +115,6 @@ export async function tunnel ({ host, port, auth }: Socks5, head: Uint8Array) {
         await read(step + 2);
 
     }
-
-    off();
 
     return socket;
 
