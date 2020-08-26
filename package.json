@@ -57,14 +57,14 @@
     "@types/pino": "^6.0.0",
     "@types/ramda": "~0.27.14",
     "husky": "^4.2.5",
-    "jest": "^26.2.2",
-    "jest-circus": "^26.2.2",
+    "jest": "^26.4.2",
+    "jest-circus": "^26.4.2",
     "jest-junit": "^11.1.0",
     "pino-pretty": "^4.1.0",
     "rollup": "^2.23.0",
     "rollup-plugin-terser": "^6.1.0",
     "rollup-plugin-visualizer": "^4.0.4",
-    "ts-jest": "^26.1.4",
+    "ts-jest": "^26.3.0",
     "tsc-watch": "^4.0.0",
     "typescript": "~4.0.2"
   }
