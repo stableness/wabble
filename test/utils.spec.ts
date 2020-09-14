@@ -23,6 +23,7 @@ import {
     Fn,
     constErr,
     toBasicCredentials,
+    splitBy,
 
 } from '../src/utils';
 
@@ -250,6 +251,34 @@ describe('chop', () => {
         }
 
         expect(store).toEqual(result.map(size => new Uint8Array(size).fill(0)));
+
+    });
+
+});
+
+
+
+
+
+describe('split', () => {
+
+    const buffer = Buffer.allocUnsafe(10);
+
+    test.each([
+        0,
+        2,
+        3,
+        4,
+        5,
+        10,
+    ])('by %d', num => {
+
+        const slice = splitBy(num);
+        const [ head, tail ] = slice(buffer);
+
+        expect(head.length).toBe(num);
+        expect(tail.length).toBe(buffer.length - num);
+        expect(Buffer.concat([ head, tail ])).toEqual(buffer);
 
     });
 

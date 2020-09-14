@@ -201,6 +201,28 @@ export function loopNext <T> (list: ArrayLike<T>) {
 
 
 
+type List <T> =
+    T extends Buffer ? [ Buffer, Buffer ]
+    : T extends Uint8Array ? [ Uint8Array, Uint8Array ]
+    : never
+;
+
+export const splitBy2 = splitBy(2);
+
+export function splitBy (at: number) {
+
+    return function <T extends Uint8Array | Buffer> (list: T) {
+
+        return [ list.subarray(0, at), list.subarray(at) ] as List<T>;
+
+    };
+
+}
+
+
+
+
+
 export namespace hash {
 
     type Alg = 'md4' | 'md5' | 'sha1' | 'sha224' | 'sha256' | 'sha512';
