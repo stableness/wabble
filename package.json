@@ -31,8 +31,8 @@
   "dependencies": {
     "@stableness/basic-auth": "^102.0.1",
     "@stableness/dohdec": "^102.1.0",
-    "async-readable": "~0.4.0",
-    "buffer-pond": "~0.8.0",
+    "async-readable": "~0.4.2",
+    "buffer-pond": "~0.8.2",
     "command-line-args": "^5.1.1",
     "fp-ts": "^2.7.1",
     "futoin-hkdf": "^1.2.1",
