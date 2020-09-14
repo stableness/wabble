@@ -153,7 +153,7 @@ const config = [
             resolve(),
             commonjs(),
             terser({
-                ecma: 8,
+                ecma: 2019,
                 toplevel: true,
                 compress: {
                     inline: false,
