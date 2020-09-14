@@ -221,15 +221,12 @@ export function DecryptAEAD (
 
         while (true) {
 
-            const sizing = await read(2 + tagSize);
-            const lengthBuffer = decrypt(sizing.subarray(0, 2), sizing.subarray(2));
+            const buffer = decrypt(...u.splitBy2(await read(2 + tagSize)));
+            const length = buffer.readUInt16BE(0);
 
-            const length = lengthBuffer.readUInt16BE(0);
+            const slice = u.splitBy(length);
 
-            const data = await read(length + tagSize);
-            const plainText = decrypt(data.subarray(0, length), data.subarray(length));
-
-            yield plainText;
+            yield decrypt(...slice(await read(length + tagSize)));
 
         }
 
