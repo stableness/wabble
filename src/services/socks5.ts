@@ -81,7 +81,7 @@ export const socks5Proxy = ({ port, host, auth }: Service) => (logging: Logging)
 
                 init: {
 
-                    const [ VER, LEN ] = await read(2);
+                    const [ VER, LEN = 0 ] = await read(2);
 
                     if (VER !== 0x05 || LEN < 1) {
                         socket.end(E_METHOD);
@@ -104,7 +104,7 @@ export const socks5Proxy = ({ port, host, auth }: Service) => (logging: Logging)
 
                         socket.write(AUTH_YES);
 
-                        const [ VER, ULEN ] = await read(2);
+                        const [ VER, ULEN = 0 ] = await read(2);
 
                         if (VER !== 0x01 || ULEN < 1 || ULEN > 255) {
                             socket.end(AUTH_ERR);
@@ -113,7 +113,7 @@ export const socks5Proxy = ({ port, host, auth }: Service) => (logging: Logging)
 
                         const info = O.some({
                             username: (await read(ULEN)).toString(),
-                            password: (await read(Math.min(255, (await read(1))[0]))).toString(),
+                            password: (await read(Math.min(255, (await read(1))[0] || 0))).toString(),
                         });
 
                         const result = P.pipe(
@@ -154,7 +154,7 @@ export const socks5Proxy = ({ port, host, auth }: Service) => (logging: Logging)
                             host = toString(await read(16));
                             break;
                         case 3:
-                            host = (await read((await read(1))[0])).toString();
+                            host = (await read((await read(1))[0] || 0)).toString();
                             break;
                     }
 

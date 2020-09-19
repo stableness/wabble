@@ -97,7 +97,7 @@ export async function tunnel ({ host, port, auth }: Socks5, head: Uint8Array) {
 
         socket.write(head);
 
-        const [ VER, REP,    , ATYP, LEN ] = await read(5);
+        const [ VER, REP,    , ATYP, LEN = 0 ] = await read(5);
 
         if (VER !== 0x05 || REP !== 0x00) {
             throw exit(`VER [${ VER }] REP [${ REP }]`);
