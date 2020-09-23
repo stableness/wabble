@@ -7,6 +7,11 @@ import { bind } from 'proxy-bind';
 import * as R from 'ramda';
 
 import {
+    option as O,
+    eq as Eq,
+} from 'fp-ts';
+
+import {
 
     noop,
     chop,
@@ -23,6 +28,7 @@ import {
     Fn,
     constErr,
     toBasicCredentials,
+    readOptionalString,
     splitBy,
 
 } from '../src/utils';
@@ -367,6 +373,36 @@ describe('toBasicCredentials', () => {
     ])('%p', (auth, result) => {
         expect(toBasicCredentials(auth)).toBe(R.concat('Basic ', result));
     });
+
+});
+
+
+
+
+
+describe('readOptionalString', () => {
+
+    test.each([
+
+        [  'foo',  O.some('foo') ],
+        [ ' foo',  O.some('foo') ],
+        [  'foo ', O.some('foo') ],
+
+        [     '', O.none ],
+        [    ' ', O.none ],
+        [ void 0, O.none ],
+        [   null, O.none ],
+        [    123, O.none ],
+        [     {}, O.none ],
+        [     [], O.none ],
+
+    ])('%p', (raw, result) => {
+
+        expect(equals(readOptionalString(raw), result)).toBe(true);
+
+    });
+
+    const { equals } = O.getEq(Eq.eqString);
 
 });
 
