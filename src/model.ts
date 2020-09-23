@@ -221,7 +221,7 @@ const runner$ = services$.pipe(
     o.flatMap(F.flow(
         RNEA.fromReadonlyArray,
         O.fold(
-            F.constant(Rx.throwError(Error('No service to provide'))),
+            F.constant(Rx.throwError(F.constant(Error('No service to provide')))),
             Rx.of,
         ),
     )),
