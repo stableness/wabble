@@ -10,7 +10,7 @@
     "non.tsc.start": "NODE_ENV=dev rollup -c && npm start",
     "dev": "TSC_NONPOLLING_WATCHER=true tsc-watch --onSuccess 'npm run -s non.tsc.start'",
     "bundle": "NODE_ENV=production npm run build -- --environment BUILD:prod",
-    "test": "jest --ci --coverage -c jest.config.json"
+    "test": "TS_JEST_DISABLE_VER_CHECKER=true jest --ci --coverage -c jest.config.json"
   },
   "bin": {
     "wabble": "dist/bin.cjs"
