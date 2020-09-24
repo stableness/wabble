@@ -6,6 +6,9 @@ import { bind } from 'proxy-bind';
 
 import * as R from 'ramda';
 
+import * as Rx from 'rxjs';
+import * as o from 'rxjs/operators';
+
 import {
     option as O,
     eq as Eq,
@@ -30,6 +33,8 @@ import {
     toBasicCredentials,
     readOptionalString,
     splitBy,
+    loopNext,
+    genLooping,
 
 } from '../src/utils';
 
@@ -410,19 +415,41 @@ describe('readOptionalString', () => {
 
 
 
-describe('loopNext', () => {
+describe('Looping', () => {
 
-    test.todo('');
+    test('genLooping empty', () => {
 
-});
+        const { done, value } = genLooping([] as string[]).next();
 
+        expect(done).toBe(true);
+        expect(value).toBeUndefined();
 
+    });
 
+    test('loopNext', done => {
 
+        const step = Math.round(5 + Math.random() * 10);
+        const io = loopNext([ 1 ]);
 
-describe('genLooping', () => {
+        const loop = Rx.range(0, step).pipe(
+            o.map(() => R.defaultTo(0, io())),
+            o.reduce<number, number>(R.add, 0),
+        );
 
-    test.todo('');
+        const sub = loop.subscribe({
+
+            next (sum) {
+                expect(sum).toBe(step);
+            },
+
+            complete () {
+                done();
+                sub.unsubscribe();
+            },
+
+        });
+
+    });
 
 });
 
