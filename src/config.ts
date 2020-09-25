@@ -8,9 +8,11 @@ import type { ShadowSocks } from './settings/utils';
 
 
 
+type RemoteProto = 'socks5' | 'http' | 'https' | 'ss' | 'trojan';
+
 interface Base {
 
-    protocol: 'socks5' | 'http' | 'https' | 'ss' | 'trojan';
+    protocol: RemoteProto;
 
     host: string;
     port: number;
