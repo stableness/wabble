@@ -113,7 +113,7 @@ export interface Service {
 
     auth: O.Option<(info: Basic) => boolean>;
 
-};
+}
 
 
 
