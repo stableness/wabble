@@ -72,7 +72,7 @@ export const socks5Proxy = ({ port, host, auth }: Service) => (logging: Logging)
 
     }).pipe(
 
-        o.flatMap(async socket => {
+        o.mergeMap(async socket => {
 
             try {
 

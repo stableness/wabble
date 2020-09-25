@@ -122,14 +122,14 @@ const config$ = loader$.pipe(
 const directList$ = config$.pipe(
     o.pluck('sieve', 'direct'),
     o.map(O.getOrElse(F.constant('@stableness/sieve-tray/lib/china-list'))),
-    o.flatMap(u.sieve),
+    o.mergeMap(u.sieve),
     o.shareReplay({ bufferSize: 1, refCount: false }),
 );
 
 const rejectList$ = config$.pipe(
     o.pluck('sieve', 'reject'),
     o.map(O.getOrElse(F.constant('@stableness/sieve-tray/lib/block-list'))),
-    o.flatMap(u.sieve),
+    o.mergeMap(u.sieve),
     o.shareReplay({ bufferSize: 1, refCount: false }),
 );
 
@@ -218,7 +218,7 @@ const runner$ = services$.pipe(
         console.info('listening on [%s:%d] by [%s]', host, port, protocol);
     })),
 
-    o.flatMap(F.flow(
+    o.mergeMap(F.flow(
         RNEA.fromReadonlyArray,
         O.fold(
             F.constant(Rx.throwError(F.constant(Error('No service to provide')))),
@@ -293,7 +293,7 @@ const runner$ = services$.pipe(
 
         }),
 
-        o.flatMap(async ({ task, log }) => P.pipe(
+        o.mergeMap(async ({ task, log }) => P.pipe(
             await task(),
             E.mapLeft(err => ({ err, log })),
         )),
