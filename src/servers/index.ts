@@ -66,7 +66,7 @@ export function connect ({ host, port, hook, dns, doh, logger }: Opts) {
 
     return async function toServer (server: O.Option<Remote> | 'nothing') {
 
-        const ip = await P.pipe(
+        const ipOr = await P.pipe(
             host,
             O.fromPredicate(doh),
             O.chain(F.constant(dns)),
@@ -108,7 +108,7 @@ export function connect ({ host, port, hook, dns, doh, logger }: Opts) {
 
 
         const ipOrHost = P.pipe(
-            ip,
+            ipOr,
             E.fromNullable(Error('Non DoH')),
             E.flatten,
             O.fromEither,
