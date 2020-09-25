@@ -20,12 +20,26 @@ jobs:
     name: SonarCloud
     runs-on: ubuntu-latest
     steps:
+
       - uses: actions/checkout@v2
         with:
-          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v2-beta
+        with:
+          node-version: 12.x
+
+      - run: npm install --no-save
+        env:
+          ADBLOCK: true
+          DISABLE_OPENCOLLECTIVE: true
+          HUSKY_SKIP_INSTALL: true
+
+      - run: npm run test
+
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@master
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
