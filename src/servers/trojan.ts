@@ -6,7 +6,6 @@ import * as R from 'ramda';
 
 import {
     taskEither as TE,
-    pipeable as P,
     function as F,
 } from 'fp-ts';
 
@@ -22,7 +21,7 @@ import type { ChainOpts } from './index';
 
 export function chain ({ ipOrHost, port, logger, hook }: ChainOpts, remote: Trojan) {
 
-    return P.pipe(
+    return F.pipe(
 
         TE.right(makeHead(remote.password, ipOrHost, port)),
 

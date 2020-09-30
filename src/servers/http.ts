@@ -9,7 +9,6 @@ import {
     taskEither as TE,
     option as O,
     function as F,
-    pipeable as P,
 } from 'fp-ts';
 
 import { logLevel } from '../model';
@@ -24,7 +23,7 @@ import type { ChainOpts } from './index';
 
 export function chain ({ ipOrHost, port, logger, hook }: ChainOpts, remote: Http) {
 
-    return P.pipe(
+    return F.pipe(
 
         TE.right(R.join(':', [ ipOrHost, port ])),
 

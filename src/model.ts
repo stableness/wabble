@@ -8,7 +8,6 @@ import {
     either as E,
     option as O,
     function as F,
-    pipeable as P,
     readonlyNonEmptyArray as RNEA,
 } from 'fp-ts';
 
@@ -293,7 +292,7 @@ const runner$ = services$.pipe(
 
         }),
 
-        o.mergeMap(async ({ task, log }) => P.pipe(
+        o.mergeMap(async ({ task, log }) => F.pipe(
             await task(),
             E.mapLeft(err => ({ err, log })),
         )),

@@ -14,7 +14,6 @@ import {
     taskEither as TE,
     option as O,
     function as F,
-    pipeable as P,
 } from 'fp-ts';
 
 import { parse as parseBasicAuth } from '@stableness/basic-auth';
@@ -348,7 +347,7 @@ export namespace basicInfo {
 
         return function (headers: IncomingHttpHeaders) {
 
-            return P.pipe(
+            return F.pipe(
                 O.fromNullable(headers[field]),
                 O.mapNullable(parseBasicAuth),
             );
@@ -451,7 +450,7 @@ export function DoH (endpoint: string, path = '@stableness/dohdec') {
 
         return tryCatchToError(async () => {
 
-            const dns = P.pipe(
+            const dns = F.pipe(
                 await doh,
                 E.fold(err => { throw err }, F.identity),
             );

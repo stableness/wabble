@@ -10,7 +10,6 @@ import {
     map as fpMap,
     eq as Eq,
     option as O,
-    pipeable as P,
     function as F,
     readonlyArray as A,
 } from 'fp-ts';
@@ -66,12 +65,12 @@ export function connect ({ host, port, hook, dns, doh, logger }: Opts) {
 
     return async function toServer (server: O.Option<Remote> | 'nothing') {
 
-        const ipOr = await P.pipe(
+        const ipOr = await F.pipe(
             host,
             O.fromPredicate(doh),
             O.chain(F.constant(dns)),
             O.ap(justHost),
-            O.map(task => P.pipe(
+            O.map(task => F.pipe(
                 ipCache,
                 O.map(data => [ { data, name: host, TTL: 1, type: 1 as 1 } ]),
                 TE.fromOption(Error),
@@ -107,7 +106,7 @@ export function connect ({ host, port, hook, dns, doh, logger }: Opts) {
 
 
 
-        const ipOrHost = P.pipe(
+        const ipOrHost = F.pipe(
             ipOr,
             E.fromNullable(Error('Non DoH')),
             E.flatten,
@@ -120,7 +119,7 @@ export function connect ({ host, port, hook, dns, doh, logger }: Opts) {
 
         if (server === 'nothing') {
 
-            return P.pipe(
+            return F.pipe(
                 tryCatchToError(() =>
                     hook(netConnectTo({ port, host: ipOrHost })),
                 ),
@@ -131,7 +130,7 @@ export function connect ({ host, port, hook, dns, doh, logger }: Opts) {
 
 
 
-        return P.pipe(
+        return F.pipe(
 
             server,
 

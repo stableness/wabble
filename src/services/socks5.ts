@@ -6,7 +6,7 @@ import { asyncReadable } from 'async-readable';
 
 import { fromLong, toString } from 'ip';
 
-import { option as O, function as F, pipeable as P } from 'fp-ts';
+import { option as O, function as F } from 'fp-ts';
 
 import * as R from 'ramda';
 
@@ -116,7 +116,7 @@ export const socks5Proxy = ({ port, host, auth }: Service) => (logging: Logging)
                             password: (await read(Math.min(255, (await read(1))[0] || 0))).toString(),
                         });
 
-                        const result = P.pipe(
+                        const result = F.pipe(
                             O.ap(info)(auth),
                             O.getOrElse(F.constFalse),
                         );

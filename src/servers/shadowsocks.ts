@@ -7,7 +7,7 @@ import {
     either as E,
     io as IO,
     taskEither as TE,
-    pipeable as P,
+    function as F,
 } from 'fp-ts';
 
 import { toTransform } from 'buffer-pond';
@@ -25,7 +25,7 @@ import { ChainOpts, netConnectTo } from './index';
 
 export function chain ({ ipOrHost, port, logger, hook }: ChainOpts, remote: SS) {
 
-    return P.pipe(
+    return F.pipe(
 
         IO.of(u.socks5Handshake(ipOrHost, port).subarray(3)),
         IO.map(cryptoPairsC(remote)),

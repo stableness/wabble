@@ -3,7 +3,7 @@ import { AssertionError } from 'assert';
 
 import * as R from 'ramda';
 
-import { eq as Eq, option as O, pipeable as P, function as F } from 'fp-ts';
+import { eq as Eq, option as O, function as F } from 'fp-ts';
 
 import type { Config, Basic, Remote } from '../config';
 
@@ -36,7 +36,7 @@ export function convert (obj: unknown): Config {
 
         const justAuth = O.some(R.curry(eqBasic)({ username, password }));
 
-        const auth = P.pipe(
+        const auth = F.pipe(
             justAuth,
             O.chain(auth => auth({ username: '', password: '' }) ? O.none : justAuth),
         );

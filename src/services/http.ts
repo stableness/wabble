@@ -7,7 +7,7 @@ import type { IncomingMessage, ServerResponse } from 'http';
 
 import { bind, mirror } from 'proxy-bind';
 
-import { option as O, either as E, function as F, pipeable as P } from 'fp-ts';
+import { option as O, either as E, function as F } from 'fp-ts';
 
 import * as R from 'ramda';
 
@@ -94,12 +94,12 @@ export const httpProxy = ({ port, host, auth }: Service) => (logging: Logging) =
                 return true;
             }
 
-            const info = P.pipe(
+            const info = F.pipe(
                 u.basicInfo.proxyAuth(headers),
                 O.map(({ name: username, pass: password }) => ({ username, password })),
             );
 
-            return P.pipe(
+            return F.pipe(
 
                 O.ap(info)(auth),
 

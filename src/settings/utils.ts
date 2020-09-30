@@ -2,7 +2,6 @@ import * as R from 'ramda';
 
 import {
     option as O,
-    pipeable as P,
     function as F,
     array as A,
     nonEmptyArray as NEA,
@@ -168,7 +167,7 @@ export namespace Trojan {
         const verify_hostname = gets('verify_hostname', true);
         const sni = gets('sni', undefined);
 
-        const alpn = P.pipe(
+        const alpn = F.pipe(
             gets('alpn', [ 'h2', 'http/1.1' ]),
             A.map(readOptionalString),
             A.compact,
@@ -176,7 +175,7 @@ export namespace Trojan {
             O.toUndefined,
         );
 
-        const ciphers = P.pipe(
+        const ciphers = F.pipe(
             A.flatten([
                 gets('cipher', CIPHER),
                 gets('cipher_tls13', CIPHER_TLS13),
@@ -198,7 +197,7 @@ export namespace Trojan {
 
 
         function gets <T> (key: string, val: T) {
-            return P.pipe(
+            return F.pipe(
                 sslProp(key),
                 O.fromNullable,
                 O.getOrElse(F.constant(val)),

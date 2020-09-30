@@ -4,7 +4,6 @@ import {
     taskEither as TE,
     option as O,
     function as F,
-    pipeable as P,
 } from 'fp-ts';
 
 import { asyncReadable } from 'async-readable';
@@ -21,7 +20,7 @@ import { ChainOpts, netConnectTo } from './index';
 
 export function chain ({ ipOrHost, port, logger, hook }: ChainOpts, remote: Socks5) {
 
-    return P.pipe(
+    return F.pipe(
 
         TE.right(socks5Handshake(ipOrHost, port)),
 
