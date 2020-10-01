@@ -5,9 +5,11 @@ import * as R from 'ramda';
 
 import { eq as Eq, option as O, function as F } from 'fp-ts';
 
+import * as Dc from 'io-ts/Decoder';
+
 import type { Config, Basic, Remote } from '../config';
 
-import { Fn, readOptionalString, portNormalize } from '../utils';
+import { Fn, readOptionalString, portNormalize, readTrimmedNonEmptyString } from '../utils';
 
 import { ShadowSocks, Trojan } from './utils';
 
@@ -138,7 +140,7 @@ export function convert (obj: unknown): Config {
         reject: readOptionalString(R.path([ 'sieve', 'reject' ], raw)),
     };
 
-    const doh = readDoH(raw.doh);
+    const doh = O.fromEither(decodeDoH.decode(raw.doh));
 
     return { services, doh, servers, rules, sieve } as const;
 
@@ -148,25 +150,29 @@ export function convert (obj: unknown): Config {
 
 
 
-export const CF_DOH_ENDPOINT = 'https://cloudflare-dns.com/dns-query';
+export const CF_DOH_ENDPOINT = 'https://cloudflare-dns.com/dns-query' as HttpOrHttps;
 
-export const readDoH = F.flow(
-    O.fromNullable,
-    O.filter(R.either(
-        R.is(Boolean),
-        R.both(
-            R.is(String),
-            R.either(
-                R.startsWith('http://'),  // TODO: should disallowing?
-                R.startsWith('https://'),
-            ),
-        ),
-    )),
-    O.chain(R.cond([
-        [ R.equals(true),  R.always(O.some(CF_DOH_ENDPOINT)) ],
-        [ R.equals(false), R.always(O.none) ],
-        [ R.T,             O.some ],
-    ]) as Fn<unknown, O.Option<string>>),
+export type HttpOrHttps = string & { readonly HttpOrHttps: unique symbol };
+
+export const trimmedStartsWithHttpOrHttps = F.pipe(
+    readTrimmedNonEmptyString,
+    Dc.refine(
+        R.either(
+            R.startsWith('http://'),
+            R.startsWith('https://'),
+        ) as (str: string) => str is HttpOrHttps,
+        'HttpOrHttps',
+    ),
+);
+
+export const flagOnToCloudFlare = F.pipe(
+    Dc.boolean,
+    Dc.parse(on => on ? Dc.success(CF_DOH_ENDPOINT) : Dc.failure(on, 'off')),
+);
+
+export const decodeDoH = Dc.union(
+    flagOnToCloudFlare,
+    trimmedStartsWithHttpOrHttps,
 );
 
 
