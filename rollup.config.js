@@ -67,6 +67,8 @@ const config = [
             | rxjs/operators
 
             | fp-ts
+            | io-ts
+            | io-ts/Decoder
         `)),
 
         output: [
@@ -179,6 +181,8 @@ const config = [
             | rxjs/operators
 
             | fp-ts
+            | io-ts
+            | io-ts/Decoder
         `),
 
         // @ts-ignore
