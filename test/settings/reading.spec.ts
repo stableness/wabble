@@ -1,11 +1,13 @@
 import * as R from 'ramda';
 
-import { option as O } from 'fp-ts';
+import {
+    either as E,
+} from 'fp-ts';
 
 import {
 
     filterTags,
-    readDoH,
+    decodeDoH,
     CF_DOH_ENDPOINT,
     assertBaseArray,
 
@@ -17,6 +19,8 @@ import {
 
 describe('readDoH', () => {
 
+    const { decode: readDoH } = decodeDoH;
+
     test.each([
         42,
         'wat',
@@ -24,16 +28,19 @@ describe('readDoH', () => {
         undefined,
         false,
     ])('%s', value => {
-        expect(readDoH(value)).toBe(O.none);
+        expect(E.isLeft(readDoH(value))).toBe(true);
     });
 
     test('true', () => {
-        expect(readDoH(true)).toStrictEqual(O.some(CF_DOH_ENDPOINT));
+        expect(readDoH(true)).toStrictEqual(E.right(CF_DOH_ENDPOINT));
     });
 
     test('custom', () => {
-        const DOH = 'https://ecs-doh.dnswarden.com/uncensored-ecs';
-        expect(readDoH(DOH)).toStrictEqual(O.some(DOH));
+
+        const DOH = '     https://ecs-doh.dnswarden.com/uncensored-ecs     ';
+
+        expect(readDoH(DOH)).toStrictEqual(E.right(DOH.trim()));
+
     });
 
 });
