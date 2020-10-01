@@ -16,6 +16,8 @@ import {
     function as F,
 } from 'fp-ts';
 
+import * as Dc from 'io-ts/Decoder';
+
 import { parse as parseBasicAuth } from '@stableness/basic-auth';
 
 import HKDF from 'futoin-hkdf';
@@ -323,12 +325,25 @@ export const isPrivateIP = R.both(
 
 
 
+export type NonEmptyString = string & { readonly NonEmptyString: unique symbol };
+
+export const readTrimmedNonEmptyString = F.pipe(
+    Dc.string,
+    Dc.map(R.trim),
+    Dc.refine(
+        R.complement(R.equals('')) as (str: string) => str is NonEmptyString,
+        'NonEmptyString',
+    ),
+);
+
+
+
+
+
 export const readOptionalString = F.flow(
-    O.fromNullable,
-    O.filter(R.is(String)),
-    O.map(R.trim),
-    O.filter(R.complement(R.equals(''))),
-) as Fn<unknown, O.Option<string>>;
+    readTrimmedNonEmptyString.decode,
+    O.fromEither,
+);
 
 
 
