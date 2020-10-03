@@ -14,6 +14,7 @@ import {
     taskEither as TE,
     option as O,
     function as F,
+    nonEmptyArray as NEA,
 } from 'fp-ts';
 
 import * as Dc from 'io-ts/Decoder';
@@ -372,6 +373,17 @@ export namespace basicInfo {
     }
 
 }
+
+
+
+
+
+export const decoderNonEmptyArrayOf = F.flow(
+    Dc.array,
+    Dc.map(NEA.fromArray),
+    Dc.refine(O.isSome, 'NonEmptyArray'),
+    Dc.map(R.prop('value')),
+);
 
 
 
