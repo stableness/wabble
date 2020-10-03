@@ -337,6 +337,11 @@ export const readTrimmedNonEmptyString = F.pipe(
     ),
 );
 
+export const readTrimmedNonEmptyStringArr = F.pipe(
+    readTrimmedNonEmptyString,
+    Dc.array,
+);
+
 
 
 
