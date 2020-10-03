@@ -6,10 +6,10 @@ import {
 
 import {
 
+    convert,
     filterTags,
     decodeDoH,
     CF_DOH_ENDPOINT,
-    assertBaseArray,
 
 } from '../../src/settings/reading';
 
@@ -49,7 +49,7 @@ describe('readDoH', () => {
 
 
 
-describe('assertBaseArray', () => {
+describe('convert', () => {
 
     test.each([
         null,
@@ -58,12 +58,55 @@ describe('assertBaseArray', () => {
         [ {} ],
         [ 42 ],
         [ null ],
+        {
+            services: [
+                { uri: 'wat://0.0.0.0:8080' },
+            ],
+            servers: [
+                { uri: 'wat://0.0.0.0:8080' },
+            ],
+        },
     ])('invalid: %p', value => {
-        expect(() => assertBaseArray(value)).toThrow();
+        expect(() => convert(value)).toThrow();
     });
 
-    test('valid', () => {
-        expect(() => assertBaseArray([ { uri: 'http://localhost' } ])).not.toThrow();
+    test('simple', () => {
+
+        const setting = {
+            services: [
+                { uri:   'http://0.0.0.0:8080' },
+                { uri:   'http://foo:bar@0.0.0.0:8080' },
+                { uri: 'socks5://0.0.0.0:8080' },
+                { uri: 'socks5://foo:bar@0.0.0.0:8080' },
+            ],
+            doh: true,
+            tags: [ 'http' ],
+            servers: [
+                { uri: 'socks5://127.0.0.1:8080' },
+                { uri: 'socks5://foo:bar@127.0.0.1:8080' },
+                { uri: 'http://127.0.0.1:8080' },
+                { uri: 'http://foo:bar@127.0.0.1:8080' },
+                { uri: 'ss://127.0.0.1', key: 'foobar' },
+                { uri: 'trojan://127.0.0.1', password: 'foobar', ssl: { verify: true } },
+            ],
+            rules: {
+                proxy: [
+                    'doodle.',
+                ],
+                direct: [
+                    'FULL,localhost',
+                ],
+                reject: [
+                    'doubleclick',
+                ],
+            },
+            sieve: {
+                direct: 'pkg',
+            },
+        };
+
+        expect(() => convert(setting)).not.toThrow();
+
     });
 
 });
