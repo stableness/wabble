@@ -11,6 +11,7 @@ import * as o from 'rxjs/operators';
 
 import {
     option as O,
+    either as E,
     eq as Eq,
 } from 'fp-ts';
 
@@ -32,6 +33,7 @@ import {
     constErr,
     toBasicCredentials,
     readOptionalString,
+    readURL,
     splitBy,
     loopNext,
     genLooping,
@@ -408,6 +410,42 @@ describe('readOptionalString', () => {
     });
 
     const { equals } = O.getEq(Eq.eqString);
+
+});
+
+
+
+
+
+describe('readURL', () => {
+
+    test.each([
+
+        'foobar',
+        ' ',
+        null,
+        42,
+        [],
+
+    ])('%p', raw => {
+
+        expect(E.isLeft(decodeURL(raw))).toBe(true);
+
+    });
+
+    test.each([
+
+        'http://127.0.1:8080',
+        ' tcp://127.0.1:8080',
+        '  ss://127.0.1:8080',
+
+    ])('%p', raw => {
+
+        expect(E.isRight(decodeURL(raw))).toBe(true);
+
+    });
+
+    const { decode: decodeURL } = readURL;
 
 });
 

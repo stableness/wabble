@@ -1,5 +1,5 @@
 import net from 'net';
-import type { URL } from 'url';
+import { URL } from 'url';
 import { once } from 'events';
 import type { IncomingHttpHeaders } from 'http';
 import crypto from 'crypto';
@@ -352,6 +352,26 @@ export const readTrimmedNonEmptyStringArr = F.pipe(
 export const readOptionalString = F.flow(
     readTrimmedNonEmptyString.decode,
     O.fromEither,
+);
+
+
+
+
+
+export const readURL = F.pipe(
+
+    readTrimmedNonEmptyString,
+
+    Dc.parse(str => {
+
+        try {
+            return Dc.success(new URL(str));
+        } catch {}
+
+        return Dc.failure(str, 'invalid URL');
+
+    }),
+
 );
 
 
