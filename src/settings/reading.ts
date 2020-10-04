@@ -252,7 +252,7 @@ export const convert: u.Fn<unknown, Config> = F.flow(
     } as const)),
 
     E.fold(
-        e => { throw e; },
+        e => { throw new Error(e); },
         F.identity,
     ),
 
