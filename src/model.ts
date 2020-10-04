@@ -186,7 +186,7 @@ const services$ = config$.pipe(
 
 
 
-export function load ({ version, setting, logging = '', quiet = false }: Options) {
+export const load = R.once(({ version, setting, logging = '', quiet = false }: Options) => {
 
     if (version === true) {
         return console.info(VERSION);
@@ -206,7 +206,7 @@ export function load ({ version, setting, logging = '', quiet = false }: Options
 
     loader$.next(setting);
 
-}
+});
 
 
 
