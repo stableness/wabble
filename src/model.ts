@@ -92,16 +92,20 @@ export const logging = { logger, logLevel };
 
 
 
-process.on('uncaughtException', R.cond([
+function catchException () {
 
-    [
-        R.propEq('code', 'ECONNRESET'),
-        R.when(() => logLevel.on.error === true, bind(logger).error),
-    ],
+    process.on('uncaughtException', R.cond([
 
-    [ R.T, F.constVoid ],
+        [
+            R.propEq('code', 'ECONNRESET'),
+            R.when(() => logLevel.on.error === true, bind(logger).error),
+        ],
 
-]) as unknown as u.Fn<Error, void>);
+        [ R.T, F.constVoid ],
+
+    ]) as unknown as u.Fn<Error, void>);
+
+}
 
 
 
@@ -197,6 +201,8 @@ export function load ({ version, setting, logging = '', quiet = false }: Options
     }
 
     runner$.subscribe(u.noop, bind(logger).error);
+
+    catchException();
 
     loader$.next(setting);
 
