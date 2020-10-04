@@ -248,7 +248,7 @@ export const convert: u.Fn<unknown, Config> = F.flow(
             reject: O.fromNullable(sieve?.reject),
         },
 
-    } as const)),
+    })),
 
     E.fold(
         e => { throw new Error(e); },
