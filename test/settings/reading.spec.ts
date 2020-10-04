@@ -67,7 +67,7 @@ describe('convert', () => {
             ],
         },
     ])('invalid: %p', value => {
-        expect(() => convert(value)).toThrow();
+        expect(() => convert(value)).toThrowError();
     });
 
     test('simple', () => {
