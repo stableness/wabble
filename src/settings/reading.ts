@@ -61,11 +61,9 @@ const decodeServices = F.pipe(
 
         const proto = R.init(protocol);
 
-        const justAuth = O.some(u.eqBasic({ username, password }));
-
         const auth = F.pipe(
-            justAuth,
-            O.chain(auth => auth({ username: '', password: '' }) ? O.none : justAuth),
+            O.some(u.eqBasic({ username, password })),
+            O.filter(auth => auth({ username: '', password: '' }) === false),
         );
 
         if (proto === 'socks5' || proto === 'http') {
