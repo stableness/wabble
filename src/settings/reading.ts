@@ -1,5 +1,3 @@
-import { URL } from 'url';
-
 import * as R from 'ramda';
 
 import {
@@ -20,7 +18,7 @@ import { ShadowSocks, Trojan } from './utils';
 
 
 
-const baseURI = Dc.type({ uri: Dc.string });
+const baseURI = Dc.type({ uri: u.readURL });
 
 
 
@@ -59,9 +57,8 @@ const decodeServices = F.pipe(
 
     baseURI,
 
-    Dc.parse(({ uri }) => {
+    Dc.parse(({ uri: { protocol, port, hostname, username, password } }) => {
 
-        const { protocol, port, hostname, username, password } = new URL(uri);
         const proto = R.init(protocol);
 
         const justAuth = O.some(u.eqBasic({ username, password }));
@@ -84,7 +81,7 @@ const decodeServices = F.pipe(
             }
         }
 
-        return Dc.failure(uri, 'invalid service');
+        return Dc.failure(protocol, 'invalid service');
 
     }),
 
@@ -111,10 +108,8 @@ const decodeServers = F.pipe(
 
         const { uri, tags = [] } = server;
 
-        const url = new URL(uri);
-
-        const { protocol, hostname, username, password } = url;
-        const port = u.portNormalize(url);
+        const { protocol, hostname, username, password } = uri;
+        const port = u.portNormalize(uri);
         const proto = R.init(protocol);
 
         const hasAuth = F.constant(R.not(u.eqBasic(
