@@ -240,7 +240,7 @@ export const convert: u.Fn<unknown, Config> = F.flow(
         rules,
         services,
 
-        servers: filterTags(tags, servers),
+        servers: filterTags(servers, tags),
 
         doh: O.fromNullable(doh),
 
@@ -264,13 +264,10 @@ export const convert: u.Fn<unknown, Config> = F.flow(
 
 type TagsOnlyRemote = Partial<Remote> & Pick<Remote, 'tags'>;
 
-export function filterTags <T extends TagsOnlyRemote> (tags: unknown, servers: T[]) {
+export function filterTags <T extends TagsOnlyRemote> (servers: T[], tags?: string[]) {
 
     // tags
-    const t = R.o(
-        R.uniq,
-        R.unless(R.is(Array), R.always([])),
-    )(tags) as unknown as string[];
+    const t = R.uniq(tags ?? []);
 
     if (t.length < 1) {
         return servers;

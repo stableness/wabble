@@ -144,8 +144,8 @@ describe('filterTags', () => {
             [ 'ab', 'abc'      ],
         ],
 
-    ])('%p', (left, right, result) => {
-        expect(unwrap(filterTags(left, wrap(right)))).toEqual(result);
+    ])('%p', (bar, source, result) => {
+        expect(unwrap(filterTags(wrap(source), bar))).toEqual(result);
     });
 
     test.each([
@@ -165,8 +165,8 @@ describe('filterTags', () => {
             [                    'c', 'cd'        ],
         ],
 
-    ])('%p', (left, right, result) => {
-        expect(unwrap(filterTags(left, wrap(right)))).toEqual(result);
+    ])('%p', (bar, source, result) => {
+        expect(unwrap(filterTags(wrap(source), bar))).toEqual(result);
     });
 
 
