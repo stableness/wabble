@@ -10,6 +10,7 @@ import { pipeline } from 'stream';
 import { isPrivate } from 'ip';
 
 import {
+    eq as Eq,
     either as E,
     taskEither as TE,
     option as O,
@@ -29,6 +30,8 @@ import * as Rx from 'rxjs';
 import * as o from 'rxjs/operators';
 
 import { bind } from 'proxy-bind';
+
+import type { Basic } from './config';
 
 
 
@@ -396,6 +399,23 @@ export const decoderNonEmptyArrayOf = F.flow(
 
 export const either2B = E.fold(F.constFalse, F.constTrue);
 export const option2B = O.fold(F.constFalse, F.constTrue);
+
+
+
+
+
+export const eqBasic = F.pipe(
+
+    Eq.getStructEq<Basic>({
+        password: Eq.eqString,
+        username: Eq.eqString,
+    }),
+
+    R.prop('equals'),
+
+    R.curry,
+
+);
 
 
 

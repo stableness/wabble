@@ -3,7 +3,6 @@ import { URL } from 'url';
 import * as R from 'ramda';
 
 import {
-    eq as Eq,
     either as E,
     option as O,
     function as F,
@@ -11,7 +10,7 @@ import {
 
 import * as Dc from 'io-ts/Decoder';
 
-import type { Config, Basic, Remote } from '../config';
+import type { Config, Remote } from '../config';
 
 import * as u from '../utils';
 
@@ -65,12 +64,7 @@ const decodeServices = F.pipe(
         const { protocol, port, hostname, username, password } = new URL(uri);
         const proto = R.init(protocol);
 
-        const { equals: eqBasic } = Eq.getStructEq<Basic>({
-            password: Eq.eqString,
-            username: Eq.eqString,
-        });
-
-        const justAuth = O.some(R.curry(eqBasic)({ username, password }));
+        const justAuth = O.some(u.eqBasic({ username, password }));
 
         const auth = F.pipe(
             justAuth,
@@ -123,6 +117,11 @@ const decodeServers = F.pipe(
         const port = u.portNormalize(url);
         const proto = R.init(protocol);
 
+        const hasAuth = F.constant(R.not(u.eqBasic(
+            { username, password },
+            { username: '', password: '' },
+        )));
+
         const baseWith = R.mergeLeft({
             host: hostname,
             port: +port,
@@ -153,10 +152,10 @@ const decodeServers = F.pipe(
 
         if (proto === 'socks5') {
 
-            const auth = username === password && password === ''
-                ? O.none
-                : O.some({ username, password })
-            ;
+            const auth = F.pipe(
+                O.some({ username, password }),
+                O.filter(hasAuth),
+            );
 
             result = baseWith({ protocol: proto, auth } as const);
 
@@ -166,10 +165,10 @@ const decodeServers = F.pipe(
 
             const verify = R.pathOr(true, [ 'ssl', 'verify' ], server);
 
-            const auth = username === password && password === ''
-                ? O.none
-                : O.some(R.join(':', [ username, password ]))
-            ;
+            const auth = F.pipe(
+                O.some(R.join(':', [ username, password ])),
+                O.filter(hasAuth),
+            );
 
             result = baseWith({ protocol: proto, ssl: { verify }, auth } as const);
 
