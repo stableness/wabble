@@ -1,6 +1,9 @@
 import type { URL } from 'url';
 
-import type { option as O } from 'fp-ts';
+import type {
+    option as O,
+    readonlyNonEmptyArray as RNEA,
+} from 'fp-ts';
 
 import type { ShadowSocks } from './settings/utils';
 
@@ -123,7 +126,7 @@ export interface Service {
 
 export interface Config {
 
-    services: ReadonlyArray<Service>;
+    services: RNEA.ReadonlyNonEmptyArray<Service>;
 
     doh: O.Option<string>;
 

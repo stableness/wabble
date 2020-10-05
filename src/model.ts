@@ -219,17 +219,9 @@ const runner$ = services$.pipe(
         console.info('LOG_LEVEL in [%s]', logger.level);
     }),
 
-    o.tap(R.forEach(({ host, port, protocol }) => {
+    o.tap(RNEA.map(({ host, port, protocol }) => {
         console.info('listening on [%s:%d] by [%s]', host, port, protocol);
     })),
-
-    o.mergeMap(F.flow(
-        RNEA.fromReadonlyArray,
-        O.fold(
-            F.constant(Rx.throwError(F.constant(Error('No service to provide')))),
-            Rx.of,
-        ),
-    )),
 
     o.switchMap(combine(logging)),
 
