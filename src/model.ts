@@ -92,7 +92,7 @@ export const logging = { logger, logLevel };
 
 
 
-function catchException () {
+export function catchException () {
 
     process.on('uncaughtException', R.cond([
 
