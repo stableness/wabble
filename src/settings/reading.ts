@@ -98,6 +98,7 @@ const decodeServers = F.pipe(
     Dc.intersect(Dc.partial({
         tags: u.readTrimmedNonEmptyStringArr,
         key: u.readTrimmedNonEmptyString,
+        alg: u.readTrimmedNonEmptyString,
         password: u.readTrimmedNonEmptyString,
         ssl: Dc.UnknownRecord,
     })),
