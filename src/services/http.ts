@@ -86,8 +86,8 @@ export const httpProxy = ({ port, host, auth }: Service) => (logging: Logging) =
         o.filter(({ request: { socket, headers }, url: { hostname } }) => {
 
             if (hostname.length < 1) {
-                // @ts-ignore
-                return R.F(socket.end(headerJoin([ 'HTTP/1.1 400' ])));
+                socket.end(u.headerJoin([ 'HTTP/1.1 400' ]));
+                return false;
             }
 
             if (authRequired === false) {
