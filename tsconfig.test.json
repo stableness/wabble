@@ -1,5 +1,8 @@
 {
   "extends": "./tsconfig",
+  "include": [
+    "./test/**/*.ts",
+  ],
   "compilerOptions": {
     "noUnusedLocals": false,
     "noUnusedParameters": false
