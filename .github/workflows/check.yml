@@ -33,6 +33,8 @@ jobs:
           DISABLE_OPENCOLLECTIVE: true
           HUSKY_SKIP_INSTALL: true
 
+      - run: npm run lint
+
       - run: npm run test -- --verbose
 
       - run: npm run build
