@@ -12,7 +12,7 @@
     "declaration": false,
     "outDir": "./dist",
     "removeComments": true,
-    "importHelpers": true,
+    "importHelpers": false,
 
     "strict": true,
     "noUnusedLocals": true,
