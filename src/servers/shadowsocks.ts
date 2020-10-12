@@ -23,7 +23,10 @@ import { ChainOpts, netConnectTo } from './index';
 
 
 
-export function chain ({ ipOrHost, port, logger, hook }: ChainOpts, remote: SS) {
+export function chain (
+        { ipOrHost, port, logger, hook }: ChainOpts,
+        remote: SS,
+) {
 
     return F.pipe(
 
@@ -143,7 +146,12 @@ export function EncryptAEAD (
 
     return init(new Transform({
 
-        transform (this: Readable, chunk: Buffer, _enc: string, cb: TransformCallback) {
+        transform (
+                this: Readable,
+                chunk: Buffer,
+                _enc: string,
+                cb: TransformCallback,
+        ) {
 
             if (chunk.length <= MAX) {
                 return cb(undefined, pack(chunk));
@@ -194,7 +202,11 @@ function genAEADEncrypt (
             { authTagLength },
         );
 
-        const cipherText = Buffer.concat([ cipher.update(chunk), cipher.final() ]);
+        const cipherText = Buffer.concat([
+            cipher.update(chunk),
+            cipher.final(),
+        ]);
+
         const authTag = cipher.getAuthTag();
 
         u.incrementLE(nonce);

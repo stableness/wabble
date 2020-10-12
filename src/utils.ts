@@ -334,7 +334,9 @@ export const isPrivateIP = R.both(
 
 
 
-export type NonEmptyString = string & { readonly NonEmptyString: unique symbol };
+export type NonEmptyString = string & {
+    readonly NonEmptyString: unique symbol;
+};
 
 export const readTrimmedNonEmptyString = F.pipe(
     Dc.string,
@@ -447,11 +449,14 @@ export const eqBasic = F.pipe(
 
 
 
-export const toBasicCredentials = R.memoizeWith(R.identity as typeof String, R.compose(
-    R.concat('Basic '),
-    R.invoker(1, 'toString')('base64'),
-    Buffer.from,
-));
+export const toBasicCredentials = R.memoizeWith(
+    R.identity as typeof String,
+    R.compose(
+        R.concat('Basic '),
+        R.invoker(1, 'toString')('base64'),
+        Buffer.from,
+    ),
+);
 
 
 
@@ -480,15 +485,19 @@ export function incrementLE (buffer: Uint8Array) {
 
 
 
-export function readFile (filename: PathLike): Rx.Observable<Buffer>;
-export function readFile (filename: PathLike, encoding: string): Rx.Observable<string>;
+type Obs <T> = Rx.Observable<T>;
+
+export function readFile (filename: PathLike): Obs<Buffer>;
+export function readFile (filename: PathLike, encoding: string): Obs<string>;
 export function readFile (filename: PathLike, encoding?: string) {
     return Rx.defer(() => fs.readFile(filename, encoding));
 }
 
-export const readFileInStringOf = (encoding: BufferEncoding) => (filename: PathLike) => {
-    return readFile(filename, encoding);
-};
+export const readFileInStringOf =
+    (encoding: BufferEncoding) =>
+        (filename: PathLike) =>
+            readFile(filename, encoding)
+;
 
 
 
@@ -560,7 +569,9 @@ export const constErr = R.o(R.always, Error);
 
 
 
-export const tryCatchToError = <A> (f: F.Lazy<Promise<A>>) => TE.tryCatch(f, E.toError);
+export function tryCatchToError <A> (fn: F.Lazy<Promise<A>>) {
+    return TE.tryCatch(fn, E.toError);
+}
 
 
 
@@ -573,7 +584,11 @@ export const onceErr: Fn<NodeJS.EventEmitter, Promise<[ Error ]>>
 
 
 
-const { has: errSetHas, add: errSetAdd, delete: errSetDel } = bind(new WeakSet());
+const {
+    has: errSetHas,
+    add: errSetAdd,
+    delete: errSetDel,
+} = bind(new WeakSet());
 
 export const mountErrOf = R.unless(
     errSetHas,

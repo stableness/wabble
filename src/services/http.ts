@@ -31,7 +31,11 @@ type Connect = ReturnType<typeof mapConnect>;
 
 
 
-export const httpProxy = ({ port, host, auth }: Service) => (logging: Logging) => {
+/* eslint-disable indent */
+
+export const httpProxy =
+    ({ port, host, auth }: Service) =>
+        (logging: Logging) => {
 
     const { logLevel, logger } = logging;
 
@@ -41,7 +45,10 @@ export const httpProxy = ({ port, host, auth }: Service) => (logging: Logging) =
 
         const { next, error, complete } = bind(subject);
 
-        function onRequest (request: IncomingMessage, response: ServerResponse) {
+        function onRequest (
+                request: IncomingMessage,
+                response: ServerResponse,
+        ) {
 
             if (`${ request.url }`.startsWith('http') === false) {
                 return response.writeHead(400).end();
@@ -51,7 +58,11 @@ export const httpProxy = ({ port, host, auth }: Service) => (logging: Logging) =
 
         }
 
-        function onConnect (request: IncomingMessage, socket: Socket, head: Buffer) {
+        function onConnect (
+                request: IncomingMessage,
+                socket: Socket,
+                head: Buffer,
+        ) {
             next(mapConnect(request, socket, head));
         }
 
@@ -96,7 +107,9 @@ export const httpProxy = ({ port, host, auth }: Service) => (logging: Logging) =
 
             const info = F.pipe(
                 u.basicInfo.proxyAuth(headers),
-                O.map(({ name: username, pass: password }) => ({ username, password })),
+                O.map(({ name: username, pass: password }) => {
+                    return { username, password };
+                }),
             );
 
             return F.pipe(
@@ -147,13 +160,17 @@ export const httpProxy = ({ port, host, auth }: Service) => (logging: Logging) =
 
 };
 
+/* eslint-enable indent */
+
 
 
 
 
 export const requestOn = Rx.pipe(
 
-    o.filter<Knock, Request>((item): item is Request => item.type === 'request'),
+    o.filter<Knock, Request>(
+        (item): item is Request => item.type === 'request',
+    ),
 
     o.map(({ request, response, url }) => ({
 
@@ -202,7 +219,9 @@ export const requestOn = Rx.pipe(
 
 export const connectOn = Rx.pipe(
 
-    o.filter<Knock, Connect>((item): item is Connect => item.type === 'connect'),
+    o.filter<Knock, Connect>(
+        (item): item is Connect => item.type === 'connect',
+    ),
 
     o.map(({ socket, url }) => ({
 
@@ -230,7 +249,10 @@ export const connectOn = Rx.pipe(
 
 
 
-export function mapRequest (request: IncomingMessage, response: ServerResponse) {
+export function mapRequest (
+        request: IncomingMessage,
+        response: ServerResponse,
+) {
     return {
         type: 'request' as const,
         url: mapURL(request.url ?? ''),
@@ -243,7 +265,11 @@ export function mapRequest (request: IncomingMessage, response: ServerResponse) 
 
 
 
-export function mapConnect (request: IncomingMessage, socket: Socket, head: Buffer) {
+export function mapConnect (
+        request: IncomingMessage,
+        socket: Socket,
+        head: Buffer,
+) {
     return {
         type: 'connect' as const,
         url: mapURL(`http://${ request.url }`),

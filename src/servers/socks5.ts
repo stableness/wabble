@@ -18,7 +18,10 @@ import { ChainOpts, netConnectTo } from './index';
 
 
 
-export function chain ({ ipOrHost, port, logger, hook }: ChainOpts, remote: Socks5) {
+export function chain (
+        { ipOrHost, port, logger, hook }: ChainOpts,
+        remote: Socks5,
+) {
 
     return F.pipe(
 

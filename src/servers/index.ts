@@ -48,7 +48,10 @@ export type ChainOpts = Pick<Opts, 'port' | 'logger' | 'hook'> & {
 const dnsCache = new Map<string, string>();
 const nsLookup = (host: string) => fpMap.lookup (Eq.eqString) (host) (dnsCache);
 
-const hostCache = R.memoizeWith(F.identity, O.some as Fn<string, O.Option<string>>);
+const hostCache = R.memoizeWith(
+    F.identity,
+    O.some as Fn<string, O.Option<string>>,
+);
 
 
 
@@ -72,7 +75,12 @@ export function connect ({ host, port, hook, dns, doh, logger }: Opts) {
             O.ap(justHost),
             O.map(task => F.pipe(
                 ipCache,
-                O.map(data => [ { data, name: host, TTL: 1, type: 1 as const } ]),
+                O.map(data => [ {
+                    data,
+                    name: host,
+                    TTL: 1,
+                    type: 1 as const,
+                } ]),
                 TE.fromOption(Error),
                 TE.alt(F.constant(task)),
             )),
@@ -154,11 +162,14 @@ export function connect ({ host, port, hook, dns, doh, logger }: Opts) {
                     return chainShadowSocks(opts, remote);
                 }
 
-                if (remote.protocol === 'http' || remote.protocol === 'https' as string) {
+                if (remote.protocol === 'http'
+                ||  remote.protocol === 'https' as string) {
                     return chainHttp(opts, remote);
                 }
 
-                return TE.left(Error(`Non supported protocol [${ remote.protocol }]`));
+                return TE.left(
+                    Error(`Non supported protocol [${ remote.protocol }]`),
+                );
 
             }),
 

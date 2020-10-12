@@ -503,11 +503,14 @@ describe('HKDF_SHA1', () => {
             '0b0b0b0b0b0b0b0b0b0b0b',
             '000102030405060708090a0b0c',
             'f0f1f2f3f4f5f6f7f8f9',
+            // eslint-disable-next-line max-len
             '085a01ea1b10f36933068b56efa5ad81a4f14b822f5b091568a9cdd4f155fda2c22e422478d305f3f896',
         ],
 
     ])('%i - %s', (length, key, salt, info, hash) => {
-        expect(HKDF_SHA1(h(key), h(salt), length, h(info))).toStrictEqual(h(hash));
+        expect(
+            HKDF_SHA1(h(key), h(salt), length, h(info)),
+        ).toStrictEqual(h(hash));
     });
 
     const h = R.o(

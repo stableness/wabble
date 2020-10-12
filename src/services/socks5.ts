@@ -160,6 +160,8 @@ export const socks5Proxy = (service: Service) => (logging: Logging) => {
                             host = ipToString(await read(16));
                             break;
                         case 3:
+                            // TODO: refine
+                            // eslint-disable-next-line max-len
                             host = (await read((await read(1))[0] ?? 0)).toString();
                             break;
                     }

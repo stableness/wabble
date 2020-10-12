@@ -109,7 +109,12 @@ export namespace ShadowSocks {
 
                 const algorithm = alg as CipherType['AEAD'];
 
-                const [ keySize, saltSize, nonceSize, tagSize ] = AEAD[algorithm];
+                const [
+                    keySize,
+                    saltSize,
+                    nonceSize,
+                    tagSize,
+                ] = AEAD[algorithm];
 
                 return {
                     key: divideBy(keySize),
@@ -162,7 +167,10 @@ export namespace Trojan {
 
     export function parse (obj: Record<string, unknown>) {
 
-        const { ssl = {}, password = '' } = obj as Record<'ssl' | 'password', never>;
+        const {
+            ssl = {},
+            password = '',
+        } = obj as Record<'ssl' | 'password', never>;
 
         const sslProp = R.prop(R.__, ssl) as Fn<string, never>;
 

@@ -71,10 +71,9 @@ rules:
 
   max-len:
     - warn
-    - 90
+    - 80
     - ignoreUrls: true
       ignoreComments: true
-      ignoreStrings: true
       ignoreTemplateLiterals: true
       ignoreTrailingComments: true
 

@@ -21,7 +21,10 @@ import type { ChainOpts } from './index';
 
 
 
-export function chain ({ ipOrHost, port, logger, hook }: ChainOpts, remote: Http) {
+export function chain (
+        { ipOrHost, port, logger, hook }: ChainOpts,
+        remote: Http,
+) {
 
     return F.pipe(
 
@@ -58,7 +61,10 @@ export function chain ({ ipOrHost, port, logger, hook }: ChainOpts, remote: Http
 
 const TIMEOUT = 1000 * 5;
 
-export async function tunnel ({ protocol, host, port, ssl, auth }: Http, path: string) {
+export async function tunnel (
+        { protocol, host, port, ssl, auth }: Http,
+        path: string,
+) {
 
     const hasAuth = option2B(auth);
 

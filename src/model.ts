@@ -52,7 +52,9 @@ export const readLevel = R.converge(
         ),
         R.o(
             R.ifElse(
-                R.flip(R.includes)(R.append('silent', Object.keys(pino.levels.values))),
+                R.flip(R.includes)(R.append(
+                    'silent', Object.keys(pino.levels.values),
+                )),
                 R.identity,
                 R.always(undefined),
             ),
@@ -191,7 +193,9 @@ const services$ = config$.pipe(
 
 export const load = R.once(_load);
 
-function _load ({ version, setting, logging: level = '', quiet = false }: Options) {
+function _load (
+        { version, setting, logging: level = '', quiet = false }: Options,
+) {
 
     if (version === true) {
         return console.info(VERSION);

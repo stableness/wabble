@@ -19,7 +19,10 @@ import type { ChainOpts } from './index';
 
 
 
-export function chain ({ ipOrHost, port, logger, hook }: ChainOpts, remote: Trojan) {
+export function chain (
+        { ipOrHost, port, logger, hook }: ChainOpts,
+        remote: Trojan,
+) {
 
     return F.pipe(
 
