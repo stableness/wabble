@@ -12,7 +12,8 @@ import type { Config, Remote } from '../config';
 
 import * as u from '../utils';
 
-import { ShadowSocks, Trojan } from './utils';
+import * as Trojan from './utils/trojan';
+import * as ShadowSocks from './utils/shadowsocks';
 
 
 

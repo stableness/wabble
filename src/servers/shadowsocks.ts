@@ -15,7 +15,7 @@ import { toTransform } from 'buffer-pond';
 import { logLevel } from '../model';
 import type { ShadowSocks as SS } from '../config';
 import * as u from '../utils';
-import type { ShadowSocks } from '../settings/utils';
+import * as ShadowSocks from '../settings/utils/shadowsocks';
 
 import { ChainOpts, netConnectTo } from './index';
 
@@ -119,7 +119,7 @@ export function cryptoPairs (server: SS, head: Uint8Array) {
 
 
 export function EncryptAEAD (
-        algorithm: ShadowSocks.CipherType['AEAD'],
+        algorithm: ShadowSocks.AEAD,
         key: Buffer,
         keySize: number,
         nonceSize: number,
@@ -185,7 +185,7 @@ export function EncryptAEAD (
 }
 
 function genAEADEncrypt (
-        algorithm: ShadowSocks.CipherType['AEAD'],
+        algorithm: ShadowSocks.AEAD,
         subKey: Buffer,
         nonceSize: number,
         authTagLength: number,
@@ -222,7 +222,7 @@ function genAEADEncrypt (
 
 
 export function DecryptAEAD (
-        algorithm: ShadowSocks.CipherType['AEAD'],
+        algorithm: ShadowSocks.AEAD,
         key: Buffer,
         keySize: number,
         nonceSize: number,
@@ -259,7 +259,7 @@ export function DecryptAEAD (
 }
 
 function genAEADDecrypt (
-        algorithm: ShadowSocks.CipherType['AEAD'],
+        algorithm: ShadowSocks.AEAD,
         key: Buffer,
         keySize: number,
         nonceSize: number,
@@ -294,7 +294,7 @@ function genAEADDecrypt (
 
 
 export function EncryptStream (
-        algorithm: ShadowSocks.CipherType['Stream'],
+        algorithm: ShadowSocks.Stream,
         key: Buffer,
         ivLength: number,
         initBuffer = Uint8Array.of(),
@@ -322,7 +322,7 @@ export function EncryptStream (
 
 
 export function DecryptStream (
-        algorithm: ShadowSocks.CipherType['Stream'],
+        algorithm: ShadowSocks.Stream,
         key: Buffer,
         ivLength: number,
 ) {

@@ -5,7 +5,7 @@ import type {
     readonlyNonEmptyArray as RNEA,
 } from 'fp-ts';
 
-import type { ShadowSocks } from './settings/utils';
+import * as SS from './settings/utils/shadowsocks';
 
 
 
@@ -80,7 +80,7 @@ interface Stream {
 
     type: 'Stream';
 
-    algorithm: ShadowSocks.CipherType['Stream'];
+    algorithm: SS.Stream;
     keySize: number;
     ivLength: number;
 
@@ -90,7 +90,7 @@ interface AEAD {
 
     type: 'AEAD';
 
-    algorithm: ShadowSocks.CipherType['AEAD'];
+    algorithm: SS.AEAD;
     keySize: number;
     saltSize: number;
     nonceSize: number;
