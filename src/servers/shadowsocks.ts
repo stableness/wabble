@@ -45,6 +45,7 @@ export function chain ({ ipOrHost, port, logger, hook }: ChainOpts, remote: SS) 
             ]);
 
             logger
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 .child({ proxy: merge(remote) })
                 .trace('proxy through ss')
             ;
@@ -65,7 +66,11 @@ export function chain ({ ipOrHost, port, logger, hook }: ChainOpts, remote: SS) 
 
 
 
-export const cryptoPairsC = (server: SS) => (head: Uint8Array) => cryptoPairs(server, head);
+export const cryptoPairsC =
+    (server: SS) =>
+        (head: Uint8Array) =>
+            cryptoPairs(server, head)
+;
 
 export function cryptoPairs (server: SS, head: Uint8Array) {
 
@@ -89,8 +94,15 @@ export function cryptoPairs (server: SS, head: Uint8Array) {
         const { algorithm, keySize, nonceSize, tagSize, saltSize } = cipher;
 
         return {
-            enc: EncryptAEAD(algorithm, key, keySize, nonceSize, tagSize, saltSize, head) as RWS,
-            dec: DecryptAEAD(algorithm, key, keySize, nonceSize, tagSize, saltSize) as RWS,
+
+            enc: EncryptAEAD(
+                algorithm, key, keySize, nonceSize, tagSize, saltSize, head,
+            ) as RWS,
+
+            dec: DecryptAEAD(
+                algorithm, key, keySize, nonceSize, tagSize, saltSize,
+            ) as RWS,
+
         };
 
     }
@@ -131,13 +143,13 @@ export function EncryptAEAD (
 
     return init(new Transform({
 
-        async transform (this: Readable, chunk: Buffer, _enc: string, cb: TransformCallback) {
+        transform (this: Readable, chunk: Buffer, _enc: string, cb: TransformCallback) {
 
             if (chunk.length <= MAX) {
                 return cb(undefined, pack(chunk));
             }
 
-            for await (const slice of u.chop(MAX, chunk)) {
+            for (const slice of u.chop(MAX, chunk)) {
                 this.push(pack(slice));
             }
 
@@ -310,28 +322,32 @@ export function DecryptStream (
 
         transform (chunk: Buffer, _enc: string, cb: TransformCallback) {
 
+            let buffer = chunk;
+
             if (decipher == null) {
 
                 if (prevChunk.length > 0) {
-                    chunk = Buffer.concat([ prevChunk, chunk ]);
+                    buffer = Buffer.concat([ prevChunk, buffer ]);
                 }
 
-                if (chunk.length < ivLength) {
-                    prevChunk = chunk;
+                if (buffer.length < ivLength) {
+                    prevChunk = buffer;
                     return cb();
                 }
 
-                decipher = crypto.createDecipheriv(algorithm, key, chunk.subarray(0, ivLength));
+                decipher = crypto.createDecipheriv(
+                    algorithm, key, buffer.subarray(0, ivLength),
+                );
 
-                if (chunk.length === ivLength) {
+                if (buffer.length === ivLength) {
                     return cb();
                 }
 
-                chunk = chunk.subarray(ivLength);
+                buffer = buffer.subarray(ivLength);
 
             }
 
-            cb(undefined, decipher.update(chunk));
+            cb(undefined, decipher.update(buffer));
 
         },
 

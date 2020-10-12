@@ -1,11 +1,7 @@
 import * as Rx from 'rxjs';
 
-import {
-    readonlyNonEmptyArray as RNEA,
-} from 'fp-ts';
-
 import type { Logging } from '../model';
-import type { Service } from '../config';
+import type { Service, Config } from '../config';
 
 import { httpProxy } from './http';
 import { socks5Proxy } from './socks5';
@@ -22,7 +18,7 @@ export type Hook = Rx.ObservedValueOf<ReturnType<Proxy>>['hook'];
 
 
 
-export const combine = (logging: Logging) => (services: RNEA.ReadonlyNonEmptyArray<Service>) => {
+export const combine = (logging: Logging) => (services: Config['services']) => {
 
     const { length, 0: head } = services;
 

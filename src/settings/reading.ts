@@ -63,7 +63,7 @@ const decodeServices = F.pipe(
 
         const auth = F.pipe(
             O.some(u.eqBasic({ username, password })),
-            O.filter(auth => auth({ username: '', password: '' }) === false),
+            O.filter(test => test({ username: '', password: '' }) === false),
         );
 
         if (proto === 'socks5' || proto === 'http') {
@@ -73,6 +73,7 @@ const decodeServices = F.pipe(
                     auth,
                     port: R.subtract(+port, +(process.env.DEV_PORT_MINUS || 0)),
                     host: hostname,
+                    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
                     protocol: proto as typeof proto,
                 });
 
@@ -245,7 +246,7 @@ export const convert: u.Fn<unknown, Config> = F.flow(
     })),
 
     E.fold(
-        e => { throw new Error(e); },
+        e => { throw new Error(e) },
         F.identity,
     ),
 

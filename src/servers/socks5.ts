@@ -78,10 +78,10 @@ export async function tunnel ({ host, port, auth }: Socks5, head: Uint8Array) {
 
             socket.write(encode(auth));
 
-            const [ VER, STATUS ] = await read(2);
+            const [ VER_AUTH, STATUS ] = await read(2);
 
-            if (VER !== 0x01 || STATUS !== 0x00) {
-                throw exit(`VER [${ VER }] STATUS [${ STATUS }]`);
+            if (VER_AUTH !== 0x01 || STATUS !== 0x00) {
+                throw exit(`VER [${ VER_AUTH }] STATUS [${ STATUS }]`);
             }
 
             break auth;
@@ -92,6 +92,8 @@ export async function tunnel ({ host, port, auth }: Socks5, head: Uint8Array) {
 
     }
 
+    // for readability and context grouping
+    // eslint-disable-next-line no-unused-labels
     request: {
 
         socket.write(head);

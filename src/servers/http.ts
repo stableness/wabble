@@ -87,10 +87,9 @@ export async function tunnel ({ protocol, host, port, ssl, auth }: Http, path: s
 
         await Promise.race([
             once(req, 'connect'),
-            new Promise((_res, rej) =>
-                setTimeout(() =>
-                    rej(new Error('timeout')), TIMEOUT)
-            ),
+            new Promise((_res, rej) => {
+                setTimeout(() => rej(new Error('timeout')), TIMEOUT);
+            }),
         ]);
 
     } catch (err) {

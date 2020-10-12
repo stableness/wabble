@@ -29,16 +29,16 @@ import { chain as chainShadowSocks } from './shadowsocks';
 
 
 type Opts = {
-    host: string,
-    port: number,
-    hook: Hook,
-    dns: O.Option<ReturnType<typeof DoH>>,
-    doh: Fn<string, boolean>,
-    logger: Logger,
+    host: string;
+    port: number;
+    hook: Hook;
+    dns: O.Option<ReturnType<typeof DoH>>;
+    doh: Fn<string, boolean>;
+    logger: Logger;
 };
 
 export type ChainOpts = Pick<Opts, 'port' | 'logger' | 'hook'> & {
-    ipOrHost: string,
+    ipOrHost: string;
 };
 
 
@@ -72,7 +72,7 @@ export function connect ({ host, port, hook, dns, doh, logger }: Opts) {
             O.ap(justHost),
             O.map(task => F.pipe(
                 ipCache,
-                O.map(data => [ { data, name: host, TTL: 1, type: 1 as 1 } ]),
+                O.map(data => [ { data, name: host, TTL: 1, type: 1 as const } ]),
                 TE.fromOption(Error),
                 TE.alt(F.constant(task)),
             )),
@@ -120,9 +120,9 @@ export function connect ({ host, port, hook, dns, doh, logger }: Opts) {
         if (server === 'nothing') {
 
             return F.pipe(
-                tryCatchToError(() =>
-                    hook(netConnectTo({ port, host: ipOrHost })),
-                ),
+                tryCatchToError(() => {
+                    return hook(netConnectTo({ port, host: ipOrHost }));
+                }),
                 TE.mapLeft(R.tap(() => hook())),
             );
 
@@ -179,7 +179,7 @@ export const netConnectTo = R.compose(
     R.tap(socket => socket
         .setNoDelay(true)
         .setTimeout(1000 * 5)
-        .setKeepAlive(true, 1000 * 60)
+        .setKeepAlive(true, 1000 * 60),
     ),
 
     net.connect as Fn<net.NetConnectOpts, net.Socket>,
