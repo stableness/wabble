@@ -64,6 +64,7 @@ const TIMEOUT = 1000 * 5;
 
 export async function tunnel ({ host, port, ssl }: Trojan) {
 
+    /* eslint-disable indent */
     const {
                 ciphers,
         sni:    servername = host,
@@ -71,6 +72,7 @@ export async function tunnel ({ host, port, ssl }: Trojan) {
         verify: rejectUnauthorized,
                 verify_hostname,
     } = ssl;
+    /* eslint-enable indent */
 
     const tls = connect({
 
@@ -82,7 +84,9 @@ export async function tunnel ({ host, port, ssl }: Trojan) {
         ALPNProtocols,
         rejectUnauthorized,
 
-        ...( R.not(verify_hostname) && { checkServerIdentity: F.constUndefined }),
+        ...(
+            R.not(verify_hostname) && { checkServerIdentity: F.constUndefined }
+        ),
 
     });
 
@@ -94,10 +98,9 @@ export async function tunnel ({ host, port, ssl }: Trojan) {
 
         await Promise.race([
             once(tls, 'secureConnect'),
-            new Promise((_res, rej) =>
-                setTimeout(() =>
-                    rej(new Error('timeout')), TIMEOUT)
-            ),
+            new Promise((_res, rej) => {
+                setTimeout(() => rej(new Error('timeout')), TIMEOUT);
+            }),
         ]);
 
     } catch (err) {

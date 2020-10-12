@@ -1,4 +1,8 @@
 'use strict';
+/* eslint-disable max-len */
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+/* eslint-disable @typescript-eslint/no-var-requires */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 
 const Command = require('command-line-args');
 
@@ -18,10 +22,10 @@ const options = Command([
     { name: 'quiet',   alias: 'q', type: Boolean },
 
 ]) as {
-    setting: string,
-    version?: boolean,
-    logging?: string,
-    quiet?: boolean,
+    setting: string;
+    version?: boolean;
+    logging?: string;
+    quiet?: boolean;
 };
 
 

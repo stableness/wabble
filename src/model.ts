@@ -32,6 +32,7 @@ import * as u from './utils';
 
 export const VERSION = '<%=VERSION=>' as string;
 
+// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 process.env.NODE_ENV = R.ifElse(
     R.startsWith('<%='),
     R.always('dev'),
@@ -58,7 +59,7 @@ export const readLevel = R.converge(
             R.prop('LOG_LEVEL'),
         ),
     ],
-) as u.Fn<object, string>;
+) as u.Fn<Record<string, unknown>, string>;
 
 
 
@@ -143,6 +144,8 @@ const rules$ = config$.pipe(
         direct: u.rules.DOH,
         reject: u.rules.NOT,
     })),
+    // TODO: upgrade > rxjs@7.0.0-beta.7
+    // eslint-disable-next-line deprecation/deprecation
     o.delayWhen(R.always(Rx.combineLatest([ directList$, rejectList$ ]))),
     o.withLatestFrom(rejectList$, directList$, (rules, reject, direct) => ({
         reject: R.either(
@@ -186,14 +189,16 @@ const services$ = config$.pipe(
 
 
 
-export const load = R.once(({ version, setting, logging = '', quiet = false }: Options) => {
+export const load = R.once(_load);
+
+function _load ({ version, setting, logging: level = '', quiet = false }: Options) {
 
     if (version === true) {
         return console.info(VERSION);
     }
 
-    if (logging.length > 0) {
-        logger.level = readLevel({ ...process.env, LOG_LEVEL: logging });
+    if (level.length > 0) {
+        logger.level = readLevel({ ...process.env, LOG_LEVEL: level });
     }
 
     if (quiet === true) {
@@ -206,7 +211,7 @@ export const load = R.once(({ version, setting, logging = '', quiet = false }: O
 
     loader$.next(setting);
 
-});
+}
 
 
 
@@ -249,14 +254,14 @@ const runner$ = services$.pipe(
             if (rejection) {
 
                 log.info('Reject');
-                hook();
+                void hook();
                 return false;
 
             }
 
             if (direction) {
 
-                u.tryCatchToError(async () => {
+                void u.tryCatchToError(async () => {
 
                     const conn = await hopTo('nothing');
 
@@ -299,7 +304,7 @@ const runner$ = services$.pipe(
 
             if (err instanceof Error) {
 
-                const code = R.propOr('unknown', 'code', err) as string;
+                const code: string = R.propOr('unknown', 'code', err);
 
                 if (errToIgnoresBy(code)) {
                     logLevel.on.trace && log.trace(err);
@@ -308,7 +313,7 @@ const runner$ = services$.pipe(
 
             }
 
-            log.error(err as any);
+            log.error(err);
 
         }, F.constVoid)),
 

@@ -70,7 +70,7 @@ describe('numberToUInt16BE', () => {
         run(
             typeof item === 'string'
                 ? item
-                : item.toString(16).padStart(4, '0')
+                : item.toString(16).padStart(4, '0'),
         );
 
     });
@@ -255,11 +255,11 @@ describe('chop', () => {
         [ 2, 5, [ 2, 2, 1 ] ],
         [ 0x3FFF, 0x3FFF, [ 0x3FFF ] ],
 
-    ])('%d / %d', async (max, chunk, result) => {
+    ])('%d / %d', (max, chunk, result) => {
 
         const store = [] as Uint8Array[];
 
-        for await (const slice of chop(max, new Uint8Array(chunk).fill(0))) {
+        for (const slice of chop(max, new Uint8Array(chunk).fill(0))) {
             store.push(slice);
         }
 

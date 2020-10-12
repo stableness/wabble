@@ -174,6 +174,7 @@ describe('filterTags', () => {
     const SetC = R.constructN<[string], Set<string>>(1, Set);
 
     const wrap = R.map(R.o(R.objOf('tags'), SetC));
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     const unwrap = R.map(R.compose(R.join(''), Array.from, R.prop('tags')));
 

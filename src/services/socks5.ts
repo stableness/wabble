@@ -4,7 +4,7 @@ import { bind } from 'proxy-bind';
 
 import { asyncReadable } from 'async-readable';
 
-import { fromLong, toString } from 'ip';
+import { fromLong as ipFromLong, toString as ipToString } from 'ip';
 
 import { option as O, function as F } from 'fp-ts';
 
@@ -36,9 +36,10 @@ const CONTINUE  = Uint8Array.from([ 0x05, 0x00, ...reply ]);
 
 
 
-export const socks5Proxy = ({ port, host, auth }: Service) => (logging: Logging) => {
+export const socks5Proxy = (service: Service) => (logging: Logging) => {
 
     const { logLevel, logger } = logging;
+    const { auth, port: servicePort, host: serviceHost } = service;
 
     const authRequired = option2B(auth);
 
@@ -52,7 +53,7 @@ export const socks5Proxy = ({ port, host, auth }: Service) => (logging: Logging)
             .addListener('error', error)
             .addListener('close', complete)
 
-            .listen(port, host)
+            .listen(servicePort, serviceHost)
 
         ;
 
@@ -104,15 +105,17 @@ export const socks5Proxy = ({ port, host, auth }: Service) => (logging: Logging)
 
                         socket.write(AUTH_YES);
 
-                        const [ VER, ULEN = 0 ] = await read(2);
+                        const [ VER_AUTH, ULEN = 0 ] = await read(2);
 
-                        if (VER !== 0x01 || ULEN < 1 || ULEN > 255) {
+                        if (VER_AUTH !== 0x01 || ULEN < 1 || ULEN > 255) {
                             socket.end(AUTH_ERR);
-                            throw exit(`VER [${ VER }] ULEN [${ ULEN }]`);
+                            throw exit(`VER [${ VER_AUTH }] ULEN [${ ULEN }]`);
                         }
 
                         const info = O.some({
                             username: (await read(ULEN)).toString(),
+                            // TODO: refine
+                            // eslint-disable-next-line max-len
                             password: (await read(Math.min(255, (await read(1))[0] || 0))).toString(),
                         });
 
@@ -128,6 +131,8 @@ export const socks5Proxy = ({ port, host, auth }: Service) => (logging: Logging)
 
                         socket.end(AUTH_ERR);
 
+                        // for logging only
+                        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                         const { username, password } = O.toUndefined(info)!;
                         throw exit(`user [${ username }] pass [${ password }]`);
 
@@ -135,6 +140,7 @@ export const socks5Proxy = ({ port, host, auth }: Service) => (logging: Logging)
 
                 }
 
+                // eslint-disable-next-line no-unused-labels
                 request: {
 
                     const [ VER, CMD,    , ATYP ] = await read(4);
@@ -148,10 +154,10 @@ export const socks5Proxy = ({ port, host, auth }: Service) => (logging: Logging)
 
                     switch (ATYP) {
                         case 1:
-                            host = fromLong((await read(4)).readUInt32BE(0));
+                            host = ipFromLong((await read(4)).readUInt32BE(0));
                             break;
                         case 4:
-                            host = toString(await read(16));
+                            host = ipToString(await read(16));
                             break;
                         case 3:
                             host = (await read((await read(1))[0] || 0)).toString();
@@ -169,13 +175,13 @@ export const socks5Proxy = ({ port, host, auth }: Service) => (logging: Logging)
 
                 }
 
-            } catch ({ message }) {
+            } catch (error) {
 
                 if (logLevel.on.debug) {
 
                     logger.debug({
                         msg: 'SOCKS5_HANDSHAKE_ERROR',
-                        message,
+                        message: R.propOr('unknown', 'message')(error),
                     });
 
                 }

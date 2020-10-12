@@ -177,9 +177,9 @@ export const requestOn = Rx.pipe(
             const [ source, { write } ] = mirror(new PassThrough());
             const [ sink, { destroy } ] = mirror(new Duplex({ read, write }));
 
-            const { method, headers, url = '' } = request;
+            const { method, headers, url: reqURL = '' } = request;
 
-            const mock = http.request(url, {
+            const mock = http.request(reqURL, {
                 method,
                 headers: omitHopHeaders(headers),
                 createConnection: R.always(sink as Socket),
@@ -232,7 +232,7 @@ export const connectOn = Rx.pipe(
 
 export function mapRequest (request: IncomingMessage, response: ServerResponse) {
     return {
-        type: 'request' as 'request',
+        type: 'request' as const,
         url: mapURL(request.url || ''),
         request,
         response,
@@ -245,7 +245,7 @@ export function mapRequest (request: IncomingMessage, response: ServerResponse) 
 
 export function mapConnect (request: IncomingMessage, socket: Socket, head: Buffer) {
     return {
-        type: 'connect' as 'connect',
+        type: 'connect' as const,
         url: mapURL(`http://${ request.url }`),
         request,
         socket,

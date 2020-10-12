@@ -49,8 +49,8 @@ export function testWith (list: Iterable<Fn<string, boolean>>) {
 
     function test (str: string) {
 
-        for (const test of list) {
-            if (test(str)) {
+        for (const check of list) {
+            if (check(str)) {
                 return true;
             }
         }
@@ -106,6 +106,7 @@ export namespace rules {
     export const DOH = (list: readonly string[]) => {
 
         const map = R.pipe(
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             // @ts-ignore
             R.applySpec({
                 doh: R.filter(R.startsWith('DOH,')),
@@ -115,6 +116,7 @@ export namespace rules {
             R.map(through),
         );
 
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         return map(list) as Record<'doh' | 'all', Test>;
 
@@ -125,8 +127,8 @@ export namespace rules {
         R.adjust(0, R.map(R.replace('NOT,', ''))) as typeof R.identity,
         R.map(through),
         R.applySpec({
-            not: R.head as Fn<any, Test>,
-            yes: R.last as Fn<any, Test>,
+            not: R.head as Fn<unknown, Test>,
+            yes: R.last as Fn<unknown, Test>,
         }),
     );
 
@@ -142,15 +144,17 @@ export const noop = F.constVoid;
 
 
 
-export async function* chop (max: number, chunk: Uint8Array) {
+export function* chop (max: number, chunk: Uint8Array) {
 
-    while (chunk.length > max) {
-        yield chunk.subarray(0, max);
-        chunk = chunk.subarray(max);
+    let buffer = chunk;
+
+    while (buffer.length > max) {
+        yield buffer.subarray(0, max);
+        buffer = buffer.subarray(max);
     }
 
-    if (chunk.length > 0) {
-        yield chunk;
+    if (buffer.length > 0) {
+        yield buffer;
     }
 
 }
@@ -236,6 +240,7 @@ export namespace hash {
     export const sha1 = hashFactor('sha1');
     export const sha224 = hashFactor('sha224');
 
+    // eslint-disable-next-line no-inner-declarations
     function hashFactor (algorithm: Alg) {
 
         type Data = string | Buffer | NodeJS.TypedArray | DataView;
@@ -244,7 +249,7 @@ export namespace hash {
 
             return crypto.createHash(algorithm).update(data).digest();
 
-        }
+        };
 
     }
 
@@ -366,7 +371,7 @@ export const readURL = F.pipe(
 
         try {
             return Dc.success(new URL(str));
-        } catch {}
+        } catch { }
 
         return Dc.failure(str, 'invalid URL');
 
@@ -387,6 +392,7 @@ export namespace basicInfo {
         IncomingHttpHeaders, 'authorization' | 'proxy-authorization'
     >;
 
+    // eslint-disable-next-line no-inner-declarations
     function infoBy (field: keyof Authorizations) {
 
         return function (headers: IncomingHttpHeaders) {
@@ -482,7 +488,7 @@ export function readFile (filename: PathLike, encoding?: string) {
 
 export const readFileInStringOf = (encoding: BufferEncoding) => (filename: PathLike) => {
     return readFile(filename, encoding);
-}
+};
 
 
 
@@ -493,7 +499,7 @@ export function sieve (list: string) {
     type Has = (domain: string) => boolean;
 
     return Rx.defer(() => import(list)).pipe(
-        o.map((list: { has: Has }) => list.has),
+        o.map((row: { has: Has }) => row.has),
         o.catchError(R.always(Rx.of(R.F as Has))),
     );
 
@@ -509,11 +515,12 @@ export function DoH (endpoint: string, path = '@stableness/dohdec') {
     type Response = Partial<Record<'answers' | 'Answer', Result[]>>;
 
     interface Class {
-        new (opts?: { url?: string }): Class;
+        new (opts?: { url?: string }): this;
         getJSON (opts: { name: string }): Promise<Response>;
     }
 
     const doh = tryCatchToError(async () => {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const pkg: { DNSoverHTTPS: Class } = await import(path);
         return new pkg.DNSoverHTTPS({ url: endpoint });
     })();
@@ -560,7 +567,7 @@ export const tryCatchToError = <A> (f: F.Lazy<Promise<A>>) => TE.tryCatch(f, E.t
 
 
 export const onceErr: Fn<NodeJS.EventEmitter, Promise<[ Error ]>>
-    = R.flip(once)('error') as any;
+    = R.flip(once)('error') as never;
 
 
 
@@ -573,7 +580,7 @@ export const mountErrOf = R.unless(
     R.o(
         R.tap(errSetAdd),
         R.tap((socket: NodeJS.EventEmitter) => {
-            socket.once('error', _err => errSetDel(socket));
+            socket.once('error', () => errSetDel(socket));
         }),
     ),
 ) as <T extends NodeJS.EventEmitter> (v: T) => T;
@@ -584,6 +591,7 @@ export const mountErrOf = R.unless(
 
 export const onceErrInSocketsFrom = R.o(
     R.map(onceErr),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     R.filter<any, 'array'>(R.is(net.Socket)),
 );
 

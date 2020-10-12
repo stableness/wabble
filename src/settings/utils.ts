@@ -58,16 +58,19 @@ export namespace ShadowSocks {
 
 
 
-    const trim = R.o(
+    const trim: Fn<Record<string, unknown>, { key: string, alg: string }> = R.o(
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
         R.evolve({
             alg: alias,
         }),
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         R.mergeRight({
             alg: 'chacha20-ietf-poly1305',
             key: '',
         }),
-    ) as unknown as Fn<object, { key: string, alg: string }>;
+    );
 
 
 
@@ -75,7 +78,7 @@ export namespace ShadowSocks {
 
 
 
-    export function parse (obj: object) {
+    export function parse (obj: Record<string, unknown>) {
 
         const { key, alg } = trim(obj);
         const divideBy = bytesToKey(key);
@@ -157,7 +160,7 @@ export namespace Trojan {
 
 
 
-    export function parse (obj: object) {
+    export function parse (obj: Record<string, unknown>) {
 
         const { ssl = {}, password = '' } = obj as Record<'ssl' | 'password', never>;
 
@@ -201,7 +204,7 @@ export namespace Trojan {
                 sslProp(key),
                 O.fromNullable,
                 O.getOrElse(F.constant(val)),
-            )
+            );
         }
 
     }
