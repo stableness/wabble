@@ -536,7 +536,7 @@ export function DoH (endpoint: string, path = '@stableness/dohdec') {
 
             const { answers, Answer } = await dns.getJSON({ name });
 
-            const list = answers || Answer || [];
+            const list = answers ?? Answer ?? [];
 
             if (R.isEmpty(list)) {
                 throw new Error('empty');

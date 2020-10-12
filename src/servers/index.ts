@@ -154,7 +154,7 @@ export function connect ({ host, port, hook, dns, doh, logger }: Opts) {
                     return chainShadowSocks(opts, remote);
                 }
 
-                if (remote.protocol === 'http' || remote.protocol === 'https') {
+                if (remote.protocol === 'http' || remote.protocol === 'https' as string) {
                     return chainHttp(opts, remote);
                 }
 

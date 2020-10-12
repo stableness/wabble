@@ -71,7 +71,7 @@ const decodeServices = F.pipe(
 
                 return Dc.success({
                     auth,
-                    port: R.subtract(+port, +(process.env.DEV_PORT_MINUS || 0)),
+                    port: R.subtract(+port, +(process.env.DEV_PORT_MINUS ?? 0)),
                     host: hostname,
                     // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
                     protocol: proto as typeof proto,
@@ -139,9 +139,7 @@ const decodeServers = F.pipe(
 
             const config = Trojan.parse(server);
 
-            if (config) {
-                result = baseWith({ ...config, protocol: proto } as const);
-            }
+            result = baseWith({ ...config, protocol: proto } as const);
 
         }
 

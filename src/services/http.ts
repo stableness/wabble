@@ -162,7 +162,7 @@ export const requestOn = Rx.pipe(
 
         async hook (...duplex: NodeJS.ReadWriteStream[]) {
 
-            const { connection: socket } = response;
+            const { connection: socket = null } = response;
 
             if (socket == null) {
                 return;
@@ -233,7 +233,7 @@ export const connectOn = Rx.pipe(
 export function mapRequest (request: IncomingMessage, response: ServerResponse) {
     return {
         type: 'request' as const,
-        url: mapURL(request.url || ''),
+        url: mapURL(request.url ?? ''),
         request,
         response,
     };

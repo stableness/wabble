@@ -37,7 +37,7 @@ process.env.NODE_ENV = R.ifElse(
     R.startsWith('<%='),
     R.always('dev'),
     R.identity,
-)(process.env.NODE_ENV || '<%=NODE_ENV=>');
+)(process.env.NODE_ENV ?? '<%=NODE_ENV=>');
 
 
 

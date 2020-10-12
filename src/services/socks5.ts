@@ -116,7 +116,7 @@ export const socks5Proxy = (service: Service) => (logging: Logging) => {
                             username: (await read(ULEN)).toString(),
                             // TODO: refine
                             // eslint-disable-next-line max-len
-                            password: (await read(Math.min(255, (await read(1))[0] || 0))).toString(),
+                            password: (await read(Math.min(255, (await read(1))[0] ?? 0))).toString(),
                         });
 
                         const result = F.pipe(
@@ -160,7 +160,7 @@ export const socks5Proxy = (service: Service) => (logging: Logging) => {
                             host = ipToString(await read(16));
                             break;
                         case 3:
-                            host = (await read((await read(1))[0] || 0)).toString();
+                            host = (await read((await read(1))[0] ?? 0)).toString();
                             break;
                     }
 

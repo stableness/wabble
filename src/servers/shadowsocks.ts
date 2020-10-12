@@ -89,7 +89,7 @@ export function cryptoPairs (server: SS, head: Uint8Array) {
 
     }
 
-    if (cipher.type === 'AEAD') {
+    if (cipher.type === 'AEAD' as string) {
 
         const { algorithm, keySize, nonceSize, tagSize, saltSize } = cipher;
 
