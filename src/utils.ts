@@ -589,16 +589,6 @@ export const mountErrOf = R.unless(
 
 
 
-export const onceErrInSocketsFrom = R.o(
-    R.map(onceErr),
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    R.filter<any, 'array'>(R.is(net.Socket)),
-);
-
-
-
-
-
 type RS = NodeJS.ReadableStream;
 type WS = NodeJS.WritableStream;
 type RWS = NodeJS.ReadWriteStream;
