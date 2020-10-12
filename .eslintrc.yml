@@ -113,7 +113,7 @@ rules:
     - after: true
 
   '@typescript-eslint/no-namespace':
-    - off
+    - warn
 
   no-shadow: 'off'
   '@typescript-eslint/no-shadow':

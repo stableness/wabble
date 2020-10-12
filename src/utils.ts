@@ -43,6 +43,14 @@ export type Fn <I, O = I> = (i: I) => O;
 
 
 
+export function force <F extends (...arg: unknown[]) => unknown> (fn: F) {
+    return fn() as ReturnType<F>;
+}
+
+
+
+
+
 export function testWith (list: Iterable<Fn<string, boolean>>) {
 
     return R.memoizeWith(R.identity, test);
@@ -65,11 +73,11 @@ export function testWith (list: Iterable<Fn<string, boolean>>) {
 
 
 
-export namespace rules {
+export const rules = force(function () {
 
     type Test = (name: string) => boolean;
 
-    export const through = R.o(
+    const through = R.o(
         testWith,
         R.map(R.cond([
             [
@@ -103,7 +111,7 @@ export namespace rules {
         ])),
     );
 
-    export const DOH = (list: readonly string[]) => {
+    const DOH = (list: readonly string[]) => {
 
         const map = R.pipe(
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -122,7 +130,7 @@ export namespace rules {
 
     };
 
-    export const NOT = R.pipe(
+    const NOT = R.pipe(
         R.partition(R.startsWith('NOT,')),
         R.adjust(0, R.map(R.replace('NOT,', ''))) as typeof R.identity,
         R.map(through),
@@ -132,7 +140,9 @@ export namespace rules {
         }),
     );
 
-}
+    return { through, DOH, NOT };
+
+});
 
 
 
@@ -232,15 +242,16 @@ export function splitBy (at: number) {
 
 
 
-export namespace hash {
+export const hash = force(function () {
 
     type Alg = 'md4' | 'md5' | 'sha1' | 'sha224' | 'sha256' | 'sha512';
 
-    export const md5 = hashFactor('md5');
-    export const sha1 = hashFactor('sha1');
-    export const sha224 = hashFactor('sha224');
+    return {
+        md5: hashFactor('md5'),
+        sha1: hashFactor('sha1'),
+        sha224: hashFactor('sha224'),
+    };
 
-    // eslint-disable-next-line no-inner-declarations
     function hashFactor (algorithm: Alg) {
 
         type Data = string | Buffer | NodeJS.TypedArray | DataView;
@@ -253,7 +264,7 @@ export namespace hash {
 
     }
 
-}
+});
 
 
 
@@ -385,16 +396,17 @@ export const readURL = F.pipe(
 
 
 
-export namespace basicInfo {
+export const basicInfo = force(function () {
 
-    export const auth = infoBy('authorization');
-    export const proxyAuth = infoBy('proxy-authorization');
+    return {
+        auth: infoBy('authorization'),
+        proxyAuth: infoBy('proxy-authorization'),
+    };
 
     type Authorizations = Pick<
         IncomingHttpHeaders, 'authorization' | 'proxy-authorization'
     >;
 
-    // eslint-disable-next-line no-inner-declarations
     function infoBy (field: keyof Authorizations) {
 
         return function (headers: IncomingHttpHeaders) {
@@ -408,7 +420,7 @@ export namespace basicInfo {
 
     }
 
-}
+});
 
 
 
