@@ -1,13 +1,12 @@
 import * as R from 'ramda';
 
 import {
-    option as O,
     function as F,
-    array as A,
-    nonEmptyArray as NEA,
 } from 'fp-ts';
 
-import { Fn, readOptionalString } from '../../utils';
+import * as Dc from 'io-ts/Decoder';
+
+import * as u from '../../utils';
 
 
 
@@ -18,6 +17,11 @@ const list = R.o(R.split(/\s+/), R.trim);
 
 
 
+
+const ALPN = list(`
+    h2
+    http/1.1
+`);
 
 const CIPHER = list(`
     ECDHE-ECDSA-AES256-GCM-SHA384
@@ -30,10 +34,6 @@ const CIPHER = list(`
     AES256-SHA
 `);
 
-
-
-
-
 const CIPHER_TLS13 = list(`
     TLS_AES_128_GCM_SHA256
     TLS_CHACHA20_POLY1305_SHA256
@@ -44,55 +44,66 @@ const CIPHER_TLS13 = list(`
 
 
 
-export function parse (obj: Record<string, unknown>) {
+const codec = Dc.type({
 
-    const {
-        ssl = {},
-        password = '',
-    } = obj as Record<'ssl' | 'password', never>;
+    password: u.readTrimmedNonEmptyString,
 
-    const sslProp = R.prop(R.__, ssl) as Fn<string, never>;
+    ssl: F.pipe(
 
-    const verify = gets('verify', true);
-    const verify_hostname = gets('verify_hostname', true);
-    const sni = gets('sni', undefined);
+        Dc.type({
 
-    const alpn = F.pipe(
-        gets('alpn', [ 'h2', 'http/1.1' ]),
-        A.map(readOptionalString),
-        A.compact,
-        NEA.fromArray,
-        O.toUndefined,
-    );
+            verify: Dc.boolean,
+            verify_hostname: Dc.boolean,
+            alpn: u.readTrimmedNonEmptyStringArr,
+            cipher: u.readTrimmedNonEmptyStringArr,
+            cipher_tls13: u.readTrimmedNonEmptyStringArr,
 
-    const ciphers = F.pipe(
-        A.flatten([
-            gets('cipher', CIPHER),
-            gets('cipher_tls13', CIPHER_TLS13),
-        ]),
-        A.map(readOptionalString),
-        A.compact,
-        NEA.fromArray,
-        O.map(R.join(':')),
-        O.toUndefined,
-    );
+        }),
 
+        Dc.intersect(Dc.partial({
 
+            sni: u.readTrimmedNonEmptyString,
 
-    return {
-        password,
-        ssl: { verify, verify_hostname, sni, alpn, ciphers },
-    };
+        })),
+
+        Dc.map(({ cipher, cipher_tls13, ...rest }) => ({
+
+            ...rest,
+
+            cipher: F.pipe(
+                R.concat(cipher, cipher_tls13),
+                R.filter(Boolean),
+                R.join(':'),
+            ),
+
+        })),
+
+    ),
+
+});
 
 
 
-    function gets <T> (key: string, val: T) {
-        return F.pipe(
-            sslProp(key),
-            O.fromNullable,
-            O.getOrElse(F.constant(val)),
-        );
-    }
 
-}
+
+export const parse = F.flow(
+
+    R.evolve({
+
+        ssl: R.mergeRight({
+
+            verify: true,
+            verify_hostname: true,
+            sni: void 0,
+            alpn: ALPN,
+            cipher: CIPHER,
+            cipher_tls13: CIPHER_TLS13,
+
+        }),
+
+    }),
+
+    codec.decode,
+
+);
 

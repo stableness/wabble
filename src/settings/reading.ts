@@ -125,6 +125,7 @@ const decodeServers = F.pipe(
         });
 
         let result;
+        let error = 'invalid server';
 
         if (proto === 'ss') {
 
@@ -132,15 +133,32 @@ const decodeServers = F.pipe(
 
             if (config) {
                 result = baseWith({ ...config, protocol: proto } as const);
+            } else {
+                error = 'non supported cipher';
             }
 
         }
 
         if (proto === 'trojan') {
 
-            const config = Trojan.parse(server);
+            F.pipe(
 
-            result = baseWith({ ...config, protocol: proto } as const);
+                Trojan.parse({ ssl: {}, ...server }),
+
+                E.mapLeft(Dc.draw),
+
+                E.map(opt => baseWith({ ...opt, protocol: proto } as const)),
+
+                E.fold(
+                    msg => {
+                        error = msg;
+                    },
+                    opt => {
+                        result = opt;
+                    },
+                ),
+
+            );
 
         }
 
@@ -176,7 +194,7 @@ const decodeServers = F.pipe(
             return Dc.success(result);
         }
 
-        return Dc.failure(uri, 'invalid server');
+        return Dc.failure(uri, error);
 
     }),
 
