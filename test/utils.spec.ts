@@ -37,8 +37,12 @@ import {
     split,
     loopNext,
     genLooping,
+    DoH,
+    force,
 
 } from '../src/utils';
+
+import { CF_DOH_ENDPOINT } from '../src/settings/reading';
 
 
 
@@ -446,6 +450,45 @@ describe('readURL', () => {
     });
 
     const { decode: decodeURL } = readURL;
+
+});
+
+
+
+
+
+describe('DoH', () => {
+
+    test('invalid endpoint', async () => {
+
+        const doh = DoH('waaaaaaaaaaaaaaaaat');
+
+        const results = await force(doh('example.com'));
+
+        expect(E.isLeft(results)).toBe(true);
+
+    });
+
+    test('invalid path', async () => {
+
+        const doh = DoH(CF_DOH_ENDPOINT, 'waaaaaaaaaaaaaaaaat');
+
+        const results = await force(doh('example.com'));
+
+        expect(E.isLeft(results)).toBe(true);
+
+    });
+
+    // TODO: network mocking
+    test.skip('valid', async () => {
+
+        const doh = DoH(CF_DOH_ENDPOINT);
+
+        const results = await force(doh('example.com'));
+
+        expect(E.isRight(results)).toBe(true);
+
+    });
 
 });
 
