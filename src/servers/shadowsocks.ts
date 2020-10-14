@@ -245,10 +245,10 @@ export function DecryptAEAD (
 
         while (true) {
 
-            const buffer = decrypt(...u.splitBy2(await read(2 + tagSize)));
+            const buffer = decrypt(...u.splitAt2(await read(2 + tagSize)));
             const length = buffer.readUInt16BE(0);
 
-            const slice = u.splitBy(length);
+            const slice = u.split({ at: length });
 
             yield decrypt(...slice(await read(length + tagSize)));
 

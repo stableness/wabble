@@ -226,9 +226,9 @@ type List <T> =
     : never
 ;
 
-export const splitBy2 = splitBy(2);
+export const splitAt2 = split({ at: 2 });
 
-export function splitBy (at: number) {
+export function split ({ at }: { at: number }) {
 
     return function <T extends Uint8Array | Buffer> (list: T) {
 

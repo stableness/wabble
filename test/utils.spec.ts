@@ -34,7 +34,7 @@ import {
     toBasicCredentials,
     readOptionalString,
     readURL,
-    splitBy,
+    split,
     loopNext,
     genLooping,
 
@@ -286,7 +286,7 @@ describe('split', () => {
         10,
     ])('by %d', num => {
 
-        const slice = splitBy(num);
+        const slice = split({ at: num });
         const [ head, tail ] = slice(buffer);
 
         expect(head.length).toBe(num);
