@@ -64,6 +64,8 @@ describe('convert', () => {
             ],
             servers: [
                 { uri: 'wat://0.0.0.0:8080' },
+                { uri: 'ss://127.0.0.1', key: 'foobar', alg: 'wat' },
+                { uri: 'trojan://127.0.0.1', password: 'foobar', ssl: { cipher: 'wat' } },
             ],
         },
     ])('invalid: %p', value => {
@@ -87,7 +89,9 @@ describe('convert', () => {
                 { uri: 'http://127.0.0.1:8080' },
                 { uri: 'http://foo:bar@127.0.0.1:8080' },
                 { uri: 'ss://127.0.0.1', key: 'foobar' },
+                { uri: 'ss://127.0.0.1', key: 'foobar', alg: 'aes-128-ctr' },
                 { uri: 'trojan://127.0.0.1', password: 'foobar', ssl: { verify: true } },
+                { uri: 'trojan://127.0.0.1', password: 'foobar', ssl: { sni: 'localhost' } },
             ],
             rules: {
                 proxy: [
