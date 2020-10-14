@@ -68,17 +68,15 @@ const decodeServices = F.pipe(
         );
 
         if (proto === 'socks5' || proto === 'http') {
-            if (hostname.length > 0) {
 
-                return Dc.success({
-                    auth,
-                    port: R.subtract(+port, +(process.env.DEV_PORT_MINUS ?? 0)),
-                    host: hostname,
-                    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-                    protocol: proto as typeof proto,
-                });
+            return Dc.success({
+                auth,
+                port: R.subtract(+port, +(process.env.DEV_PORT_MINUS ?? 0)),
+                host: hostname,
+                // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+                protocol: proto as typeof proto,
+            });
 
-            }
         }
 
         return Dc.failure(protocol, 'invalid service');

@@ -60,6 +60,7 @@ describe('convert', () => {
         [ null ],
         {
             services: [
+                { uri: '' },
                 { uri: 'wat://0.0.0.0:8080' },
             ],
             servers: [
