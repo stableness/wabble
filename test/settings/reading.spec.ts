@@ -26,13 +26,16 @@ describe('readDoH', () => {
         'wat',
         null,
         undefined,
-        false,
     ])('%s', value => {
         expect(E.isLeft(readDoH(value))).toBe(true);
     });
 
     test('true', () => {
         expect(readDoH(true)).toStrictEqual(E.right(CF_DOH_ENDPOINT));
+    });
+
+    test('false', () => {
+        expect(readDoH(false)).toStrictEqual(E.right(void 0));
     });
 
     test('custom', () => {

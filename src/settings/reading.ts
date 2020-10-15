@@ -42,7 +42,7 @@ export const trimmedStartsWithHttpOrHttps = F.pipe(
 
 const flagOnToCloudFlare = F.pipe(
     Dc.boolean,
-    Dc.parse(on => on ? Dc.success(CF_DOH_ENDPOINT) : Dc.failure(on, 'off')),
+    Dc.map(on => on ? CF_DOH_ENDPOINT : void 0),
 );
 
 export const decodeDoH = Dc.union(
