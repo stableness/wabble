@@ -2,12 +2,15 @@ import type { Socket } from 'net';
 import { URL } from 'url';
 import { Duplex, PassThrough } from 'stream';
 
-import http from 'http';
-import type { IncomingMessage, ServerResponse } from 'http';
+import http, { IncomingMessage, ServerResponse } from 'http';
 
 import { bind, mirror } from 'proxy-bind';
 
-import { option as O, either as E, function as F } from 'fp-ts';
+import {
+    option as O,
+    either as E,
+    function as F,
+} from 'fp-ts';
 
 import * as R from 'ramda';
 

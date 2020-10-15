@@ -6,7 +6,10 @@ import { asyncReadable } from 'async-readable';
 
 import { fromLong as ipFromLong, toString as ipToString } from 'ip';
 
-import { option as O, function as F } from 'fp-ts';
+import {
+    option as O,
+    function as F,
+} from 'fp-ts';
 
 import * as R from 'ramda';
 
