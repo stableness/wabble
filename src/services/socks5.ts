@@ -18,7 +18,9 @@ import * as o from 'rxjs/operators';
 
 import type { Logging } from '../model';
 import type { Service } from '../config';
-import { pump, mountErrOf, option2B } from '../utils';
+import { pump, mountErrOf } from '../utils';
+
+import { do_not_have_authentication, do_not_require } from './utils';
 
 
 
@@ -44,7 +46,7 @@ export const socks5Proxy = (service: Service) => (logging: Logging) => {
     const { logLevel, logger } = logging;
     const { auth, port: servicePort, host: serviceHost } = service;
 
-    const authRequired = option2B(auth);
+    const is_admission_free = do_not_require(auth);
 
     return new Rx.Observable<net.Socket>(subject => {
 
@@ -94,12 +96,12 @@ export const socks5Proxy = (service: Service) => (logging: Logging) => {
 
                     const methods = Array.from(await read(LEN));
 
-                    if (authRequired === false) {
+                    if (is_admission_free) {
                         socket.write(AUTH_NOT);
                         break init;
                     }
 
-                    if (R.not(R.includes(0x02, methods))) {
+                    if (do_not_have_authentication(methods)) {
                         socket.end(E_METHOD);
                         throw exit(`METHODS [${ methods }]`);
                     }

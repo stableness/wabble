@@ -21,6 +21,8 @@ import type { Logging } from '../model';
 import type { Service } from '../config';
 import * as u from '../utils';
 
+import { do_not_require } from './utils';
+
 
 
 
@@ -42,7 +44,7 @@ export const httpProxy =
 
     const { logLevel, logger } = logging;
 
-    const authRequired = u.option2B(auth);
+    const is_admission_free = do_not_require(auth);
 
     const conn$ = new Rx.Observable<Knock>(subject => {
 
@@ -104,7 +106,7 @@ export const httpProxy =
                 return false;
             }
 
-            if (authRequired === false) {
+            if (is_admission_free) {
                 return true;
             }
 
