@@ -480,7 +480,9 @@ describe('DoH', () => {
     });
 
     // TODO: network mocking
-    test.skip('valid', async () => {
+    const condTest = process.env.NO_SKIP === 'on' ? test : test.skip;
+
+    condTest('valid', async () => {
 
         const doh = DoH(CF_DOH_ENDPOINT);
 

@@ -35,7 +35,7 @@ jobs:
 
       - run: npm run lint
 
-      - run: npm run test -- --verbose
+      - run: NO_SKIP=on npm run test -- --verbose
 
       - run: npm run build
 
