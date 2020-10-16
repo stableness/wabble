@@ -4,20 +4,17 @@ import { asyncReadable } from 'async-readable';
 import {
     option as O,
     either as E,
-    task as T,
-    taskEither as TE,
 } from 'fp-ts';
 
 import * as R from 'ramda';
 
-import { force, tryCatchToError } from '../../src/utils';
+import { force } from '../../src/utils';
 
 import {
 
+    readFrame,
     do_not_require,
     do_not_have_authentication,
-    readFrame,
-    unwrapTaskEither,
 
 } from '../../src/services/utils';
 
@@ -105,32 +102,6 @@ describe('readFrame', () => {
         const result = await force(readFrame(read));
 
         expect(result).toStrictEqual(E.left(error));
-
-    });
-
-});
-
-
-
-
-
-describe('unwrapTaskEither', () => {
-
-    test('resolve', () => {
-
-        const wat = 42;
-        const task = tryCatchToError(T.of(wat));
-
-        void expect(unwrapTaskEither(task)).resolves.toBe(wat);
-
-    });
-
-    test('reject', () => {
-
-        const wat = 'wat';
-        const task = TE.throwError(new Error(wat));
-
-        void expect(unwrapTaskEither(task)).rejects.toThrow(wat);
 
     });
 

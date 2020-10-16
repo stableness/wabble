@@ -1,14 +1,13 @@
 import * as R from 'ramda';
 
 import {
-    either as E,
     taskEither as TE,
     function as F,
 } from 'fp-ts';
 
 import type { Read } from 'async-readable';
 
-import { option2B, tryCatchToError } from '../utils';
+import { option2B, readToTaskEither } from '../utils';
 
 
 
@@ -38,38 +37,6 @@ export function readFrame (read: Read) {
         TE.map(buffer => buffer.readUInt8(0)),
         TE.chain(readTask),
     );
-
-}
-
-
-
-
-
-// :: (number -> Promise Buffer) -> number -> TaskEither Error Buffer
-export function readToTaskEither (read: Read) {
-
-    return function (size: number) {
-
-        return tryCatchToError(() => read(size));
-
-    };
-
-}
-
-
-
-
-
-// :: TaskEither Error a -> Promise a
-export async function unwrapTaskEither <A> (task: TE.TaskEither<Error, A>) {
-
-    const result = await task();
-
-    if (E.isRight(result)) {
-        return result.right;
-    }
-
-    throw result.left;
 
 }
 

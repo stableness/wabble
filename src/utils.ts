@@ -31,6 +31,8 @@ import * as o from 'rxjs/operators';
 
 import { bind } from 'proxy-bind';
 
+import type { Read } from 'async-readable';
+
 import type { Basic } from './config';
 
 
@@ -235,6 +237,38 @@ export function split ({ at }: { at: number }) {
         return [ list.subarray(0, at), list.subarray(at) ] as List<T>;
 
     };
+
+}
+
+
+
+
+
+// :: (number -> Promise Buffer) -> number -> TaskEither Error Buffer
+export function readToTaskEither (read: Read) {
+
+    return function (size: number) {
+
+        return tryCatchToError(() => read(size));
+
+    };
+
+}
+
+
+
+
+
+// :: TaskEither Error a -> Promise a
+export async function unwrapTaskEither <A> (task: TE.TaskEither<Error, A>) {
+
+    const result = await task();
+
+    if (E.isRight(result)) {
+        return result.right;
+    }
+
+    throw result.left;
 
 }
 

@@ -12,6 +12,8 @@ import * as o from 'rxjs/operators';
 import {
     option as O,
     either as E,
+    task as T,
+    taskEither as TE,
     eq as Eq,
 } from 'fp-ts';
 
@@ -39,6 +41,8 @@ import {
     genLooping,
     DoH,
     force,
+    unwrapTaskEither,
+    tryCatchToError,
 
 } from '../src/utils';
 
@@ -296,6 +300,32 @@ describe('split', () => {
         expect(head.length).toBe(num);
         expect(tail.length).toBe(buffer.length - num);
         expect(Buffer.concat([ head, tail ])).toEqual(buffer);
+
+    });
+
+});
+
+
+
+
+
+describe('unwrapTaskEither', () => {
+
+    test('resolve', () => {
+
+        const wat = 42;
+        const task = tryCatchToError(T.of(wat));
+
+        void expect(unwrapTaskEither(task)).resolves.toBe(wat);
+
+    });
+
+    test('reject', () => {
+
+        const wat = 'wat';
+        const task = TE.throwError(new Error(wat));
+
+        void expect(unwrapTaskEither(task)).rejects.toThrow(wat);
 
     });
 

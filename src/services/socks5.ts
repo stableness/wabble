@@ -20,11 +20,10 @@ import * as o from 'rxjs/operators';
 
 import type { Logging } from '../model';
 import type { Service } from '../config';
-import { pump, mountErrOf } from '../utils';
+import { pump, mountErrOf, unwrapTaskEither } from '../utils';
 
 import {
     readFrame,
-    unwrapTaskEither,
     do_not_require,
     do_not_have_authentication,
 } from './utils';
