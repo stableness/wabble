@@ -99,14 +99,17 @@ export const socks5Proxy = (service: Service) => (logging: Logging) => {
 
                 init: {
 
-                    const [ VER, LEN = 0 ] = await read(2);
+                    const [ VER ] = await read(1);
 
-                    if (VER !== 0x05 || LEN < 1) {
+                    if (VER !== 0x05) {
                         socket.end(E_METHOD);
-                        throw exit(`VER [${ VER }] LEN [${ LEN }]`);
+                        throw exit(`VER [${ VER }]`);
                     }
 
-                    const methods = Array.from(await read(LEN));
+                    const methods = await unwrapTaskEither(F.pipe(
+                        readFrame(read),
+                        TE.map(buffer => Array.from(buffer)),
+                    ));
 
                     if (is_admission_free) {
                         socket.write(AUTH_NOT);
