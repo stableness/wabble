@@ -243,14 +243,33 @@ export function DecryptAEAD (
             salt,
         );
 
+        const readTask = u.readToTaskEither(read);
+
         while (true) {
 
-            const buffer = decrypt(...u.splitAt2(await read(2 + tagSize)));
-            const length = buffer.readUInt16BE(0);
+            yield u.unwrapTaskEither(F.pipe(
 
-            const slice = u.split({ at: length });
+                readTask(2 + tagSize),
 
-            yield decrypt(...slice(await read(length + tagSize)));
+                TE.map(F.flow(
+                    u.splitAt2,
+                    R.apply(decrypt),
+                    buf => buf.readUInt16BE(0),
+                    R.juxt([
+                        R.o(readTask, R.add(tagSize)),
+                        R.o(u.split, R.objOf('at')),
+                    ]),
+                )),
+
+                TE.chain(([ buf, slice ]) => F.pipe(
+                    buf,
+                    TE.map(F.flow(
+                        slice,
+                        R.apply(decrypt),
+                    )),
+                )),
+
+            ));
 
         }
 
