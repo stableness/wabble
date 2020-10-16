@@ -7,7 +7,9 @@ import { asyncReadable } from 'async-readable';
 import { fromLong as ipFromLong, toString as ipToString } from 'ip';
 
 import {
+    apply as Ap,
     option as O,
+    taskEither as TE,
     function as F,
 } from 'fp-ts';
 
@@ -20,7 +22,12 @@ import type { Logging } from '../model';
 import type { Service } from '../config';
 import { pump, mountErrOf } from '../utils';
 
-import { do_not_have_authentication, do_not_require } from './utils';
+import {
+    readFrame,
+    unwrapTaskEither,
+    do_not_require,
+    do_not_have_authentication,
+} from './utils';
 
 
 
@@ -83,6 +90,12 @@ export const socks5Proxy = (service: Service) => (logging: Logging) => {
             try {
 
                 const { read } = asyncReadable(socket);
+
+                const frame = F.pipe(
+                    readFrame(read),
+                    TE.map(R.toString),
+                );
+
                 const exit = R.construct(Error);
 
                 init: {
@@ -110,22 +123,23 @@ export const socks5Proxy = (service: Service) => (logging: Logging) => {
 
                         socket.write(AUTH_YES);
 
-                        const [ VER_AUTH, ULEN = 0 ] = await read(2);
+                        const [ VER_AUTH ] = await read(1);
 
-                        if (VER_AUTH !== 0x01 || ULEN < 1 || ULEN > 255) {
+                        if (VER_AUTH !== 0x01) {
                             socket.end(AUTH_ERR);
-                            throw exit(`VER [${ VER_AUTH }] ULEN [${ ULEN }]`);
+                            throw exit(`VER [${ VER_AUTH }]`);
                         }
 
-                        const info = O.some({
-                            username: (await read(ULEN)).toString(),
-                            // TODO: refine
-                            // eslint-disable-next-line max-len
-                            password: (await read(Math.min(255, (await read(1))[0] ?? 0))).toString(),
-                        });
+                        const info = await unwrapTaskEither(
+                            sequenceSTE({
+                                username: frame,
+                                password: frame,
+                            }),
+                        );
 
                         const result = F.pipe(
-                            O.ap(info)(auth),
+                            auth,
+                            O.ap(O.some(info)),
                             O.getOrElse(F.constFalse),
                         );
 
@@ -136,9 +150,7 @@ export const socks5Proxy = (service: Service) => (logging: Logging) => {
 
                         socket.end(AUTH_ERR);
 
-                        // for logging only
-                        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                        const { username, password } = O.toUndefined(info)!;
+                        const { username, password } = info;
                         throw exit(`user [${ username }] pass [${ password }]`);
 
                     }
@@ -165,9 +177,7 @@ export const socks5Proxy = (service: Service) => (logging: Logging) => {
                             host = ipToString(await read(16));
                             break;
                         case 3:
-                            // TODO: refine
-                            // eslint-disable-next-line max-len
-                            host = (await read((await read(1))[0] ?? 0)).toString();
+                            host = await unwrapTaskEither(frame);
                             break;
                     }
 
@@ -226,4 +236,10 @@ export const socks5Proxy = (service: Service) => (logging: Logging) => {
     );
 
 };
+
+
+
+
+
+const sequenceSTE = Ap.sequenceS(TE.taskEither);
 
