@@ -243,5 +243,5 @@ export const socks5Proxy = (service: Service) => (logging: Logging) => {
 
 
 
-const sequenceSTE = Ap.sequenceS(TE.taskEither);
+const sequenceSTE = Ap.sequenceS(TE.taskEitherSeq);
 
