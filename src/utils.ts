@@ -259,8 +259,8 @@ export function readToTaskEither (read: Read) {
 
 
 
-// :: TaskEither Error a -> Promise a
-export async function unwrapTaskEither <A> (task: TE.TaskEither<Error, A>) {
+// :: TaskEither e a -> Promise a
+export async function unwrapTaskEither <E, A> (task: TE.TaskEither<E, A>) {
 
     const result = await task();
 
@@ -268,7 +268,7 @@ export async function unwrapTaskEither <A> (task: TE.TaskEither<Error, A>) {
         return result.right;
     }
 
-    throw result.left;
+    throw E.toError(result.left);
 
 }
 

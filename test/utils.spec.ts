@@ -322,8 +322,17 @@ describe('unwrapTaskEither', () => {
 
     test('reject', () => {
 
+        const wat = new Error('wat');
+        const task = TE.throwError(wat);
+
+        void expect(unwrapTaskEither(task)).rejects.toThrow(wat);
+
+    });
+
+    test('reject non error', () => {
+
         const wat = 'wat';
-        const task = TE.throwError(new Error(wat));
+        const task = TE.throwError(wat);
 
         void expect(unwrapTaskEither(task)).rejects.toThrow(wat);
 
