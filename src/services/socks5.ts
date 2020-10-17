@@ -132,12 +132,10 @@ export const socks5Proxy = (service: Service) => (logging: Logging) => {
                             throw exit(`VER [${ VER_AUTH }]`);
                         }
 
-                        const info = await unwrapTaskEither(
-                            sequenceSTE({
-                                username: frame,
-                                password: frame,
-                            }),
-                        );
+                        const info = await fetch({
+                            username: frame,
+                            password: frame,
+                        });
 
                         const result = F.pipe(
                             auth,
@@ -243,5 +241,11 @@ export const socks5Proxy = (service: Service) => (logging: Logging) => {
 
 
 
-const sequenceSTE = Ap.sequenceS(TE.taskEitherSeq);
+const fetch = F.flow(
+
+    Ap.sequenceS(TE.taskEitherSeq),
+
+    unwrapTaskEither,
+
+);
 
