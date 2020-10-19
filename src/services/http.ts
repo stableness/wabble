@@ -123,10 +123,7 @@ export const httpProxy =
 
                 O.filter(F.identity),
 
-                E.fromOption(F.constant(u.headerJoin([
-                    'HTTP/1.1 407 Proxy Authentication Required',
-                    'Proxy-Authenticate: Basic realm="proxy auth please"',
-                ]))),
+                E.fromOption(CONST_PROXY_AUTHENTICATION),
 
                 E.mapLeft(msg => {
 
@@ -307,4 +304,13 @@ export const omitHopHeaders = R.omit([
     'trailer',
     'te',
 ]);
+
+
+
+
+
+const CONST_PROXY_AUTHENTICATION = F.constant(u.headerJoin([
+    'HTTP/1.1 407 Proxy Authentication Required',
+    'Proxy-Authenticate: Basic realm="proxy auth please"',
+]));
 
