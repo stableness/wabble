@@ -11,7 +11,7 @@
     ],
     "declaration": false,
     "outDir": "./dist",
-    "removeComments": true,
+    "removeComments": false,
     "importHelpers": false,
 
     "strict": true,
