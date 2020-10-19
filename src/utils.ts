@@ -574,11 +574,11 @@ export function DoH (endpoint: string, path = '@stableness/dohdec') {
         getJSON (opts: { name: string }): Promise<Response>;
     }
 
-    const doh = tryCatchToError(async () => {
+    const doh = run(tryCatchToError(async () => {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const pkg: { DNSoverHTTPS: Class } = await import(path);
         return new pkg.DNSoverHTTPS({ url: endpoint });
-    })();
+    }));
 
     return function (name: string) {
 

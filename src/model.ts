@@ -265,7 +265,7 @@ const runner$ = services$.pipe(
 
             if (direction) {
 
-                void u.tryCatchToError(async () => {
+                void u.run(u.tryCatchToError(async () => {
 
                     const conn = await hopTo('nothing');
 
@@ -273,7 +273,7 @@ const runner$ = services$.pipe(
 
                     return conn();
 
-                })();
+                }));
 
                 return false;
 
