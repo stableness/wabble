@@ -45,6 +45,8 @@ export type Fn <I, O = I> = (i: I) => O;
 
 
 
+export { force as run };
+
 export function force <F extends (...arg: unknown[]) => unknown> (fn: F) {
     return fn() as ReturnType<F>;
 }
