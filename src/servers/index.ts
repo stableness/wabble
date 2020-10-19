@@ -58,38 +58,21 @@ const hostCache = R.memoizeWith(
 
 
 
+/*#__NOINLINE__*/
 export function connect ({ host, port, hook, dns, doh, logger }: Opts) {
 
     const justHost = hostCache(host);
     const mergeOpts = R.mergeRight({ port, logger, hook });
+    const check = doh(host) ? F.constUndefined : F.constant(host);
 
-
-
+    /*#__NOINLINE__*/
     return async function toServer (server: O.Option<Remote> | 'nothing') {
 
-        const please = doh(host) ? F.constUndefined : F.constant(host);
+        // hot path optimization
+        // switch to native nullish-coalescing when targeting to node >= 14
 
-        const query = () => F.pipe(
-
-            O.chain (nsLookup) (justHost),
-            TE.fromOption(() => new Error('No cache')),
-
-            TE.alt(F.constant(F.pipe(
-
-                O.ap (justHost) (dns),
-                TE.fromOption(() => new Error('No DoH')),
-                TE.chain(parse),
-
-            ))),
-
-            TE.getOrElseW(() => T.fromIO(F.constUndefined)),
-
-        );
-
-        //                        do                    by
-        const ipOrHost = please() ?? await run(query()) ?? host;
-
-
+        // eslint-disable-next-line max-len, @typescript-eslint/prefer-nullish-coalescing, @typescript-eslint/strict-boolean-expressions
+        const ipOrHost = /*#__NOINLINE__*/ check() || await run(/*#__NOINLINE__*/ query()) || host;
 
         if (server === 'nothing') {
 
@@ -101,8 +84,6 @@ export function connect ({ host, port, hook, dns, doh, logger }: Opts) {
             );
 
         }
-
-
 
         return F.pipe(
 
@@ -144,6 +125,28 @@ export function connect ({ host, port, hook, dns, doh, logger }: Opts) {
         );
 
     };
+
+
+
+    function query () {
+
+        return F.pipe(
+
+            O.chain (nsLookup) (justHost),
+            TE.fromOption(() => new Error('No cache')),
+
+            TE.alt(F.constant(F.pipe(
+
+                O.ap (justHost) (dns),
+                TE.fromOption(() => new Error('No DoH')),
+                TE.chain(/*#__NOINLINE__*/ parse),
+
+            ))),
+
+            TE.getOrElseW(() => T.fromIO(F.constUndefined)),
+
+        );
+    }
 
 
 
