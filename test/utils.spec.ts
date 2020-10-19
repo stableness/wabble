@@ -40,7 +40,7 @@ import {
     loopNext,
     genLooping,
     DoH,
-    force,
+    run as force,
     unwrapTaskEither,
     tryCatchToError,
 

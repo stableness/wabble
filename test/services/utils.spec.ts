@@ -8,7 +8,7 @@ import {
 
 import * as R from 'ramda';
 
-import { force } from '../../src/utils';
+import { run as force } from '../../src/utils';
 
 import {
 

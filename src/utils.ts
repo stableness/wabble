@@ -45,9 +45,7 @@ export type Fn <I, O = I> = (i: I) => O;
 
 
 
-export { force as run };
-
-export function force <F extends (...arg: unknown[]) => unknown> (fn: F) {
+export function run <F extends (...arg: unknown[]) => unknown> (fn: F) {
     return fn() as ReturnType<F>;
 }
 
@@ -77,7 +75,7 @@ export function testWith (list: Iterable<Fn<string, boolean>>) {
 
 
 
-export const rules = force(function () {
+export const rules = run(function () {
 
     type Test = (name: string) => boolean;
 
@@ -278,7 +276,7 @@ export async function unwrapTaskEither <E, A> (task: TE.TaskEither<E, A>) {
 
 
 
-export const hash = force(function () {
+export const hash = run(function () {
 
     type Alg = 'md4' | 'md5' | 'sha1' | 'sha224' | 'sha256' | 'sha512';
 
@@ -432,7 +430,7 @@ export const readURL = F.pipe(
 
 
 
-export const basicInfo = force(function () {
+export const basicInfo = run(function () {
 
     return {
         auth: infoBy('authorization'),
