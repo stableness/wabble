@@ -7,7 +7,6 @@ import * as R from 'ramda';
 import {
     task as T,
     taskEither as TE,
-    either as E,
     map as fpMap,
     eq as Eq,
     option as O,
@@ -62,7 +61,6 @@ const hostCache = R.memoizeWith(
 export function connect ({ host, port, hook, dns, doh, logger }: Opts) {
 
     const justHost = hostCache(host);
-    const mergeOpts = R.mergeRight({ port, logger, hook });
     const check = doh(host) ? F.constUndefined : F.constant(host);
 
     /*#__NOINLINE__*/
@@ -89,13 +87,11 @@ export function connect ({ host, port, hook, dns, doh, logger }: Opts) {
 
             server,
 
-            E.fromOption(F.constant(Error('Has no server to connect'))),
+            TE.fromOption(() => new Error('Has no server to connect')),
 
-            E.map(remote => ({ remote, opts: mergeOpts({ ipOrHost }) })),
+            TE.chain(remote => {
 
-            TE.fromEither,
-
-            TE.chain(({ remote, opts }) => {
+                const opts = { port, logger, hook, ipOrHost };
 
                 if (remote.protocol === 'socks5') {
                     return chainSocks5(opts, remote);
@@ -115,7 +111,7 @@ export function connect ({ host, port, hook, dns, doh, logger }: Opts) {
                 }
 
                 return TE.left(
-                    Error(`Non supported protocol [${ remote.protocol }]`),
+                    new Error(`Non supported protocol [${ remote.protocol }]`),
                 );
 
             }),
@@ -134,14 +130,13 @@ export function connect ({ host, port, hook, dns, doh, logger }: Opts) {
 
             O.chain (nsLookup) (justHost),
             TE.fromOption(() => new Error('No cache')),
-
-            TE.alt(F.constant(F.pipe(
+            TE.alt(() => F.pipe(
 
                 O.ap (justHost) (dns),
                 TE.fromOption(() => new Error('No DoH')),
                 TE.chain(/*#__NOINLINE__*/ parse),
 
-            ))),
+            )),
 
             TE.getOrElseW(() => T.fromIO(F.constUndefined)),
 
