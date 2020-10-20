@@ -311,30 +311,30 @@ describe('split', () => {
 
 describe('unwrapTaskEither', () => {
 
-    test('resolve', () => {
+    test('resolve', async () => {
 
         const wat = 42;
         const task = tryCatchToError(T.of(wat));
 
-        void expect(unwrapTaskEither(task)).resolves.toBe(wat);
+        await expect(unwrapTaskEither(task)).resolves.toBe(wat);
 
     });
 
-    test('reject', () => {
+    test('reject', async () => {
 
         const wat = new Error('wat');
         const task = TE.throwError(wat);
 
-        void expect(unwrapTaskEither(task)).rejects.toThrow(wat);
+        await expect(unwrapTaskEither(task)).rejects.toThrow(wat);
 
     });
 
-    test('reject non error', () => {
+    test('reject non error', async () => {
 
         const wat = 'wat';
         const task = TE.throwError(wat);
 
-        void expect(unwrapTaskEither(task)).rejects.toThrow(wat);
+        await expect(unwrapTaskEither(task)).rejects.toThrow(wat);
 
     });
 
