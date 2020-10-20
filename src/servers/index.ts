@@ -194,7 +194,7 @@ export function connect ({ host, port, hook, dns, doh, logger }: Opts) {
 
 
 
-export const netConnectTo = R.compose(
+export const netConnectTo: Fn<net.TcpNetConnectOpts, net.Socket> = R.compose(
 
     R.tap(socket => socket
         .setNoDelay(true)
@@ -208,5 +208,5 @@ export const netConnectTo = R.compose(
         allowHalfOpen: true,
     }),
 
-) as Fn<net.TcpNetConnectOpts, net.Socket>;
+);
 
