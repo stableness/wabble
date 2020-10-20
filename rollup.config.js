@@ -103,9 +103,7 @@ const config = [
                 include: [
                     'node_modules/**'
                 ],
-                exclude: [
-                    'node_modules/pino-pretty/**',
-                ],
+                ignore: ['pino-pretty'],
                 sourceMap: false,
             }),
             json(),
