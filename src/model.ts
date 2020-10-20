@@ -146,8 +146,6 @@ const rules$ = config$.pipe(
         direct: u.rules.DOH,
         reject: u.rules.NOT,
     })),
-    // TODO: upgrade > rxjs@7.0.0-beta.7
-    // eslint-disable-next-line deprecation/deprecation
     o.delayWhen(R.always(Rx.combineLatest([ directList$, rejectList$ ]))),
     o.withLatestFrom(rejectList$, directList$, (rules, reject, direct) => ({
         reject: R.either(
