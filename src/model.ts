@@ -120,7 +120,11 @@ const config$ = loader$.pipe(
     o.switchMap(u.readFileInStringOf('utf8')),
     o.map(R.unary(safeLoad)),
     o.map(convert),
-    o.catchError(R.o(R.always(Rx.EMPTY), bind(logger).error)),
+    o.catchError(err => {
+        const { message } = E.toError(err);
+        logger.error(message);
+        return Rx.EMPTY;
+    }),
     o.publishReplay(1, Number.POSITIVE_INFINITY, Rx.asyncScheduler),
     o.refCount(),
 );
