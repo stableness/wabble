@@ -27,7 +27,7 @@ export const suffix = R.useWith(R.replace('.js'), [ R.concat('.'), R.identity ])
 
 export const extendsBuiltin = R.compose(list, R.concat(`
     | http | https | tls | net | crypto | stream | buffer |
-    | util | os | events | url | fs | assert | vm |
+    | util | os | events | url | fs | assert | vm | path |
 `));
 
 const devOrProd = R.partialRight(R.ifElse, [ R.identity, R.empty ]);
@@ -61,7 +61,7 @@ const config = [
         external: extendsBuiltin(dev(`
             | proxy-bind | buffer-pond | async-readable |
             | ramda | ip | futoin-hkdf |
-            | js-yaml | pino | command-line-args | @stableness/basic-auth |
+            | js-yaml | pino | argparse | @stableness/basic-auth |
 
             | rxjs
             | rxjs/operators
@@ -175,7 +175,7 @@ const config = [
         external: extendsBuiltin(`
             | proxy-bind | buffer-pond | async-readable |
             | ramda | ip | futoin-hkdf |
-            | js-yaml | pino | command-line-args | @stableness/basic-auth |
+            | js-yaml | pino | argparse | @stableness/basic-auth |
 
             | rxjs
             | rxjs/operators

@@ -32,9 +32,9 @@
   "dependencies": {
     "@stableness/basic-auth": "^102.0.1",
     "@stableness/dohdec": "^102.1.0",
+    "argparse": "^2.0.1",
     "async-readable": "~0.4.2",
     "buffer-pond": "~0.8.2",
-    "command-line-args": "^5.1.1",
     "fp-ts": "^2.8.2",
     "futoin-hkdf": "^1.2.1",
     "io-ts": "^2.2.10",
@@ -50,6 +50,7 @@
     "@rollup/plugin-json": "^4.1.0",
     "@rollup/plugin-node-resolve": "^9.0.0",
     "@rollup/plugin-replace": "^2.3.3",
+    "@types/argparse": "^2.0.2",
     "@types/command-line-args": "^5.0.0",
     "@types/ip": "^1.1.0",
     "@types/jest": "^26.0.3",
