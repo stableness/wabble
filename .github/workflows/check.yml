@@ -43,6 +43,8 @@ jobs:
 
       - run: npm run bundle
 
+      - run: node dist/bin.cjs -v
+
       - run: ls -lh dist/{index,bin}*
 
       - uses: codecov/codecov-action@v1
