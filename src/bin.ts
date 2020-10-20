@@ -1,12 +1,10 @@
 'use strict';
 /* eslint-disable max-len */
-/* eslint-disable @typescript-eslint/no-unsafe-call */
 /* eslint-disable @typescript-eslint/no-var-requires */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 
-const Command = require('command-line-args');
+const Command = require('command-line-args') as typeof import('command-line-args');
 
-const { load } = require('./index.cjs');
+const { load } = require('./index.cjs') as typeof import('./index');
 
 
 
