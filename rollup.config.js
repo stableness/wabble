@@ -159,8 +159,10 @@ const config = [
                 toplevel: true,
                 compress: {
                     inline: false,
-                    unsafe_arrows: true,
-                    unsafe_methods: true,
+                    unsafe_arrows: false,
+                    unsafe_methods: false,
+                    keep_fnames: true,
+                    keep_classnames: true,
                 },
             }),
         ],
