@@ -31,8 +31,6 @@ import * as o from 'rxjs/operators';
 
 import { bind } from 'proxy-bind';
 
-import type { Read } from 'async-readable';
-
 import type { Basic } from './config';
 
 
@@ -244,15 +242,19 @@ export function split ({ at }: { at: number }) {
 
 
 
-// :: (number -> Promise Buffer) -> number -> TaskEither Error Buffer
-export function readToTaskEither (read: Read) {
+// :: (() -> Promise a) -> TaskEither Error a
+export function tryCatchToError <A> (fn: F.Lazy<Promise<A>>) {
+    return TE.tryCatch(fn, E.toError);
+}
 
-    return function (size: number) {
 
-        return tryCatchToError(() => read(size));
 
-    };
 
+
+// :: (a -> Promise b) -> a -> TaskEither Error b
+export function catchKToError <A extends ReadonlyArray<unknown>, B>
+(fn: (...args: A) => Promise<B>) {
+    return TE.tryCatchK(fn, E.toError);
 }
 
 
@@ -610,14 +612,6 @@ export function DoH (endpoint: string, path = '@stableness/dohdec') {
 
 
 export const constErr = R.o(R.always, Error);
-
-
-
-
-
-export function tryCatchToError <A> (fn: F.Lazy<Promise<A>>) {
-    return TE.tryCatch(fn, E.toError);
-}
 
 
 

@@ -7,7 +7,7 @@ import {
 
 import type { Read } from 'async-readable';
 
-import { option2B, readToTaskEither } from '../utils';
+import { option2B, catchKToError } from '../utils';
 
 
 
@@ -30,7 +30,7 @@ export const do_not_require = R.complement(option2B);
 // :: (number -> Promise Buffer) -> TaskEither Error Buffer
 export function readFrame (read: Read) {
 
-    const readTask = readToTaskEither(read);
+    const readTask = catchKToError(read);
 
     return F.pipe(
         readTask(1),
