@@ -10,7 +10,12 @@ import { asyncReadable } from 'async-readable';
 
 import { logLevel } from '../model';
 import type { Socks5, Basic } from '../config';
-import { socks5Handshake, tryCatchToError, Fn } from '../utils';
+import {
+    Fn,
+    socks5Handshake,
+    catchKToError,
+    writeToTaskEither,
+} from '../utils';
 
 import { ChainOpts, netConnectTo } from './index';
 
@@ -18,16 +23,15 @@ import { ChainOpts, netConnectTo } from './index';
 
 
 
-export function chain (
-        { ipOrHost, port, logger, hook }: ChainOpts,
-        remote: Socks5,
-) {
+export function chain (opts: ChainOpts, remote: Socks5) {
+
+    const { ipOrHost, port, logger, hook } = opts;
 
     return F.pipe(
 
         TE.right(socks5Handshake(ipOrHost, port)),
 
-        TE.map(R.tap(() => {
+        TE.apFirst(TE.fromIO(() => {
 
             if (R.not(logLevel.on.trace)) {
                 return;
@@ -42,9 +46,9 @@ export function chain (
 
         })),
 
-        TE.chain(knock => tryCatchToError(async () => {
-            return hook(await tunnel(remote, knock));
-        })),
+        TE.chain(tunnel(remote)),
+
+        TE.chain(catchKToError(hook)),
 
         TE.mapLeft(R.tap(() => hook())),
 
@@ -56,73 +60,76 @@ export function chain (
 
 
 
-export async function tunnel ({ host, port, auth }: Socks5, head: Uint8Array) {
+export const tunnel = ({ host, port, auth }: Socks5) => (head: Uint8Array) => {
 
     const socket = netConnectTo({ host, port });
 
     const { read } = asyncReadable(socket);
-    const exit = R.construct(Error);
 
-    auth: {
+    const readTE = catchKToError(read);
+    const writeTE = writeToTaskEither(socket);
 
-        socket.write(make(auth));
+    return F.pipe(
 
-        const [ VER, METHOD ] = await read(2);
+        writeTE(make(auth)),
+        TE.chain(() => readTE(1)),
+        TE.chain(([ VER ]) =>
+            VER === 0x05 ? readTE(1) : TE.leftIO(() => Error(`VER [${ VER }]`)),
+        ),
+        TE.chain(([ METHOD ]) => {
 
-        if (VER !== 0x05 || METHOD === 0xFF) {
-            throw exit(`VER [${ VER }] METHOD [${ METHOD }]`);
-        }
-
-        if (METHOD === 0x00) {
-            break auth;
-        }
-
-        if (METHOD === 0x02 && O.isSome(auth)) {
-
-            socket.write(encode(auth));
-
-            const [ VER_AUTH, STATUS ] = await read(2);
-
-            if (VER_AUTH !== 0x01 || STATUS !== 0x00) {
-                throw exit(`VER [${ VER_AUTH }] STATUS [${ STATUS }]`);
+            if (METHOD === 0x00) {
+                return TE.fromIO(F.constVoid);
             }
 
-            break auth;
+            if (METHOD === 0x02 && O.isSome(auth)) {
+                return F.pipe(
 
-        }
+                    writeTE(encode(auth)),
+                    TE.chain(() => readTE(2)),
+                    TE.chain(([ VER_AUTH, STATUS ]) => {
 
-        throw exit(`METHOD [${ METHOD }]`);
+                        if (VER_AUTH !== 0x01 || STATUS !== 0x00) {
+                            return TE.leftIO(() => Error(`VER [${ VER_AUTH }] STATUS [${ STATUS }]`));
+                        }
 
-    }
+                        return TE.fromIO(F.constVoid);
 
-    // for readability and context grouping
-    // eslint-disable-next-line no-unused-labels
-    request: {
+                    }),
 
-        socket.write(head);
+                );
+            }
 
-        const [ VER, REP,    , ATYP, LEN = 0 ] = await read(5);
+            return TE.leftIO(() => Error(`METHOD [${ METHOD }]`));
 
-        if (VER !== 0x05 || REP !== 0x00) {
-            throw exit(`VER [${ VER }] REP [${ REP }]`);
-        }
+        }),
 
-        let step = -1;
+        TE.chain(() => writeTE(head)),
+        TE.chain(() => readTE(5)),
+        TE.chain(([ VER, REP, _, ATYP, LEN = 0 ]) => {
 
-        switch (ATYP) {
-            case 1: step += 4; break;
-            case 4: step += 16; break;
-            case 3: step += LEN + 1; break;
-            default: throw exit(`ATYP [${ ATYP }]`);
-        }
+            if (VER !== 0x05 || REP !== 0x00) {
+                return TE.leftIO(() => Error(`VER [${ VER }] REP [${ REP }]`));
+            }
 
-        await read(step + 2);
+            let step = -1;
 
-    }
+            switch (ATYP) {
+                case 1: step += 4; break;
+                case 4: step += 16; break;
+                case 3: step += LEN + 1; break;
+                default: return TE.leftIO(() => Error(`ATYP [${ ATYP }]`));
+            }
 
-    return socket;
+            return readTE(step + 2);
 
-}
+        }),
+
+        TE.map(F.constant(socket)),
+
+    );
+
+};
 
 
 
