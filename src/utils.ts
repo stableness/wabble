@@ -582,28 +582,24 @@ export function DoH (endpoint: string, path = '@stableness/dohdec') {
         return new pkg.DNSoverHTTPS({ url: endpoint });
     }));
 
-    return function (name: string) {
+    return catchKToError(async (name: string) => {
 
-        return tryCatchToError(async () => {
+        const dns = F.pipe(
+            await doh,
+            E.fold(err => { throw err }, F.identity),
+        );
 
-            const dns = F.pipe(
-                await doh,
-                E.fold(err => { throw err }, F.identity),
-            );
+        const { answers, Answer } = await dns.getJSON({ name });
 
-            const { answers, Answer } = await dns.getJSON({ name });
+        const list = answers ?? Answer ?? [];
 
-            const list = answers ?? Answer ?? [];
+        if (R.isEmpty(list)) {
+            throw new Error('empty');
+        }
 
-            if (R.isEmpty(list)) {
-                throw new Error('empty');
-            }
+        return list;
 
-            return list;
-
-        });
-
-    };
+    });
 
 }
 
