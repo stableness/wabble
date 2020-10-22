@@ -1,4 +1,5 @@
 import { URL } from 'url';
+import { Writable } from 'stream';
 
 import { EventEmitter } from 'events';
 
@@ -43,6 +44,7 @@ import {
     run as force,
     unwrapTaskEither,
     tryCatchToError,
+    writeToTaskEither,
 
 } from '../src/utils';
 
@@ -335,6 +337,44 @@ describe('unwrapTaskEither', () => {
         const task = TE.throwError(wat);
 
         await expect(unwrapTaskEither(task)).rejects.toThrow(wat);
+
+    });
+
+});
+
+
+
+
+
+describe('writeToTaskEither', () => {
+
+    const stream = new Writable({
+
+        highWaterMark: 1,
+
+        write ([ flag ], _enc, cb) {
+
+            if (flag === 0x30 + 0) {
+                return cb();
+            }
+
+            if (flag === 0x30 + 1) {
+                return setImmediate(cb);
+            }
+
+            return cb(Error('wat'));
+
+        },
+
+    });
+
+    const write = writeToTaskEither(stream);
+
+    test('', async () => {
+
+        await expect(unwrapTaskEither(write('0'))).resolves.toBe(void 0);
+        await expect(unwrapTaskEither(write('1'))).resolves.toBe(void 0);
+        await expect(unwrapTaskEither(write('2'))).rejects.toThrow();
 
     });
 
