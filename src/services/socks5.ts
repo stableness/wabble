@@ -7,9 +7,10 @@ import { asyncReadable } from 'async-readable';
 import { fromLong as ipFromLong, toString as ipToString } from 'ip';
 
 import {
-    apply as Ap,
+    apply,
     option as O,
     taskEither as TE,
+    either as E,
     function as F,
 } from 'fp-ts';
 
@@ -20,11 +21,17 @@ import * as o from 'rxjs/operators';
 
 import type { Logging } from '../model';
 import type { Service } from '../config';
-import { pump, mountErrOf, unwrapTaskEither } from '../utils';
+
+import {
+    run,
+    pump,
+    mountErrOf,
+    catchKToError,
+    writeToTaskEither,
+} from '../utils';
 
 import {
     readFrame,
-    do_not_require,
     do_not_have_authentication,
 } from './utils';
 
@@ -51,8 +58,6 @@ export const socks5Proxy = (service: Service) => (logging: Logging) => {
 
     const { logLevel, logger } = logging;
     const { auth, port: servicePort, host: serviceHost } = service;
-
-    const is_admission_free = do_not_require(auth);
 
     return new Rx.Observable<net.Socket>(subject => {
 
@@ -86,128 +91,147 @@ export const socks5Proxy = (service: Service) => (logging: Logging) => {
 
         o.mergeMap(async socket => {
 
-            try {
+            const { read: readToPromise } = asyncReadable(socket);
 
-                const { read } = asyncReadable(socket);
+            const read = catchKToError(readToPromise);
+            const write = writeToTaskEither(socket);
 
-                const frame = F.pipe(
-                    readFrame(read),
-                    TE.map(R.toString),
-                );
+            const frame = readFrame(readToPromise);
+            const frameToString = TE.map (R.toString) (frame);
 
-                const exit = R.construct(Error);
+            const result = await run(F.pipe(
 
-                init: {
+                read(1),
 
-                    const [ VER ] = await read(1);
+                TE.chain(([ VER ]) =>
+                    VER === 0x05 ? frame : TE.leftIO(() => Error(`VER [${ VER }]`)),
+                ),
 
-                    if (VER !== 0x05) {
-                        socket.end(E_METHOD);
-                        throw exit(`VER [${ VER }]`);
-                    }
+                TE.map<Buffer, number[]>(Array.from),
 
-                    const methods = await unwrapTaskEither(F.pipe(
-                        readFrame(read),
-                        TE.map(buffer => Array.from(buffer)),
-                    ));
+                TE.chain(methods => {
 
-                    if (is_admission_free) {
-                        socket.write(AUTH_NOT);
-                        break init;
+                    if (O.isNone(auth)) {
+                        return write(AUTH_NOT);
                     }
 
                     if (do_not_have_authentication(methods)) {
-                        socket.end(E_METHOD);
-                        throw exit(`METHODS [${ methods }]`);
-                    }
-
-                    auth: {
-
-                        socket.write(AUTH_YES);
-
-                        const [ VER_AUTH ] = await read(1);
-
-                        if (VER_AUTH !== 0x01) {
-                            socket.end(AUTH_ERR);
-                            throw exit(`VER [${ VER_AUTH }]`);
-                        }
-
-                        const info = await fetch({
-                            username: frame,
-                            password: frame,
-                        });
-
-                        const result = F.pipe(
-                            auth,
-                            O.ap(O.some(info)),
-                            O.getOrElse(F.constFalse),
+                        return F.pipe(
+                            write(E_METHOD),
+                            TE.chain(leftIOErr(`METHODS [${ methods }]`)),
                         );
-
-                        if (result === true) {
-                            socket.write(AUTH_SUC);
-                            break auth;
-                        }
-
-                        socket.end(AUTH_ERR);
-
-                        const { username, password } = info;
-                        throw exit(`user [${ username }] pass [${ password }]`);
-
                     }
 
-                }
+                    return F.pipe(
 
-                // eslint-disable-next-line no-unused-labels
-                request: {
+                        write(AUTH_YES),
+                        TE.chain(() => read(1)),
+                        TE.chain(([ VER ]) => {
 
-                    const [ VER, CMD,    , ATYP ] = await read(4);
+                            if (VER === 0x01) {
+                                return readSequenceS({
+                                    username: frameToString,
+                                    password: frameToString,
+                                });
+                            }
+
+                            return F.pipe(
+                                write(AUTH_ERR),
+                                TE.chain(leftIOErr(`VER [${ VER }]`)),
+                            );
+
+                        }),
+
+                        TE.chain(info => {
+
+                            if (auth.value(info) === true) {
+                                return write(AUTH_SUC);
+                            }
+
+                            const { username, password } = info;
+
+                            return F.pipe(
+                                write(AUTH_ERR),
+                                TE.chain(leftIOErr(`user [${ username }] pass [${ password }]`)),
+                            );
+
+                        }),
+
+                    );
+
+                }),
+
+                TE.chain(() => read(4)),
+
+                TE.chain(([ VER, CMD, _, ATYP ]) => {
 
                     if (VER !== 0x05 || CMD !== 0x01) {
-                        socket.end(E_COMMAND);
-                        throw exit(`VER [${ VER }] CMD [${ CMD }]`);
+                        return F.pipe(
+                            write(E_COMMAND),
+                            TE.chain(leftIOErr(`VER [${ VER }] CMD [${ CMD }]`)),
+                        );
                     }
 
-                    let host = '';
+                    return TE.right(ATYP);
 
-                    switch (ATYP) {
-                        case 1:
-                            host = ipFromLong((await read(4)).readUInt32BE(0));
-                            break;
-                        case 4:
-                            host = ipToString(await read(16));
-                            break;
-                        case 3:
-                            host = await unwrapTaskEither(frame);
-                            break;
+                }),
+
+                TE.chain(ATYP => {
+
+                    if (ATYP === 1) {
+                        return F.pipe(
+                            read(4),
+                            TE.map(buf => ipFromLong(buf.readUInt32BE(0))),
+                        );
                     }
 
-                    if (host.length < 1) {
-                        socket.end(E_ATYP);
-                        throw exit(`ATYP [${ ATYP }]`);
+                    if (ATYP === 4) {
+                        return F.pipe(
+                            read(16),
+                            TE.map(ipToString),
+                        );
                     }
 
-                    const port = (await read(2)).readUInt16BE(0);
+                    if (ATYP === 3) {
+                        return frameToString;
+                    }
 
-                    return { socket, host, port };
+                    return F.pipe(
+                        write(E_ATYP),
+                        TE.chain(leftIOErr(`ATYP [${ ATYP }]`)),
+                    );
 
-                }
+                }),
 
-            } catch (error) {
+                TE.bindTo('host'),
 
-                if (logLevel.on.debug) {
+                TE.bind('port', () => F.pipe(
+                    read(2),
+                    TE.map(buf => buf.readUInt16BE(0)),
+                )),
 
-                    logger.debug({
-                        msg: 'SOCKS5_HANDSHAKE_ERROR',
-                        message: R.propOr('unknown', 'message')(error),
-                    });
+                TE.bind('socket', F.constant(TE.right(socket))),
 
-                }
+            ));
 
-                socket.destroy();
+            if (E.isRight(result)) {
+                return result.right;
+            }
 
-                return undefined;
+            if (logLevel.on.debug) {
+
+                logger.debug({
+                    msg: 'SOCKS5_HANDSHAKE_ERROR',
+                    message: R.propOr('unknown', 'message')(result.left),
+                });
 
             }
+
+            run(write(result.left.message)).finally(() => {
+                socket.destroy();
+            });
+
+            return F.constUndefined();
 
         }),
 
@@ -241,11 +265,11 @@ export const socks5Proxy = (service: Service) => (logging: Logging) => {
 
 
 
-const fetch = F.flow(
+const readSequenceS = apply.sequenceS(TE.taskEitherSeq);
 
-    Ap.sequenceS(TE.taskEitherSeq),
-
-    unwrapTaskEither,
-
+const leftIOErr = F.flow(
+    Error,
+    TE.left,
+    F.constant,
 );
 
