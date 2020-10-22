@@ -278,6 +278,23 @@ export async function unwrapTaskEither <E, A> (task: TE.TaskEither<E, A>) {
 
 
 
+// :: WritableStream -> Uint8Array | string -> TaskEither Error void
+export function writeToTaskEither (stream: NodeJS.WritableStream) {
+
+    return catchKToError(async (data: Uint8Array | string) => {
+
+        if (stream.write(data) !== true) {
+            await once(stream, 'drain');
+        }
+
+    });
+
+}
+
+
+
+
+
 export const hash = run(function () {
 
     type Alg = 'md4' | 'md5' | 'sha1' | 'sha224' | 'sha256' | 'sha512';
