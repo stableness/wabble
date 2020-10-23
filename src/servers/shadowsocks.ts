@@ -23,10 +23,9 @@ import { ChainOpts, netConnectTo } from './index';
 
 
 
-export function chain (
-        { ipOrHost, port, logger, hook }: ChainOpts,
-        remote: SS,
-) {
+export function chain (opts: ChainOpts, remote: SS) {
+
+    const { ipOrHost, port, logger, hook } = opts;
 
     return F.pipe(
 
@@ -36,7 +35,7 @@ export function chain (
 
         TE.fromIOEither,
 
-        TE.map(R.tap(() => {
+        TE.apFirst(TE.fromIO(() => {
 
             if (R.not(logLevel.on.trace)) {
                 return;

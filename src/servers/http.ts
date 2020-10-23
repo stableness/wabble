@@ -30,7 +30,7 @@ export function chain (
 
         TE.right(R.join(':', [ ipOrHost, port ])),
 
-        TE.map(R.tap(() => {
+        TE.apFirst(TE.fromIO(() => {
 
             if (R.not(logLevel.on.trace)) {
                 return;
