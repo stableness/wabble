@@ -45,6 +45,7 @@ import {
     unwrapTaskEither,
     tryCatchToError,
     writeToTaskEither,
+    timeout,
 
 } from '../src/utils';
 
@@ -430,6 +431,26 @@ describe('mountErrOf', () => {
         expect(mountErrOf(emitter)).toBe(emitter);
         expect(mountErrOf(emitter)).toBe(emitter);
     });
+
+});
+
+
+
+
+
+describe('timeout', () => {
+
+    test('', async () => {
+
+        jest.useFakeTimers();
+
+        const feature = timeout(900);
+
+        jest.runOnlyPendingTimers();
+
+        await expect(feature).rejects.toThrow();
+
+    }, 10);
 
 });
 

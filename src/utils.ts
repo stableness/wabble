@@ -583,6 +583,18 @@ export function sieve (list: string) {
 
 
 
+export function timeout (ms: number) {
+
+    return new Promise((_resolve, reject) => {
+        setTimeout(() => reject(Error('timeout')), ms);
+    });
+
+}
+
+
+
+
+
 export function DoH (endpoint: string, path = '@stableness/dohdec') {
 
     type Result = { name: string, type: 1 | 28 | 5, TTL: number, data: string };
