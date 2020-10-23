@@ -13,11 +13,12 @@ import {
 
 import { logLevel } from '../model';
 import type { Http } from '../config';
+
 import {
     timeout,
     option2B,
+    catchKToError,
     toBasicCredentials,
-    tryCatchToError,
 } from '../utils';
 
 import type { ChainOpts } from './index';
@@ -26,10 +27,9 @@ import type { ChainOpts } from './index';
 
 
 
-export function chain (
-        { ipOrHost, port, logger, hook }: ChainOpts,
-        remote: Http,
-) {
+export function chain (opts: ChainOpts, remote: Http) {
+
+    const { ipOrHost, port, logger, hook } = opts;
 
     return F.pipe(
 
@@ -50,9 +50,9 @@ export function chain (
 
         })),
 
-        TE.chain(path => tryCatchToError(async () => {
-            return hook(await tunnel(remote, path));
-        })),
+        TE.chain(catchKToError(tunnel(remote))),
+
+        TE.chain(catchKToError(hook)),
 
         TE.mapLeft(R.tap(() => hook())),
 
@@ -66,10 +66,9 @@ export function chain (
 
 const TIMEOUT = 1000 * 5;
 
-export async function tunnel (
-        { protocol, host, port, ssl, auth }: Http,
-        path: string,
-) {
+export const tunnel = (opts: Http) => async (path: string) => {
+
+    const { protocol, host, port, ssl, auth } = opts;
 
     const hasAuth = option2B(auth);
 
@@ -108,7 +107,7 @@ export async function tunnel (
 
     return req.socket;
 
-}
+};
 
 
 
