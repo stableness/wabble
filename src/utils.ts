@@ -175,7 +175,7 @@ export function* chop (max: number, chunk: Uint8Array) {
 
 export const socks5Handshake = R.memoizeWith(
 
-    (host, port) => `${ host }: ${ port }`,
+    (host, port) => `${ host }:${ port }`,
     _socks5Handshake,
 
 );
