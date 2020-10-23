@@ -15,6 +15,7 @@ import type { Trojan } from '../config';
 import {
     Fn,
     hash,
+    timeout,
     catchKToError,
     socks5Handshake,
 } from '../utils';
@@ -102,9 +103,7 @@ export const tunnel = (opts: Trojan) => async (head: Uint8Array) => {
 
         await Promise.race([
             once(socket, 'secureConnect'),
-            new Promise((_res, rej) => {
-                setTimeout(() => rej(new Error('timeout')), TIMEOUT);
-            }),
+            timeout(TIMEOUT),
         ]);
 
         if (socket.write(head) !== true) {

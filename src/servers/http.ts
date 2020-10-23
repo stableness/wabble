@@ -13,7 +13,12 @@ import {
 
 import { logLevel } from '../model';
 import type { Http } from '../config';
-import { tryCatchToError, option2B, toBasicCredentials } from '../utils';
+import {
+    timeout,
+    option2B,
+    toBasicCredentials,
+    tryCatchToError,
+} from '../utils';
 
 import type { ChainOpts } from './index';
 
@@ -93,9 +98,7 @@ export async function tunnel (
 
         await Promise.race([
             once(req, 'connect'),
-            new Promise((_res, rej) => {
-                setTimeout(() => rej(new Error('timeout')), TIMEOUT);
-            }),
+            timeout(TIMEOUT),
         ]);
 
     } catch (err) {
