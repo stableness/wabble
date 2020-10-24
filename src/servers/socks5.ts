@@ -8,11 +8,10 @@ import {
 
 import { asyncReadable } from 'async-readable';
 
-import mem from 'memoizerific';
-
 import { logLevel } from '../model';
 import type { Socks5, Basic } from '../config';
 import {
+    mem,
     socks5Handshake,
     catchKToError,
     writeToTaskEither,
@@ -145,7 +144,7 @@ export const encode = O.fold(
 
     Uint8Array.of,
 
-    mem (256) (({ username, password }: Basic) => Uint8Array.from([
+    mem.in50(({ username, password }: Basic) => Uint8Array.from([
         0x01,
         username.length, ...Buffer.from(username),
         password.length, ...Buffer.from(password),

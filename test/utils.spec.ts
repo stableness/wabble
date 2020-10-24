@@ -20,6 +20,7 @@ import {
 
 import {
 
+    mem,
     noop,
     chop,
     numberToUInt16BE,
@@ -430,6 +431,34 @@ describe('mountErrOf', () => {
     test('identical returning', () => {
         expect(mountErrOf(emitter)).toBe(emitter);
         expect(mountErrOf(emitter)).toBe(emitter);
+    });
+
+});
+
+
+
+
+
+describe('mem', () => {
+
+    test('', () => {
+
+        const hook = jest.fn(R.add(1));
+        const add1 = mem.in256(hook);
+
+        expect(add1(42)).toBe(43);
+        expect(add1(42)).toBe(43);
+        expect(hook).toHaveBeenCalledWith(42);
+        expect(hook).toHaveBeenCalledTimes(1);
+
+        R.map(add1, R.range(256, 256 * 2));
+
+        expect(add1(999)).toBe(1000);
+        expect(hook).toHaveBeenLastCalledWith(999);
+
+        expect(add1(42)).toBe(43);
+        expect(hook).toHaveBeenLastCalledWith(42);
+
     });
 
 });

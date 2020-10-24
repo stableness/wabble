@@ -7,7 +7,7 @@ import { promisify } from 'util';
 import { PathLike, promises as fs } from 'fs';
 import { pipeline } from 'stream';
 
-import mem from 'memoizerific';
+import memo from 'memoizerific';
 
 import { isPrivate } from 'ip';
 
@@ -48,6 +48,21 @@ export type Fn <I, O = I> = (i: I) => O;
 export function run <F extends (...arg: unknown[]) => unknown> (fn: F) {
     return fn() as ReturnType<F>;
 }
+
+
+
+
+
+export const mem = {
+
+    in10: memo(10),
+    in50: memo(50),
+    in100: memo(100),
+    in256: memo(256),
+    in512: memo(512),
+    in1000: memo(1000),
+
+} as const;
 
 
 
@@ -175,7 +190,7 @@ export function* chop (max: number, chunk: Uint8Array) {
 
 
 
-export const socks5Handshake = mem (256) ((host: string, port: number) =>
+export const socks5Handshake = mem.in50((host: string, port: number) =>
 
     Uint8Array.from([
         0x05, 0x01, 0x00,
@@ -317,7 +332,6 @@ export const hash = run(function () {
 
 
 
-
 export function EVP_BytesToKey (password: string, keySize: number) {
 
     const sample = Buffer.from(password);
@@ -360,7 +374,7 @@ export const numberToUInt16BE = R.cond([
     [ R.lte(0xFFFF), R.always(Buffer.from([ 0xFF, 0xFF ])) ],
     [      R.gte(0), R.always(Buffer.from([ 0x00, 0x00 ])) ],
 
-    [ R.T, mem (256) (_numberToUInt16BE) ],
+    [ R.T, mem.in100(_numberToUInt16BE) ],
 
 ]) as Fn<number, Buffer>;
 

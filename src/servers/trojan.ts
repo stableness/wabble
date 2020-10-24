@@ -4,8 +4,6 @@ import { once } from 'events';
 
 import * as R from 'ramda';
 
-import mem from 'memoizerific';
-
 import {
     taskEither as TE,
     function as F,
@@ -16,6 +14,7 @@ import type { Trojan } from '../config';
 
 import {
     Fn,
+    mem,
     hash,
     timeout,
     catchKToError,
@@ -125,17 +124,21 @@ export const tunnel = (opts: Trojan) => async (head: Uint8Array) => {
 
 
 
-export const memHash = mem (256) (R.compose(
+export const memHash: Fn<string, Buffer> = R.compose(
     Buffer.from,
     R.invoker(1, 'toString')('hex'),
     hash.sha224,
-) as Fn<string, Buffer>);
+);
 
 
 
 
 
-export function makeHead (password: string, host: string, port: number) {
+export const makeHead = mem.in10((
+        password: string,
+        host: string,
+        port: number,
+) => {
 
     return Uint8Array.from([
 
@@ -149,5 +152,5 @@ export function makeHead (password: string, host: string, port: number) {
 
     ]);
 
-}
+});
 
