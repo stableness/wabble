@@ -360,7 +360,7 @@ export const numberToUInt16BE = R.cond([
     [ R.lte(0xFFFF), R.always(Buffer.from([ 0xFF, 0xFF ])) ],
     [      R.gte(0), R.always(Buffer.from([ 0x00, 0x00 ])) ],
 
-    [ R.T, _numberToUInt16BE ],
+    [ R.T, mem (256) (_numberToUInt16BE) ],
 
 ]) as Fn<number, Buffer>;
 
