@@ -14,6 +14,8 @@ import {
     readonlyArray as A,
 } from 'fp-ts';
 
+import mem from 'memoizerific';
+
 import type { Remote } from '../config';
 import { DoH, Fn, run, tryCatchToError } from '../utils';
 import { logLevel } from '../model';
@@ -48,10 +50,7 @@ export type ChainOpts = Pick<Opts, 'port' | 'logger' | 'hook'> & {
 const dnsCache = new Map<string, string>();
 const nsLookup = (host: string) => fpMap.lookup (Eq.eqString) (host) (dnsCache);
 
-const hostCache = R.memoizeWith(
-    F.identity,
-    O.some as Fn<string, O.Option<string>>,
-);
+const hostCache = mem (256) (O.some);
 
 
 

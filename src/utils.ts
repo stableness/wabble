@@ -7,6 +7,8 @@ import { promisify } from 'util';
 import { PathLike, promises as fs } from 'fs';
 import { pipeline } from 'stream';
 
+import mem from 'memoizerific';
+
 import { isPrivate } from 'ip';
 
 import {
@@ -173,22 +175,15 @@ export function* chop (max: number, chunk: Uint8Array) {
 
 
 
-export const socks5Handshake = R.memoizeWith(
+export const socks5Handshake = mem (256) ((host: string, port: number) =>
 
-    (host, port) => `${ host }:${ port }`,
-    _socks5Handshake,
-
-);
-
-function _socks5Handshake (host: string, port: number) {
-
-    return Uint8Array.from([
+    Uint8Array.from([
         0x05, 0x01, 0x00,
         3, host.length, ...Buffer.from(host),
         ...numberToUInt16BE(port),
-    ]);
+    ]),
 
-}
+);
 
 
 

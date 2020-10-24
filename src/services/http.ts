@@ -4,6 +4,8 @@ import { Duplex, PassThrough } from 'stream';
 
 import http, { IncomingMessage, ServerResponse } from 'http';
 
+import mem from 'memoizerific';
+
 import { bind, mirror } from 'proxy-bind';
 
 import {
@@ -285,10 +287,7 @@ export function mapConnect (
 
 
 
-export const mapURL = R.memoizeWith(
-    R.identity,
-    R.constructN(1, URL) as u.Fn<string, URL>,
-);
+export const mapURL = mem (256) (R.unary(R.constructN(1, URL)));
 
 
 

@@ -4,6 +4,8 @@ import { once } from 'events';
 
 import * as R from 'ramda';
 
+import mem from 'memoizerific';
+
 import {
     taskEither as TE,
     function as F,
@@ -123,14 +125,11 @@ export const tunnel = (opts: Trojan) => async (head: Uint8Array) => {
 
 
 
-export const memHash = R.memoizeWith(
-    R.identity,
-    R.compose(
-        Buffer.from,
-        R.invoker(1, 'toString')('hex'),
-        hash.sha224,
-    ) as Fn<string, Buffer>,
-);
+export const memHash = mem (256) (R.compose(
+    Buffer.from,
+    R.invoker(1, 'toString')('hex'),
+    hash.sha224,
+) as Fn<string, Buffer>);
 
 
 
