@@ -26,6 +26,7 @@ import {
     run,
     pump,
     mountErrOf,
+    constErr,
     catchKToError,
     writeToTaskEither,
 } from '../utils';
@@ -104,7 +105,7 @@ export const socks5Proxy = (service: Service) => (logging: Logging) => {
                 read(1),
 
                 TE.chain(([ VER ]) =>
-                    VER === 0x05 ? frame : TE.leftIO(() => Error(`VER [${ VER }]`)),
+                    VER === 0x05 ? frame : TE.leftIO(constErr(`VER [${ VER }]`)),
                 ),
 
                 TE.map<Buffer, number[]>(Array.from),
