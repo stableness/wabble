@@ -376,7 +376,7 @@ describe('writeToTaskEither', () => {
 
         await expect(unwrapTaskEither(write('0'))).resolves.toBe(void 0);
         await expect(unwrapTaskEither(write('1'))).resolves.toBe(void 0);
-        await expect(unwrapTaskEither(write('2'))).rejects.toThrow();
+        await expect(unwrapTaskEither(write('2'))).rejects.toThrow('wat');
 
     });
 
