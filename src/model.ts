@@ -7,6 +7,7 @@ import * as R from 'ramda';
 import {
     either as E,
     option as O,
+    taskEither as TE,
     function as F,
     readonlyNonEmptyArray as RNEA,
 } from 'fp-ts';
@@ -267,15 +268,11 @@ const runner$ = services$.pipe(
 
             if (direction) {
 
-                void u.run(u.tryCatchToError(async () => {
-
-                    const conn = await hopTo('nothing');
-
-                    log.info('Direct');
-
-                    return conn();
-
-                }));
+                void u.run(F.pipe(
+                    TE.fromTask(() => hopTo('nothing')),
+                    TE.apFirst(TE.fromIO(() => log.info('Direct'))),
+                    TE.flatten,
+                ));
 
                 return false;
 
@@ -287,15 +284,13 @@ const runner$ = services$.pipe(
 
         o.withLatestFrom(dealer$, ({ log, hopTo }, dealer) => {
 
-            const task = u.tryCatchToError(async () => {
+            type TE_E_V = TE.TaskEither<Error, void>;
 
-                const conn = await hopTo(dealer.hit());
-
-                log.info('Proxy');
-
-                return conn();
-
-            });
+            const task = F.pipe(
+                TE.fromTask<never, TE_E_V>(() => hopTo(dealer.hit())),
+                TE.apFirst(TE.fromIO(() => log.info('Proxy'))),
+                TE.flatten,
+            );
 
             return { task, log };
 
