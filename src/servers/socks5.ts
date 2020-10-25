@@ -64,17 +64,18 @@ export const tunnel = ({ host, port, auth }: Socks5) => (head: Uint8Array) => {
 
     const socket = netConnectTo({ host, port });
 
-    const { read } = asyncReadable(socket);
+    const { read: readPromise } = asyncReadable(socket);
 
-    const readTE = catchKToError(read);
-    const writeTE = writeToTaskEither(socket);
+    const read = catchKToError(readPromise);
+    const write = writeToTaskEither(socket);
 
     return F.pipe(
 
-        writeTE(make(auth)),
-        TE.chain(() => readTE(1)),
+        write(make(auth)),
+
+        TE.chain(() => read(1)),
         TE.chain(([ VER ]) =>
-            VER === 0x05 ? readTE(1) : TE.leftIO(() => Error(`VER [${ VER }]`)),
+            VER === 0x05 ? read(1) : TE.leftIO(() => Error(`VER [${ VER }]`)),
         ),
         TE.chain(([ METHOD ]) => {
 
@@ -85,12 +86,13 @@ export const tunnel = ({ host, port, auth }: Socks5) => (head: Uint8Array) => {
             if (METHOD === 0x02 && O.isSome(auth)) {
                 return F.pipe(
 
-                    writeTE(encode(auth)),
-                    TE.chain(() => readTE(2)),
-                    TE.chain(([ VER_AUTH, STATUS ]) => {
+                    write(encode(auth)),
 
-                        if (VER_AUTH !== 0x01 || STATUS !== 0x00) {
-                            return TE.leftIO(() => Error(`VER [${ VER_AUTH }] STATUS [${ STATUS }]`));
+                    TE.chain(() => read(2)),
+                    TE.chain(([ VER, STATUS ]) => {
+
+                        if (VER !== 0x01 || STATUS !== 0x00) {
+                            return TE.leftIO(() => Error(`VER [${ VER }] STATUS [${ STATUS }]`));
                         }
 
                         return TE.fromIO(F.constVoid);
@@ -104,8 +106,9 @@ export const tunnel = ({ host, port, auth }: Socks5) => (head: Uint8Array) => {
 
         }),
 
-        TE.chain(() => writeTE(head)),
-        TE.chain(() => readTE(5)),
+        TE.chain(() => write(head)),
+
+        TE.chain(() => read(5)),
         TE.chain(([ VER, REP, _, ATYP, LEN = 0 ]) => {
 
             if (VER !== 0x05 || REP !== 0x00) {
@@ -121,7 +124,7 @@ export const tunnel = ({ host, port, auth }: Socks5) => (head: Uint8Array) => {
                 default: return TE.leftIO(() => Error(`ATYP [${ ATYP }]`));
             }
 
-            return readTE(step + 2);
+            return read(step + 2);
 
         }),
 
@@ -144,7 +147,7 @@ export const encode = O.fold(
 
     Uint8Array.of,
 
-    mem.in50(({ username, password }: Basic) => Uint8Array.from([
+    mem.in10(({ username, password }: Basic) => Uint8Array.from([
         0x01,
         username.length, ...Buffer.from(username),
         password.length, ...Buffer.from(password),
