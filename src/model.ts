@@ -170,15 +170,10 @@ const rules$ = config$.pipe(
 
 const dealer$ = config$.pipe(
     o.pluck('servers'),
-    o.map(list => {
-
-        const next = u.loopNext(list);
-
-        return {
-            hit: () => O.fromNullable(next()),
-        };
-
-    }),
+    o.map(u.loopNext),
+    o.map(next => ({
+        hit: () => O.fromNullable(next()),
+    })),
 );
 
 const dns$ = config$.pipe(
