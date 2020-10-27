@@ -139,7 +139,7 @@ function query ({ dns, host, logger }: Opts) {
             TE.fromOption(() => Error('No DoH')),
             TE.flatten,
 
-            TE.map(A.findFirst(R.where({
+            TE.map(/*#__NOINLINE__*/ A.findFirst(R.where({
                 type: R.equals(1),
                 data: R.is(String),
             }))),
