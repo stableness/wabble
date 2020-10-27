@@ -264,9 +264,8 @@ const runner$ = services$.pipe(
             if (direction) {
 
                 void u.run(F.pipe(
-                    TE.fromTask(() => hopTo('nothing')),
+                    hopTo('nothing'),
                     TE.apFirst(TE.fromIO(() => log.info('Direct'))),
-                    TE.flatten,
                 ));
 
                 return false;
@@ -279,12 +278,9 @@ const runner$ = services$.pipe(
 
         o.withLatestFrom(dealer$, ({ log, hopTo }, dealer) => {
 
-            type TE_E_V = TE.TaskEither<Error, void>;
-
             const task = F.pipe(
-                TE.fromTask<never, TE_E_V>(() => hopTo(dealer.hit())),
+                hopTo(dealer.hit()),
                 TE.apFirst(TE.fromIO(() => log.info('Proxy'))),
-                TE.flatten,
             );
 
             return { task, log };

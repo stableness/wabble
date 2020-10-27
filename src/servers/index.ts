@@ -15,7 +15,7 @@ import {
 } from 'fp-ts';
 
 import type { Remote } from '../config';
-import { DoH, Fn, run, tryCatchToError, mem } from '../utils';
+import { DoH, Fn, mem, catchKToError } from '../utils';
 import { logLevel } from '../model';
 import type { Hook } from '../services/index';
 
@@ -55,26 +55,22 @@ const hostCache = mem.in256(O.some);
 
 
 /*#__NOINLINE__*/
-export function connect ({ host, port, hook, dns, doh, logger }: Opts) {
+export function connect (connectOpts: Opts) {
 
+    const { host, port, hook, dns, doh, logger } = connectOpts;
     const justHost = hostCache(host);
-    const check = doh(host) ? F.constUndefined : F.constant(host);
 
     /*#__NOINLINE__*/
-    return async function toServer (server: O.Option<Remote> | 'nothing') {
+    return function toServer (server: O.Option<Remote> | 'nothing') {
 
-        // hot path optimization
-        // switch to native nullish-coalescing when targeting to node >= 14
-
-        // eslint-disable-next-line max-len, @typescript-eslint/prefer-nullish-coalescing, @typescript-eslint/strict-boolean-expressions
-        const ipOrHost = /*#__NOINLINE__*/ check() || await run(/*#__NOINLINE__*/ query()) || host;
+        const fetchIP = doh(host) ? query() : T.of(host);
 
         if (server === 'nothing') {
 
             return F.pipe(
-                tryCatchToError(() => {
-                    return hook(netConnectTo({ port, host: ipOrHost }));
-                }),
+                TE.fromTask<never, string>(fetchIP),
+                TE.map(ipOrHost => netConnectTo({ port, host: ipOrHost })),
+                TE.chain(catchKToError(hook)),
                 TE.mapLeft(R.tap(() => hook())),
             );
 
@@ -86,7 +82,11 @@ export function connect ({ host, port, hook, dns, doh, logger }: Opts) {
 
             TE.fromOption(() => new Error('Has no server to connect')),
 
-            TE.chain(remote => {
+            TE.bindTo('remote'),
+
+            TE.bind('ipOrHost', () => TE.fromTask(fetchIP)),
+
+            TE.chain(({ remote, ipOrHost }) => {
 
                 const opts = { port, logger, hook, ipOrHost };
 
@@ -135,9 +135,10 @@ export function connect ({ host, port, hook, dns, doh, logger }: Opts) {
 
             )),
 
-            TE.getOrElseW(() => T.fromIO(F.constUndefined)),
+            TE.getOrElse(() => T.of(host)),
 
         );
+
     }
 
 
