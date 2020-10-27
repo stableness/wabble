@@ -15,7 +15,7 @@ import {
 } from 'fp-ts';
 
 import type { Remote } from '../config';
-import { DoH, Fn, mem, catchKToError } from '../utils';
+import { DoH, Fn, catchKToError } from '../utils';
 import { logLevel } from '../model';
 import type { Hook } from '../services/index';
 
@@ -48,22 +48,22 @@ export type ChainOpts = Pick<Opts, 'port' | 'logger' | 'hook'> & {
 const dnsCache = new Map<string, string>();
 const nsLookup = (host: string) => fpMap.lookup (Eq.eqString) (host) (dnsCache);
 
-const hostCache = mem.in256(O.some);
-
 
 
 
 
 /*#__NOINLINE__*/
-export function connect (connectOpts: Opts) {
+export function connect (connOpts: Opts) {
 
-    const { host, port, hook, dns, doh, logger } = connectOpts;
-    const justHost = hostCache(host);
+    const { port, host, doh, hook, logger } = connOpts;
 
     /*#__NOINLINE__*/
     return function toServer (server: O.Option<Remote> | 'nothing') {
 
-        const fetchIP = doh(host) ? query() : T.of(host);
+        const fetchIP = doh(host)
+            ? /*#__NOINLINE__*/ query(connOpts)
+            : T.of(host)
+        ;
 
         if (server === 'nothing') {
 
@@ -119,67 +119,55 @@ export function connect (connectOpts: Opts) {
 
     };
 
-
-
-    function query () {
-
-        return F.pipe(
-
-            O.chain (nsLookup) (justHost),
-            TE.fromOption(() => new Error('No cache')),
-            TE.alt(() => F.pipe(
-
-                O.ap (justHost) (dns),
-                TE.fromOption(() => new Error('No DoH')),
-                TE.chain(/*#__NOINLINE__*/ parse),
-
-            )),
-
-            TE.getOrElse(() => T.of(host)),
-
-        );
-
-    }
+}
 
 
 
-    function parse (results: ReturnType<ReturnType<typeof DoH>>) {
 
-        return F.pipe(
 
-            results,
+/*#__NOINLINE__*/
+function query ({ dns, host, logger }: Opts) {
 
-            TE.map(F.flow(
+    return F.pipe(
 
-                A.findFirst(R.where({
-                    type: R.equals(1),
-                    data: R.is(String),
-                })),
+        nsLookup(host),
+        TE.fromOption(() => Error('No cache')),
+        TE.alt(() => F.pipe(
 
-                O.map(R.tap(({ data: ip, TTL }) => {
+            dns,
+            O.ap(O.some(host)),
+            TE.fromOption(() => Error('No DoH')),
+            TE.flatten,
 
-                    if (O.isNone(nsLookup(host))) {
-                        dnsCache.set(host, ip);
-                        setTimeout(() => dnsCache.delete(host), TTL * 1000);
-                    }
+            TE.map(A.findFirst(R.where({
+                type: R.equals(1),
+                data: R.is(String),
+            }))),
 
-                    if (R.not(logLevel.on.trace)) {
-                        return;
-                    }
+            TE.chain(TE.fromOption(() => Error('No valid entries'))),
 
-                    logger.child({ ip }).trace('DoH');
+            TE.chainFirst(({ data: ip, TTL }) => TE.fromIO(() => {
 
-                })),
+                if (O.isNone(nsLookup(host))) {
+                    dnsCache.set(host, ip);
+                    setTimeout(() => dnsCache.delete(host), TTL * 1000);
+                }
 
-                O.map(R.prop('data')),
+                if (R.not(logLevel.on.trace)) {
+                    return;
+                }
 
-            )),
+                logger.child({ ip }).trace('DoH');
 
-            TE.chain(TE.fromOption(() => new Error('No valid entries'))),
+            })),
 
-        );
+            TE.map(R.prop('data')),
 
-    }
+        )),
+
+        TE.getOrElse(() => T.of(host)),
+
+    );
 
 }
 
