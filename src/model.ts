@@ -245,7 +245,9 @@ const runner$ = services$.pipe(
             const rejection = reject(host);
             const direction = direct(host);
 
-            const hopTo = connect({ host, port, hook, dns, doh, logger: log });
+            const hopTo = /*#__NOINLINE__*/ connect({
+                host, port, hook, dns, doh, logger: log,
+            });
 
             return { log, rejection, direction, hopTo, hook };
 
