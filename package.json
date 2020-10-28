@@ -22,6 +22,9 @@
     "dist/bin.cjs",
     "dist/index.cjs"
   ],
+  "engines": {
+    "node": ">= 10.20"
+  },
   "repository": "github:stableness/wabble",
   "homepage": "https://github.com/stableness/wabble",
   "bugs": {
