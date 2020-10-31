@@ -1,3 +1,8 @@
+import {
+    function as F,
+    readonlyNonEmptyArray as RNEA,
+} from 'fp-ts';
+
 import * as Rx from 'rxjs';
 
 import type { Logging } from '../model';
@@ -20,13 +25,16 @@ export type Hook = Rx.ObservedValueOf<ReturnType<Proxy>>['hook'];
 
 export const combine = (logging: Logging) => (services: Config['services']) => {
 
-    const { length, 0: head } = services;
+    const source = F.pipe(
+        services,
+        RNEA.map(service => box (service) (logging)),
+    );
 
-    if (length === 1) {
-        return box (head) (logging);
+    if (source.length === 1) {
+        return RNEA.head(source);
     }
 
-    return Rx.merge(...services.map(service => box (service) (logging)));
+    return Rx.merge(...source);
 
 };
 
