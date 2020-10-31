@@ -148,7 +148,7 @@ function query ({ dns, host, logger }: Opts) {
 
             TE.chainFirst(({ data: ip, TTL }) => TE.fromIO(() => {
 
-                if (O.isNone(nsLookup(host))) {
+                if (dnsCache.has(host) === false) {
                     dnsCache.set(host, ip);
                     setTimeout(() => dnsCache.delete(host), TTL * 1000);
                 }
