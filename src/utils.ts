@@ -41,6 +41,14 @@ import type { Basic } from './config';
 
 export type Fn <I, O = I> = (i: I) => O;
 
+export type CurryT <T extends readonly unknown[]> =
+      T extends [                     ] ? () => void
+    : T extends [ infer U             ] ? Fn<U, U>
+    : T extends [ infer I,    infer O ] ? Fn<I, O>
+    : T extends [ infer H, ...infer R ] ? Fn<H, CurryT<R>>
+    : never
+;
+
 
 
 
