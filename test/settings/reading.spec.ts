@@ -9,6 +9,7 @@ import {
     convert,
     filterTags,
     decodeDoH,
+    decodeAPI,
     CF_DOH_ENDPOINT,
 
 } from '../../src/settings/reading';
@@ -43,6 +44,45 @@ describe('readDoH', () => {
         const DOH = '     https://ecs-doh.dnswarden.com/uncensored-ecs     ';
 
         expect(readDoH(DOH)).toStrictEqual(E.right(DOH.trim()));
+
+    });
+
+});
+
+
+
+
+
+describe('decodeAPI', () => {
+
+    const { decode: readAPI } = decodeAPI;
+
+    test.each([
+        42,
+        'wat',
+        null,
+        undefined,
+        true,
+        false,
+    ])('%s', value => {
+        expect(E.isLeft(readAPI(value))).toBe(true);
+    });
+
+    test('optional shared', () => {
+
+        const origin = { port: 8080 };
+        const result = { port: 8080, shared: false, host: '127.0.0.1' };
+
+        expect(readAPI(origin)).toStrictEqual(E.right(result));
+
+    });
+
+    test('with shared', () => {
+
+        const origin = { port: 8080, shared: true };
+        const result = { port: 8080, shared: true, host: '0.0.0.0' };
+
+        expect(readAPI(origin)).toStrictEqual(E.right(result));
 
     });
 

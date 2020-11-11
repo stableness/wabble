@@ -11,6 +11,8 @@ import type { Service, Config } from '../config';
 import { httpProxy } from './http';
 import { socks5Proxy } from './socks5';
 
+export { establish } from './api';
+
 
 
 

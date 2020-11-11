@@ -214,6 +214,28 @@ const decodeRules = Dc.type({
 
 
 
+export const decodeAPI = F.pipe(
+
+    Dc.type({
+        port: Dc.number,
+    }),
+
+    Dc.intersect(Dc.partial({
+        shared: Dc.boolean,
+    })),
+
+    Dc.map(({ port, shared = false }) => ({
+        shared,
+        host: shared ? '0.0.0.0' : '127.0.0.1',
+        port: R.subtract(port, +(process.env.DEV_PORT_MINUS ?? 0)),
+    })),
+
+);
+
+
+
+
+
 export const { decode: decodeConfig } = F.pipe(
 
     Dc.type({
@@ -226,6 +248,7 @@ export const { decode: decodeConfig } = F.pipe(
 
     Dc.intersect(Dc.partial({
 
+        api: decodeAPI,
         doh: decodeDoH,
         tags: u.readTrimmedNonEmptyStringArr,
 
@@ -248,7 +271,7 @@ export const convert: u.Fn<unknown, Config> = F.flow(
 
     E.mapLeft(Dc.draw),
 
-    E.map(({ services, doh, servers, rules, tags, sieve }) => ({
+    E.map(({ services, doh, servers, rules, tags, sieve, api }) => ({
 
         rules,
         services,
@@ -256,6 +279,8 @@ export const convert: u.Fn<unknown, Config> = F.flow(
         servers: filterTags(servers, tags),
 
         doh: O.fromNullable(doh),
+
+        api: O.fromNullable(api),
 
         sieve: {
             direct: O.fromNullable(sieve?.direct),
