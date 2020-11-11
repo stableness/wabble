@@ -20,7 +20,7 @@ import { bind } from 'proxy-bind';
 import type { Options } from './bin';
 
 import { connect } from './servers/index';
-import { combine } from './services/index';
+import { combine, establish } from './services/index';
 import { convert } from './settings/index';
 
 import * as u from './utils';
@@ -185,6 +185,10 @@ const services$ = config$.pipe(
     o.pluck('services'),
 );
 
+const api$ = config$.pipe(
+    o.pluck('api'),
+);
+
 
 
 
@@ -207,11 +211,20 @@ function _load (
         logger.level = 'silent';
     }
 
-    runner$.subscribe(u.noop, bind(logger).error);
+    const { reload$, health$, notFound$ } = establish(api$);
+
+    Rx.merge(
+        runner$,
+        health$,
+        notFound$,
+        reload$.pipe(
+            o.mapTo(setting),
+            o.startWith(setting),
+            o.tap(loader$),
+        ),
+    ).subscribe(u.noop, bind(logger).error);
 
     catchException();
-
-    loader$.next(setting);
 
 }
 

@@ -124,11 +124,25 @@ export interface Service {
 
 
 
+export interface API {
+
+    host: string;
+    port: number;
+    shared: boolean;
+
+}
+
+
+
+
+
 export interface Config {
 
     services: RNEA.ReadonlyNonEmptyArray<Service>;
 
     doh: O.Option<string>;
+
+    api: O.Option<API>;
 
     servers: ReadonlyArray<Remote>;
 
