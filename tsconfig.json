@@ -24,6 +24,7 @@
     "moduleResolution": "node",
     "baseUrl": "./",
     "esModuleInterop": true,
+    "isolatedModules": true,
 
     "skipDefaultLibCheck": true,
     "skipLibCheck": true,
