@@ -20,7 +20,7 @@ import { bind } from 'proxy-bind';
 import type { Options } from './bin';
 
 import { connect } from './servers/index';
-import { combine } from './services/index';
+import { combine, establish } from './services/index';
 import { convert } from './settings/index';
 
 import * as u from './utils';
@@ -185,6 +185,10 @@ const services$ = config$.pipe(
     o.pluck('services'),
 );
 
+const api$ = config$.pipe(
+    o.pluck('api'),
+);
+
 
 
 
@@ -207,11 +211,21 @@ function _load (
         logger.level = 'silent';
     }
 
-    runner$.subscribe(u.noop, bind(logger).error);
+    construct(setting).subscribe({
+
+        error (err) {
+            logger.error(err);
+        },
+
+        complete () {
+            setImmediate(() => {
+                process.exit(0);
+            });
+        },
+
+    });
 
     catchException();
-
-    loader$.next(setting);
 
 }
 
@@ -324,6 +338,66 @@ const runner$ = services$.pipe(
     )),
 
 );
+
+
+
+
+
+function construct (setting: string) {
+
+    const {
+
+        cors$,
+        health$,
+        reload$,
+        test_domain$,
+        exit$,
+        metrics$,
+        notFound$,
+
+    } = establish(api$);
+
+    return Rx.merge(
+
+        runner$,
+
+        cors$,
+        health$,
+        notFound$,
+
+        reload$.pipe(
+            o.mapTo(setting),
+            o.startWith(setting),
+            o.tap(loader$),
+        ),
+
+        metrics$.pipe(
+            o.map(({ write }) => {
+                write({ ...process.memoryUsage() });
+            }),
+        ),
+
+        test_domain$.pipe(
+            o.withLatestFrom(rules$, (
+                    { domain, write },
+                    { direct, reject },
+            ) => {
+                write(
+                    reject(domain) ?       'reject'
+                        : direct(domain) ? 'direct'
+                            :              'proxy',
+                );
+            }),
+        ),
+
+    ).pipe(
+
+        o.ignoreElements(),
+        o.takeUntil(exit$),
+
+    );
+
+}
 
 
 
