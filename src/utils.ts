@@ -680,7 +680,8 @@ const {
     delete: errSetDel,
 } = bind(new WeakSet());
 
-export const mountErrOf = R.unless(
+export const mountErrOf = R.identity;
+export const _mountErrOf = R.unless(
     errSetHas,
     R.o(
         R.tap(errSetAdd),

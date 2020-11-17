@@ -246,6 +246,7 @@ export const socks5Proxy = (service: Service) => (logging: Logging) => {
             async hook (...duplex: NodeJS.ReadWriteStream[]) {
 
                 if (R.isEmpty(duplex)) {
+                    socket.resume();
                     mountErrOf(socket);
                     return socket.destroy();
                 }
