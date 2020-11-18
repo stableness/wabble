@@ -346,6 +346,7 @@ function construct (setting: string) {
         test_domain$,
         exit$,
         metrics$,
+        dump$,
         notFound$,
 
     } = establish(api$);
@@ -356,6 +357,7 @@ function construct (setting: string) {
 
         cors$,
         health$,
+        dump$,
         notFound$,
 
         reload$.pipe(

@@ -1,5 +1,8 @@
 import { createServer, IncomingMessage, ServerResponse } from 'http';
 
+import { pipeline } from 'stream';
+import { getHeapSnapshot } from 'v8';
+
 import {
     apply,
     option as O,
@@ -15,7 +18,7 @@ import * as o from 'rxjs/operators';
 import { bind } from 'proxy-bind';
 
 import type { Config, API } from '../config';
-import { CurryT, rxTap, str2arr, collectAsyncIterable } from '../utils';
+import { CurryT, rxTap, str2arr, collectAsyncIterable, noop } from '../utils';
 
 
 
@@ -84,6 +87,36 @@ export function establish (api$: Rx.Observable<Config['api']>) {
 
             S.map(rxTap(({ res }) => {
                 res.writeHead(204).end();
+            })),
+
+        ),
+
+        dump$: F.pipe(
+
+            stateOfReq('GET /dump'),
+
+            S.map(rxTap(({ res }) => {
+
+                const format = R.pipe(
+                    R.dropLast(5),
+                    R.replace(/-/g, ''),
+                    R.replace(/:/g, ''),
+                    R.split('T'),
+                    R.prepend('Heap'),
+                    R.append(process.pid),
+                    R.join('-'),
+                );
+
+                const name = format(new Date().toISOString())
+                    .concat('.heapsnapshot')
+                ;
+
+                res.writeHead(200, {
+                    'Content-Disposition': `attachment; filename="${ name }"`,
+                });
+
+                pipeline(getHeapSnapshot(), res, noop);
+
             })),
 
         ),
