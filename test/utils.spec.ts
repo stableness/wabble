@@ -43,6 +43,7 @@ import {
     genLooping,
     DoH,
     run as force,
+    rxTap,
     unwrapTaskEither,
     tryCatchToError,
     writeToTaskEither,
@@ -618,6 +619,27 @@ describe('DoH', () => {
         const results = await force(doh('example.com'));
 
         expect(E.isRight(results)).toBe(true);
+
+    });
+
+});
+
+
+
+
+
+describe('rxTap', () => {
+
+    test('', () => {
+
+        const value = 42;
+        const foo = jest.fn();
+        const bar = jest.fn();
+
+        Rx.of(value).pipe(rxTap(foo)).subscribe(bar);
+
+        expect(foo).toHaveBeenCalledWith(value);
+        expect(bar).toHaveBeenCalledWith(value);
 
     });
 

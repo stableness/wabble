@@ -61,6 +61,14 @@ export function run <F extends (...arg: unknown[]) => unknown> (fn: F) {
 
 
 
+export function rxTap <T> (fn: (arg: T) => void) {
+    return o.tap({ next: fn });
+}
+
+
+
+
+
 export const mem = {
 
     in10: memo(10),
