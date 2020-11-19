@@ -221,18 +221,14 @@ function _load (
 
 const runner$ = services$.pipe(
 
-    o.tap({
-        next () {
-            console.info('ver. %s', VERSION);
-            console.info('LOG_LEVEL in [%s]', logger.level);
-        },
+    u.rxTap(() => {
+        console.info('ver. %s', VERSION);
+        console.info('LOG_LEVEL in [%s]', logger.level);
     }),
 
-    o.tap({
-        next: RNEA.map(({ host, port, protocol }) => {
-            console.info('listening on [%s:%d] by [%s]', host, port, protocol);
-        }),
-    }),
+    u.rxTap(RNEA.map(({ host, port, protocol }) => {
+        console.info('listening on [%s:%d] by [%s]', host, port, protocol);
+    })),
 
     o.switchMap(combine(logging)),
 
@@ -298,24 +294,22 @@ const runner$ = services$.pipe(
             E.mapLeft(err => ({ err, log })),
         )),
 
-        o.tap({
-            next: E.fold(({ err, log }) => {
+        u.rxTap(E.fold(({ err, log }) => {
 
-                if (err instanceof Error) {
+            if (err instanceof Error) {
 
-                    const code: string = R.propOr('unknown', 'code', err);
+                const code: string = R.propOr('unknown', 'code', err);
 
-                    if (errToIgnoresBy(code)) {
-                        logLevel.on.trace && log.trace(err);
-                        return;
-                    }
-
+                if (errToIgnoresBy(code)) {
+                    logLevel.on.trace && log.trace(err);
+                    return;
                 }
 
-                log.error(err);
+            }
 
-            }, F.constVoid),
-        }),
+            log.error(err);
+
+        }, F.constVoid)),
 
         o.ignoreElements(),
 
