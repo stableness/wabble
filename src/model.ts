@@ -313,7 +313,7 @@ const runner$ = services$.pipe(
 
         o.ignoreElements(),
 
-        o.retryWhen(Rx.pipe(o.delay(1))),
+        o.retry({ count: 5, resetOnSuccess: true }),
 
     )),
 
