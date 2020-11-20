@@ -12,7 +12,7 @@ import * as u from '../../utils';
 
 
 
-const list = R.o(R.split(/\s+/), R.trim);
+const list = u.str2arr;
 
 
 
