@@ -48,6 +48,7 @@ import {
     tryCatchToError,
     writeToTaskEither,
     timeout,
+    str2arr,
 
 } from '../src/utils';
 
@@ -432,6 +433,25 @@ describe('mountErrOf', () => {
     test('identical returning', () => {
         expect(mountErrOf(emitter)).toBe(emitter);
         expect(mountErrOf(emitter)).toBe(emitter);
+    });
+
+});
+
+
+
+
+
+describe('str2arr', () => {
+
+    test('', () => {
+
+        const list = str2arr(`
+            foo
+            bar
+        `);
+
+        expect(list).toStrictEqual([ 'foo', 'bar' ]);
+
     });
 
 });

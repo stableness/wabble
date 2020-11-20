@@ -431,6 +431,12 @@ export const isPrivateIP = R.both(
 
 
 
+export const str2arr = R.o(R.split(/\s+/), R.trim);
+
+
+
+
+
 export type NonEmptyString = string & {
     readonly NonEmptyString: unique symbol;
 };
