@@ -25,7 +25,6 @@ import type { Service } from '../config';
 import {
     run,
     pump,
-    mountErrOf,
     constErr,
     catchKToError,
     writeToTaskEither,
@@ -246,7 +245,6 @@ export const socks5Proxy = (service: Service) => (logging: Logging) => {
             async hook (...duplex: NodeJS.ReadWriteStream[]) {
 
                 if (R.isEmpty(duplex)) {
-                    mountErrOf(socket);
                     return socket.destroy();
                 }
 

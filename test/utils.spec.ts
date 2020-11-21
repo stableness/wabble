@@ -1,8 +1,6 @@
 import { URL } from 'url';
 import { Writable } from 'stream';
 
-import { EventEmitter } from 'events';
-
 import { bind } from 'proxy-bind';
 
 import * as R from 'ramda';
@@ -31,7 +29,6 @@ import {
     socks5Handshake,
     incrementLE,
     rules,
-    mountErrOf,
     HKDF_SHA1,
     Fn,
     constErr,
@@ -419,21 +416,6 @@ describe('socks5Handshake', () => {
             R.o(Array.from, numberToUInt16BE),
         ],
     );
-
-});
-
-
-
-
-
-describe('mountErrOf', () => {
-
-    const emitter = new EventEmitter();
-
-    test('identical returning', () => {
-        expect(mountErrOf(emitter)).toBe(emitter);
-        expect(mountErrOf(emitter)).toBe(emitter);
-    });
 
 });
 

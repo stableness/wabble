@@ -31,8 +31,6 @@ import * as R from 'ramda';
 import * as Rx from 'rxjs';
 import * as o from 'rxjs/operators';
 
-import { bind } from 'proxy-bind';
-
 import type { Basic } from './config';
 
 
@@ -683,26 +681,6 @@ export const constErr = R.o(R.always, Error);
 
 export const onceErr: Fn<NodeJS.EventEmitter, Promise<[ Error ]>>
     = R.flip(once)('error') as never;
-
-
-
-
-
-const {
-    has: errSetHas,
-    add: errSetAdd,
-    delete: errSetDel,
-} = bind(new WeakSet());
-
-export const mountErrOf = R.unless(
-    errSetHas,
-    R.o(
-        R.tap(errSetAdd),
-        R.tap((socket: NodeJS.EventEmitter) => {
-            socket.once('error', () => errSetDel(socket));
-        }),
-    ),
-) as <T extends NodeJS.EventEmitter> (v: T) => T;
 
 
 
