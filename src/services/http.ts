@@ -188,6 +188,7 @@ export const requestOn = Rx.pipe(
             }
 
             if (R.isEmpty(duplex)) {
+                socket.resume();
                 return response.writeHead(503).end();
             }
 
@@ -232,6 +233,7 @@ export const connectOn = Rx.pipe(
         async hook (...duplex: NodeJS.ReadWriteStream[]) {
 
             if (R.isEmpty(duplex)) {
+                socket.resume();
                 return socket.end(u.headerJoin([ 'HTTP/1.0 503' ]));
             }
 
