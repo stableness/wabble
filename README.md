@@ -16,6 +16,13 @@ version: 1.0
 
 
 
+api:
+  port: 8080
+  cors: false    # set true to enable Cross-Origin Resource Sharing
+  shared: false  # set true to allow access from external
+
+
+
 doh: true # 1) [true] enables DoH (via https://cloudflare-dns.com/dns-query)
           # 2) [false] disables DoH
           # 3) or specify another provider's endpoint
@@ -100,6 +107,18 @@ rules:
     - doubleclick
     - google-analytics
 ```
+
+
+
+
+
+## API Endpoint
+
+- `GET  /health`
+- `GET  /metrics`
+- `POST /test-domain`
+- `POST /reload`
+- `POST /exit`
 
 
 
