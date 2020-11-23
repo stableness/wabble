@@ -36,7 +36,13 @@ release()
     mv bin.cjs bin-${VER}.cjs
     mv bin-*.cjs *.json *.tgz artifacts/ && cd artifacts/
 
-    sha256sum *[^.txt] | tee checksum.txt && sha256sum checksum.txt
+    CS=checksum.txt NT=notes.md
+
+    sha256sum *[^.txt] > ${CS}
+    echo '```' > ${NT}
+    cat ${CS} >> ${NT}
+    sha256sum ${CS} >> ${NT}
+    echo '```' >> ${NT}
 
     ls -lh
 }
