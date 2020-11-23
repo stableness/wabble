@@ -503,7 +503,7 @@ export const basicInfo = run(function () {
 
             return F.pipe(
                 O.fromNullable(headers[field]),
-                O.mapNullable(parseBasicAuth),
+                O.chainNullableK(parseBasicAuth),
             );
 
         };
