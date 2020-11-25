@@ -89,11 +89,18 @@ const config = [
         },
 
         onwarn (warning, warn) {
+
+            const ignores = R.flip(R.includes)(list(`
+                THIS_IS_UNDEFINED
+                CIRCULAR_DEPENDENCY
+            `));
+
             R.ifElse(
-                R.propEq('code', 'CIRCULAR_DEPENDENCY'),
+                R.o(ignores, R.prop('code')),
                 R.F,
                 warn,
             )(warning);
+
         },
 
         // @ts-ignore
