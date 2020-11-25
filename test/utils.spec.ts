@@ -476,11 +476,11 @@ describe('timeout', () => {
 
         jest.useFakeTimers();
 
-        const feature = timeout(900);
+        const future = timeout(900);
 
         jest.runOnlyPendingTimers();
 
-        await expect(feature).rejects.toThrow();
+        await expect(future).rejects.toThrow();
 
     }, 10);
 
