@@ -1,5 +1,6 @@
 import { URL } from 'url';
 import { Writable } from 'stream';
+import fs from 'fs';
 
 import { bind } from 'proxy-bind';
 
@@ -46,10 +47,18 @@ import {
     writeToTaskEither,
     timeout,
     str2arr,
+    readFile,
+    readFileInStringOf,
 
 } from '../src/utils';
 
 import { CF_DOH_ENDPOINT } from '../src/settings/reading';
+
+
+
+
+
+jest.mock('fs');
 
 
 
@@ -621,6 +630,55 @@ describe('DoH', () => {
         const results = await force(doh('example.com'));
 
         expect(E.isRight(results)).toBe(true);
+
+    });
+
+});
+
+
+
+
+
+describe('readFile', () => {
+
+    const mapping = {
+        hello: 'world',
+    };
+
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+    fs.__setMockFiles(mapping);
+
+    test('in String of utf8', () => {
+
+        readFileInStringOf('utf8')('hello').subscribe(content => {
+
+            expect(content).toBe(mapping.hello);
+
+        });
+
+    });
+
+    test('in Buffer', () => {
+
+        readFile('hello').subscribe(content => {
+
+            expect(content).toStrictEqual(Buffer.from(mapping.hello));
+
+        });
+
+    });
+
+    test('404', () => {
+
+        readFile('wat').subscribe({
+
+            error (err) {
+                expect(err instanceof Error).toBe(true);
+            },
+
+        });
 
     });
 
