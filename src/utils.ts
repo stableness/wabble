@@ -18,6 +18,7 @@ import {
     option as O,
     function as F,
     nonEmptyArray as NEA,
+    readonlyNonEmptyArray as RNEA,
 } from 'fp-ts';
 
 import * as Dc from 'io-ts/Decoder';
@@ -673,13 +674,13 @@ export function DoH (endpoint: string, path = '@stableness/dohdec') {
 
         const { answers, Answer } = await dns.getJSON({ name });
 
-        const list = answers ?? Answer ?? [];
+        const list = RNEA.fromArray(answers ?? Answer ?? []);
 
-        if (R.isEmpty(list)) {
+        if (O.isNone(list)) {
             throw new Error('empty');
         }
 
-        return list;
+        return list.value;
 
     });
 
