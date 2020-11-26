@@ -1,5 +1,5 @@
 import { URL } from 'url';
-import { Writable } from 'stream';
+import { Writable, Readable } from 'stream';
 import fs from 'fs';
 
 import { bind } from 'proxy-bind';
@@ -49,6 +49,7 @@ import {
     str2arr,
     readFile,
     readFileInStringOf,
+    collectAsyncIterable,
 
 } from '../src/utils';
 
@@ -189,6 +190,30 @@ describe('headerJoin', () => {
 
     ])('%p', fields => {
         expect(headerJoin(fields)).toMatch(/\r\n\r\n$/);
+    });
+
+});
+
+
+
+
+
+describe('collectAsyncIterable', () => {
+
+    // eslint-disable-next-line @typescript-eslint/require-await
+    const gen = async function* () {
+        yield* [ 1, 2, 3 ];
+    };
+
+    const stream = Readable.from(gen());
+
+    test('', async () => {
+
+        const a = await collectAsyncIterable(gen());
+        const b = await collectAsyncIterable(stream);
+
+        expect(a).toStrictEqual(b);
+
     });
 
 });

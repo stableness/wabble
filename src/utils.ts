@@ -244,6 +244,22 @@ export function loopNext <T> (list: ArrayLike<T>) {
 
 
 
+export async function collectAsyncIterable <T> (source: AsyncIterable<T>) {
+
+    const list: T[] = [];
+
+    for await (const chunk of source) {
+        list.push(chunk);
+    }
+
+    return list;
+
+}
+
+
+
+
+
 type List <T> =
     T extends Buffer ? [ Buffer, Buffer ]
     : T extends Uint8Array ? [ Uint8Array, Uint8Array ]
