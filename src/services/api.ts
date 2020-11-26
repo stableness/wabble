@@ -15,7 +15,7 @@ import * as o from 'rxjs/operators';
 import { bind } from 'proxy-bind';
 
 import type { Config, API } from '../config';
-import { CurryT, rxTap, str2arr } from '../utils';
+import { CurryT, rxTap, str2arr, collectAsyncIterable } from '../utils';
 
 
 
@@ -65,8 +65,7 @@ export function establish (api$: Rx.Observable<Config['api']>) {
 
             stateOfReq('POST /test-domain'),
 
-            S.map(o.mergeMap(({ req, res }) => Rx.from(req).pipe(
-                o.toArray(),
+            S.map(o.mergeMap(({ req, res }) => from(req).pipe(
                 o.map(R.o(R.toString, Buffer.concat)),
                 o.map(domain => ({
                     domain,
@@ -157,6 +156,9 @@ const reqEq: CurryT<[ Req, Job, boolean ]> = R.useWith(
 );
 
 
+
+// eslint-disable-next-line deprecation/deprecation
+const from = F.flow(collectAsyncIterable, Rx.from);
 
 const sequenceState = apply.sequenceS(S.state);
 
