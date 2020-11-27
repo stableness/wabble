@@ -27,7 +27,7 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
 
-      - run: npm install --no-save --legacy-peer-deps
+      - run: npm install --no-save
         env:
           ADBLOCK: true
           DISABLE_OPENCOLLECTIVE: true
