@@ -118,7 +118,7 @@ export function catchException () {
 const loader$ = new Rx.ReplaySubject<string>(1);
 
 const config$ = loader$.pipe(
-    o.switchMap(u.readFileInStringOf('utf8')),
+    o.switchMap(u.loadPath),
     o.map(R.unary(safeLoad)),
     o.map(convert),
     o.catchError(err => {
