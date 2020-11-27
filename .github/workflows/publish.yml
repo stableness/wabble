@@ -76,7 +76,6 @@ jobs:
           tag_name: v/${{ steps.release.outputs.ver }}
           release_name: Release ${{ steps.release.outputs.ver }}
           body_path: dist/artifacts/notes.md
-          draft: true
           prerelease: true
 
 
