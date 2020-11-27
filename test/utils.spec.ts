@@ -678,35 +678,33 @@ describe('readFile', () => {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     fs.__setMockFiles(mapping);
 
-    test('in String of utf8', () => {
+    test('in String of utf8', async () => {
 
-        readFileInStringOf('utf8')('hello').subscribe(content => {
+        await expect(
 
-            expect(content).toBe(mapping.hello);
+            Rx.lastValueFrom(readFileInStringOf('utf8')('hello')),
 
-        });
-
-    });
-
-    test('in Buffer', () => {
-
-        readFile('hello').subscribe(content => {
-
-            expect(content).toStrictEqual(Buffer.from(mapping.hello));
-
-        });
+        ).resolves.toBe(mapping.hello);
 
     });
 
-    test('404', () => {
+    test('in Buffer', async () => {
 
-        readFile('wat').subscribe({
+        await expect(
 
-            error (err) {
-                expect(err instanceof Error).toBe(true);
-            },
+            Rx.lastValueFrom(readFile('hello')),
 
-        });
+        ).resolves.toStrictEqual(Buffer.from(mapping.hello));
+
+    });
+
+    test('404', async () => {
+
+        await expect(
+
+            Rx.lastValueFrom(readFile('wat')),
+
+        ).rejects.toThrowError();
 
     });
 
@@ -729,9 +727,11 @@ describe('loadPath', () => {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         fs.__setMockFiles(mapping);
 
-        const p = Rx.lastValueFrom(loadPath('hello'));
+        await expect(
 
-        await expect(p).resolves.toBe(mapping.hello);
+            Rx.lastValueFrom(loadPath('hello')),
+
+        ).resolves.toBe(mapping.hello);
 
     });
 
@@ -741,9 +741,11 @@ describe('loadPath', () => {
 
         nock('https://example.com').get('/foo').reply(200, 'bar');
 
-        const p = Rx.lastValueFrom(loadPath('https://example.com/foo'));
+        await expect(
 
-        await expect(p).resolves.toBe('bar');
+            Rx.lastValueFrom(loadPath('https://example.com/foo')),
+
+        ).resolves.toBe('bar');
 
     });
 
@@ -753,9 +755,11 @@ describe('loadPath', () => {
 
         nock('http://example.com').get('/error').reply(500);
 
-        const p = Rx.lastValueFrom(loadPath('http://example.com/error'));
+        await expect(
 
-        await expect(p).rejects.toThrow();
+            Rx.lastValueFrom(loadPath('http://example.com/error')),
+
+        ).rejects.toThrow();
 
     });
 
@@ -797,7 +801,7 @@ describe('Looping', () => {
 
     });
 
-    test('loopNext', done => {
+    test('loopNext', async () => {
 
         const step = Math.round(5 + Math.random() * 10);
         const io = loopNext([ 1 ]);
@@ -807,18 +811,11 @@ describe('Looping', () => {
             o.reduce<number, number>(R.add, 0),
         );
 
-        const sub = loop.subscribe({
+        await expect(
 
-            next (sum) {
-                expect(sum).toBe(step);
-            },
+            Rx.lastValueFrom(loop),
 
-            complete () {
-                done();
-                sub.unsubscribe();
-            },
-
-        });
+        ).resolves.toBe(step);
 
     });
 
