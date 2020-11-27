@@ -2,6 +2,8 @@ import { URL } from 'url';
 import { Writable, Readable } from 'stream';
 import fs from 'fs';
 
+import nock from 'nock';
+
 import { bind } from 'proxy-bind';
 
 import * as R from 'ramda';
@@ -50,6 +52,7 @@ import {
     readFile,
     readFileInStringOf,
     collectAsyncIterable,
+    loadPath,
 
 } from '../src/utils';
 
@@ -704,6 +707,55 @@ describe('readFile', () => {
             },
 
         });
+
+    });
+
+});
+
+
+
+
+
+describe('loadPath', () => {
+
+    test('File: hello', async () => {
+
+        const mapping = {
+            hello: 'world',
+        };
+
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+        fs.__setMockFiles(mapping);
+
+        const p = Rx.lastValueFrom(loadPath('hello'));
+
+        await expect(p).resolves.toBe(mapping.hello);
+
+    });
+
+
+
+    test('GET /foo', async () => {
+
+        nock('https://example.com').get('/foo').reply(200, 'bar');
+
+        const p = Rx.lastValueFrom(loadPath('https://example.com/foo'));
+
+        await expect(p).resolves.toBe('bar');
+
+    });
+
+
+
+    test('HTTP 500', async () => {
+
+        nock('http://example.com').get('/error').reply(500);
+
+        const p = Rx.lastValueFrom(loadPath('http://example.com/error'));
+
+        await expect(p).rejects.toThrow();
 
     });
 

@@ -1,7 +1,8 @@
 import net from 'net';
 import { URL } from 'url';
 import { once } from 'events';
-import type { IncomingHttpHeaders } from 'http';
+import { IncomingMessage, IncomingHttpHeaders, get as httpGet } from 'http';
+import { get as httpsGet } from 'https';
 import crypto from 'crypto';
 import { promisify } from 'util';
 import { PathLike, promises as fs } from 'fs';
@@ -617,6 +618,47 @@ export const readFileInStringOf =
         (filename: PathLike) =>
             readFile(filename, encoding)
 ;
+
+
+
+
+
+export function ObsGet (path: string) {
+
+    const get$: Fn<string, Obs<IncomingMessage>> = R.ifElse(
+        R.startsWith('https'),
+        Rx.bindCallback(httpsGet),
+        Rx.bindCallback(httpGet),
+    );
+
+    return get$(path).pipe(
+
+        o.mergeMap(res => {
+
+            if (res.statusCode !== 200) {
+                res.resume();
+                return Rx.throwError(() => Error(`code ${ res.statusCode }`));
+            }
+
+            return collectAsyncIterable(res);
+
+        }),
+
+        o.map(R.o(R.toString, Buffer.concat)),
+
+    );
+
+}
+
+
+
+
+
+export const loadPath: Fn<string, Rx.Observable<string>> = R.ifElse(
+    R.test(/^https?:\/\//),
+    ObsGet,
+    readFileInStringOf('utf8'),
+);
 
 
 
