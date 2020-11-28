@@ -16,6 +16,7 @@ import {
     either as E,
     task as T,
     taskEither as TE,
+    function as F,
     eq as Eq,
 } from 'fp-ts';
 
@@ -54,6 +55,7 @@ import {
     readFileInStringOf,
     collectAsyncIterable,
     loadPath,
+    basicInfo,
 
 } from '../src/utils';
 
@@ -265,6 +267,50 @@ describe('through', () => {
     ])('not - %s', item => {
         expect(tests(item)).toBe(false);
     });
+
+});
+
+
+
+
+
+describe('basicInfo', () => {
+
+    test.each([
+
+        [ 'aaa', 'bbb' ],
+        [ 'foo', 'bar' ],
+        [ '111', '222' ],
+
+    ])('%s', (name, pass) => {
+
+        const basic = stringify([ name, pass ]);
+        const info = O.some({ name, pass });
+
+        expect(
+
+            F.pipe(
+                basicInfo.auth({ authorization: basic }),
+                O.map(pluck),
+            ),
+
+        ).toStrictEqual(info);
+
+        expect(
+
+            F.pipe(
+                basicInfo.proxyAuth({ 'proxy-authorization': basic }),
+                O.map(pluck),
+            ),
+
+        ).toStrictEqual(info);
+
+    });
+
+
+
+    const stringify = R.o(toBasicCredentials, R.join(':'));
+    const pluck = R.pick([ 'name', 'pass' ]);
 
 });
 
