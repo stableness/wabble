@@ -274,6 +274,46 @@ describe('through', () => {
 
 
 
+describe('rules', () => {
+
+    describe('DOH', () => {
+
+        const tests = rules.DOH([
+            'DOH,foo.com',
+            'bar.com',
+        ]);
+
+
+        expect(tests.all('foo.com')).toBe(true);
+        expect(tests.all('bar.com')).toBe(true);
+
+        expect(tests.doh('foo.com')).toBe(true);
+        expect(tests.doh('bar.com')).toBe(false);
+
+    });
+
+    describe('NOT', () => {
+
+        const tests = rules.NOT([
+            'NOT,foo.com',
+            'bar.com',
+        ]);
+
+
+        expect(tests.not('foo.com')).toBe(true);
+        expect(tests.not('bar.com')).toBe(false);
+
+        expect(tests.yes('foo.com')).toBe(false);
+        expect(tests.yes('bar.com')).toBe(true);
+
+    });
+
+});
+
+
+
+
+
 describe('basicInfo', () => {
 
     test.each([
