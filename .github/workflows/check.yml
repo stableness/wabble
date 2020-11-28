@@ -14,7 +14,7 @@ jobs:
 
   build:
     name: Check
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     strategy:
       matrix:
         node: [ '10', '12', '14', '15' ]
