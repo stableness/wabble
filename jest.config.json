@@ -17,7 +17,7 @@
 
   "coveragePathIgnorePatterns": [
     "test/__fixtures__/",
-    "test/helpers"
+    "test/__helpers__/"
   ],
 
   "reporters": [
