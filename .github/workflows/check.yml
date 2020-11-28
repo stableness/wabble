@@ -43,7 +43,9 @@ jobs:
 
       - run: npm run bundle
 
-      - run: node dist/bin.cjs -v
+      - name: Check executable
+        run: |-
+          [[ "$(node dist/bin.cjs -v)" == "$(jq -r '.version' package.json)" ]] && echo y
 
       - run: ls -lh dist/{index,bin}*
 
