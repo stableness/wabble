@@ -1,6 +1,5 @@
 import { URL } from 'url';
 import { Writable, Readable } from 'stream';
-import path from 'path';
 
 import nock from 'nock';
 
@@ -60,6 +59,10 @@ import {
 } from '../src/utils';
 
 import { CF_DOH_ENDPOINT } from '../src/settings/reading';
+
+import {
+    paths,
+} from './__helpers__';
 
 
 
@@ -780,7 +783,7 @@ describe('DoH', () => {
 
     test('valid', async () => {
 
-        nock.load(path.join(__dirname, '__fixtures__/doh/valid.json'));
+        nock.load(fixtures('doh/valid.json'));
 
         const doh = DoH(CF_DOH_ENDPOINT);
 
@@ -792,7 +795,7 @@ describe('DoH', () => {
 
     test('empty', async () => {
 
-        nock.load(path.join(__dirname, '__fixtures__/doh/empty.json'));
+        nock.load(fixtures('doh/empty.json'));
 
         const doh = DoH(CF_DOH_ENDPOINT);
 
@@ -810,8 +813,12 @@ describe('DoH', () => {
 
 describe('readFile', () => {
 
-    const hello = path.join(__dirname, '__fixtures__/files/hello');
+    let hello = '';
     const world = 'world';
+
+    beforeAll(() => {
+        hello = fixtures('files/hello');
+    });
 
     test('in String of utf8', async () => {
 
@@ -853,7 +860,7 @@ describe('loadPath', () => {
 
     test('File: hello', async () => {
 
-        const hello = path.join(__dirname, '__fixtures__/files/hello');
+        const hello = fixtures('files/hello');
         const world = 'world';
 
         await expect(
@@ -1007,4 +1014,10 @@ describe('isPrivateIP', () => {
     });
 
 });
+
+
+
+
+
+const fixtures = paths(__dirname, '__fixtures__');
 
