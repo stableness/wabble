@@ -42,6 +42,7 @@ import {
     loopNext,
     genLooping,
     DoH,
+    sieve,
     run as force,
     rxTap,
     unwrapTaskEither,
@@ -619,6 +620,59 @@ describe('readURL', () => {
     });
 
     const { decode: decodeURL } = readURL;
+
+});
+
+
+
+
+
+describe('sieve', () => {
+
+    const block = sieve('../test/__fixtures__/sieve/block');
+
+    test.each([
+
+        [ 'doodle-analytics', R.T ],
+        [ 'double-blink',     R.T ],
+
+        [ 'Y-O-L-O',          R.F ],
+
+    ])('%s', async (domain, result) => {
+
+        await expect(
+
+            Rx.lastValueFrom(
+
+                block.pipe(
+                    o.map(R.applyTo(domain)),
+                ),
+
+            ),
+
+        ).resolves.toBe(result());
+
+    });
+
+
+
+    test('(__wat__)', async () => {
+
+        const __wat = sieve('__wat');
+
+        await expect(
+
+            Rx.lastValueFrom(
+
+                __wat.pipe(
+                    o.map(R.applyTo('O_o')),
+                ),
+
+            ),
+
+        ).resolves.toBe(R.F());
+
+    });
 
 });
 
