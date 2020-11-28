@@ -778,16 +778,27 @@ describe('DoH', () => {
 
     });
 
-    // TODO: network mocking
-    const condTest = process.env.NO_SKIP === 'on' ? test : test.skip;
+    test('valid', async () => {
 
-    condTest('valid', async () => {
+        nock.load(path.join(__dirname, '__fixtures__/doh/valid.json'));
 
         const doh = DoH(CF_DOH_ENDPOINT);
 
         const results = await force(doh('example.com'));
 
         expect(E.isRight(results)).toBe(true);
+
+    });
+
+    test('empty', async () => {
+
+        nock.load(path.join(__dirname, '__fixtures__/doh/empty.json'));
+
+        const doh = DoH(CF_DOH_ENDPOINT);
+
+        const results = await force(doh('example.com'));
+
+        expect(E.isRight(results)).toBe(false);
 
     });
 

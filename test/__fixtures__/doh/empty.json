@@ -1,0 +1,48 @@
+[
+{
+  "scope": "https://cloudflare-dns.com:443",
+  "method": "GET",
+  "path": "/dns-query?name=example.com&type=A",
+  "body": "",
+  "status": 200,
+  "response": {
+    "Status": 0,
+    "TC": false,
+    "RD": true,
+    "RA": true,
+    "AD": true,
+    "CD": false,
+    "Question": [
+      {
+        "name": "example.com",
+        "type": 1
+      }
+    ],
+    "Answer": [
+    ]
+  },
+  "rawHeaders": [
+    "Date",
+    "Sat, 28 Nov 2020 16:12:47 GMT",
+    "Content-Type",
+    "application/dns-json",
+    "Content-Length",
+    "187",
+    "Connection",
+    "close",
+    "Access-Control-Allow-Origin",
+    "*",
+    "cf-request-id",
+    "06b139efa7000036878d912000000001",
+    "Expect-CT",
+    "max-age=604800, report-uri=\"https://report-uri.cloudflare.com/cdn-cgi/beacon/expect-ct\"",
+    "Vary",
+    "Accept-Encoding",
+    "Server",
+    "cloudflare",
+    "CF-RAY",
+    "5f955f5f7cb73687-LAX"
+  ],
+  "responseIsBinary": false
+}
+]
