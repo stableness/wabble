@@ -1,6 +1,6 @@
 import { URL } from 'url';
 import { Writable, Readable } from 'stream';
-import fs from 'fs';
+import path from 'path';
 
 import nock from 'nock';
 
@@ -60,12 +60,6 @@ import {
 } from '../src/utils';
 
 import { CF_DOH_ENDPOINT } from '../src/settings/reading';
-
-
-
-
-
-jest.mock('fs');
 
 
 
@@ -805,22 +799,16 @@ describe('DoH', () => {
 
 describe('readFile', () => {
 
-    const mapping = {
-        hello: 'world',
-    };
-
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-    fs.__setMockFiles(mapping);
+    const hello = path.join(__dirname, '__fixtures__/files/hello');
+    const world = 'world';
 
     test('in String of utf8', async () => {
 
         await expect(
 
-            Rx.lastValueFrom(readFileInStringOf('utf8')('hello')),
+            Rx.lastValueFrom(readFileInStringOf('utf8')(hello)),
 
-        ).resolves.toBe(mapping.hello);
+        ).resolves.toBe(world);
 
     });
 
@@ -828,9 +816,9 @@ describe('readFile', () => {
 
         await expect(
 
-            Rx.lastValueFrom(readFile('hello')),
+            Rx.lastValueFrom(readFile(hello)),
 
-        ).resolves.toStrictEqual(Buffer.from(mapping.hello));
+        ).resolves.toStrictEqual(Buffer.from(world));
 
     });
 
@@ -854,20 +842,14 @@ describe('loadPath', () => {
 
     test('File: hello', async () => {
 
-        const mapping = {
-            hello: 'world',
-        };
-
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-        fs.__setMockFiles(mapping);
+        const hello = path.join(__dirname, '__fixtures__/files/hello');
+        const world = 'world';
 
         await expect(
 
-            Rx.lastValueFrom(loadPath('hello')),
+            Rx.lastValueFrom(loadPath(hello)),
 
-        ).resolves.toBe(mapping.hello);
+        ).resolves.toBe(world);
 
     });
 
