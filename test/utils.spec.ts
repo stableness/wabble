@@ -228,53 +228,49 @@ describe('collectAsyncIterable', () => {
 
 
 
-describe('through', () => {
-
-    const tests = rules.through([
-        'foobar',
-        'hello',
-        'FULL,www.example.xyz',
-        'REG,\\.cn$',
-        'REG,google\\.',
-        'END,.io',
-        'BEGIN,mobile.',
-    ]);
-
-    test.each([
-
-        'foobar.com',
-        'hello-world.xyz',
-        'www.example.xyz',
-        'z.cn',
-        'api.google.xyz',
-        'example.io',
-        'mobile.example.xyz',
-
-    ])('yes - %s', item => {
-        expect(tests(item)).toBe(true);
-    });
-
-    test.each([
-
-        'fooba',
-        'hallo-world.xyz',
-        'www.example.org',
-        'z.cn.org',
-        'api.googleeeeeeee.xyz',
-        'example.ioo',
-        'v1.mobile.example.com',
-
-    ])('not - %s', item => {
-        expect(tests(item)).toBe(false);
-    });
-
-});
-
-
-
-
-
 describe('rules', () => {
+
+    describe('through', () => {
+
+        const tests = rules.through([
+            'foobar',
+            'hello',
+            'FULL,www.example.xyz',
+            'REG,\\.cn$',
+            'REG,google\\.',
+            'END,.io',
+            'BEGIN,mobile.',
+        ]);
+
+        test.each([
+
+            'foobar.com',
+            'hello-world.xyz',
+            'www.example.xyz',
+            'z.cn',
+            'api.google.xyz',
+            'example.io',
+            'mobile.example.xyz',
+
+        ])('yes - %s', item => {
+            expect(tests(item)).toBe(true);
+        });
+
+        test.each([
+
+            'fooba',
+            'hallo-world.xyz',
+            'www.example.org',
+            'z.cn.org',
+            'api.googleeeeeeee.xyz',
+            'example.ioo',
+            'v1.mobile.example.com',
+
+        ])('not - %s', item => {
+            expect(tests(item)).toBe(false);
+        });
+
+    });
 
     describe('DOH', () => {
 
