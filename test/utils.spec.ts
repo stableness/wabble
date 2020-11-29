@@ -708,8 +708,6 @@ describe('readURL', () => {
 
 describe('sieve', () => {
 
-    const block = sieve('../test/__fixtures__/sieve/block');
-
     test.each([
 
         [ 'doodle-analytics', R.T ],
@@ -718,6 +716,8 @@ describe('sieve', () => {
         [ 'Y-O-L-O',          R.F ],
 
     ])('%s', async (domain, result) => {
+
+        const block = sieve(fixtures('sieve/block'));
 
         await expect(
 
