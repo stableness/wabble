@@ -16,6 +16,7 @@
   ],
 
   "coveragePathIgnorePatterns": [
+    "node_modules/",
     "test/__fixtures__/",
     "test/__helpers__/"
   ],
