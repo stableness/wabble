@@ -23,8 +23,10 @@ import type { Logging } from '../model';
 import type { Service } from '../config';
 
 import {
+    Fn,
     run,
     pump,
+    noop,
     constErr,
     catchKToError,
     writeToTaskEither,
@@ -57,7 +59,7 @@ const CONTINUE  = Uint8Array.from([ 0x05, 0x00, ...reply ]);
 /* eslint-disable indent */
 
 export const socks5Proxy =
-    (service: Service) =>
+    (service: Service, cb: Fn<number, void> = noop) =>
         (logging: Logging) => {
 
     const { logLevel, logger } = logging;
@@ -67,9 +69,15 @@ export const socks5Proxy =
 
         const { next, error, complete } = bind(subject);
 
+        function onListening () {
+            const address = server.address() ?? '';
+            cb(typeof address === 'string' ? 0 : address.port);
+        }
+
         const server = net.createServer()
 
             .addListener('connection', next)
+            .addListener('listening', onListening)
             .addListener('error', error)
             .addListener('close', complete)
 
@@ -82,6 +90,7 @@ export const socks5Proxy =
             server
 
                 .removeListener('connection', next)
+                .removeListener('listening', onListening)
                 .removeListener('error', error)
                 .removeListener('close', complete)
 
