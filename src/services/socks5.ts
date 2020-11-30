@@ -54,7 +54,11 @@ const CONTINUE  = Uint8Array.from([ 0x05, 0x00, ...reply ]);
 
 
 
-export const socks5Proxy = (service: Service) => (logging: Logging) => {
+/* eslint-disable indent */
+
+export const socks5Proxy =
+    (service: Service) =>
+        (logging: Logging) => {
 
     const { logLevel, logger } = logging;
     const { auth, port: servicePort, host: serviceHost } = service;
@@ -260,6 +264,8 @@ export const socks5Proxy = (service: Service) => (logging: Logging) => {
     );
 
 };
+
+/* eslint-enable indent */
 
 
 
