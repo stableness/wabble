@@ -101,6 +101,7 @@ export const httpProxy =
 
         o.filter(({ request: { socket, headers }, url: { hostname } }) => {
 
+            // istanbul ignore next
             if (hostname.length < 1) {
                 socket.end(u.headerJoin([ 'HTTP/1.1 400' ]));
                 return false;
