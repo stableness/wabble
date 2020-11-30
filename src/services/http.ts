@@ -183,6 +183,7 @@ export const requestOn = Rx.pipe(
 
             const { connection: socket = null } = response;
 
+            // istanbul ignore next
             if (socket == null) {
                 return;
             }
