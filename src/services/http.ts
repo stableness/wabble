@@ -39,7 +39,7 @@ type Connect = ReturnType<typeof mapConnect>;
 /* eslint-disable indent */
 
 export const httpProxy =
-    ({ port, host, auth }: Service) =>
+    ({ port, host, auth }: Service, cb: u.Fn<number, void> = u.noop) =>
         (logging: Logging) => {
 
     const { logLevel, logger } = logging;
@@ -71,10 +71,16 @@ export const httpProxy =
             next(mapConnect(request, socket, head));
         }
 
+        function onListening () {
+            const address = server.address() ?? '';
+            cb(typeof address === 'string' ? 0 : address.port);
+        }
+
         const server = http.createServer()
 
             .addListener('request', onRequest)
             .addListener('connect', onConnect)
+            .addListener('listening', onListening)
             .addListener('error', error)
             .addListener('close', complete)
 
@@ -88,6 +94,7 @@ export const httpProxy =
 
                 .removeListener('request', onRequest)
                 .removeListener('connect', onConnect)
+                .removeListener('listening', onListening)
                 .removeListener('error', error)
                 .removeListener('close', complete)
 
