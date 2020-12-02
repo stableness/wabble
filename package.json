@@ -23,7 +23,7 @@
     "dist/index.cjs"
   ],
   "engines": {
-    "node": ">= 10.20"
+    "node": ">= 12"
   },
   "repository": "github:stableness/wabble",
   "homepage": "https://github.com/stableness/wabble",
