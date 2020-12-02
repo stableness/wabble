@@ -60,7 +60,11 @@ export function chain (opts: ChainOpts, remote: Socks5) {
 
 
 
-export const tunnel = ({ host, port, auth }: Socks5) => (head: Uint8Array) => {
+/* eslint-disable indent */
+
+export const tunnel =
+    ({ host, port, auth }: Pick<Socks5, 'host' | 'port' | 'auth'>) =>
+        (head: Uint8Array) => {
 
     const socket = netConnectTo({ host, port });
 
@@ -133,6 +137,8 @@ export const tunnel = ({ host, port, auth }: Socks5) => (head: Uint8Array) => {
     );
 
 };
+
+/* eslint-enable indent */
 
 
 
