@@ -50,6 +50,7 @@ const AUTH_SUC  = Uint8Array.from([ 0x01, 0x00 ]);
 const E_METHOD  = Uint8Array.from([ 0x05, 0xFF ]);
 const E_COMMAND = Uint8Array.from([ 0x05, 0x07, ...reply ]);
 const E_ATYP    = Uint8Array.from([ 0x05, 0x08, ...reply ]);
+const E_REFUSED = Uint8Array.from([ 0x05, 0x05, ...reply ]);
 const CONTINUE  = Uint8Array.from([ 0x05, 0x00, ...reply ]);
 
 
@@ -259,7 +260,10 @@ export const socks5Proxy =
 
                 if (R.isEmpty(duplex)) {
                     socket.resume();
-                    return socket.destroy();
+                    socket.write(E_REFUSED, () => {
+                        socket.destroy();
+                    });
+                    return;
                 }
 
                 socket.write(CONTINUE);
