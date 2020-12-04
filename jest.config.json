@@ -4,6 +4,8 @@
   "testRunner": "jest-circus/runner",
   "testEnvironment": "node",
 
+  "testTimeout": 500,
+
   "globals": {
     "ts-jest": {
       "tsconfig": "tsconfig.test.json"
