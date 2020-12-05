@@ -1,5 +1,3 @@
-import type { URL } from 'url';
-
 import type {
     option as O,
     readonlyNonEmptyArray as RNEA,
@@ -104,7 +102,7 @@ export type Remote = Http | Socks5 | ShadowSocks | Trojan;
 
 
 
-export type Basic = Pick<URL, 'username' | 'password'>;
+export type Basic = Readonly<Record<'username' | 'password', string>>;
 
 
 
