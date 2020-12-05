@@ -60,8 +60,8 @@ const CONTINUE  = Uint8Array.from([ 0x05, 0x00, ...reply ]);
 /* eslint-disable indent */
 
 export const socks5Proxy =
-    (service: Service, cb: Fn<number, void> = noop) =>
-        (logging: Logging) => {
+    (service: Service) =>
+        (logging: Logging, cb: Fn<number, void> = noop) => {
 
     const { logLevel, logger } = logging;
     const { auth, port: servicePort, host: serviceHost } = service;

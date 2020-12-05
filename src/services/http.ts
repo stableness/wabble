@@ -39,8 +39,8 @@ type Connect = ReturnType<typeof mapConnect>;
 /* eslint-disable indent */
 
 export const httpProxy =
-    ({ port, host, auth }: Service, cb: u.Fn<number, void> = u.noop) =>
-        (logging: Logging) => {
+    ({ port, host, auth }: Service) =>
+        (logging: Logging, cb: u.Fn<number, void> = u.noop) => {
 
     const { logLevel, logger } = logging;
 

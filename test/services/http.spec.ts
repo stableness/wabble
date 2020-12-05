@@ -58,7 +58,7 @@ describe('httpProxy', () => {
 
         const p = Defer<number>();
 
-        const proxy = httpProxy (service, p.resolve) (genLogging(opts));
+        const proxy = httpProxy (service) (genLogging(opts), p.resolve);
 
         const sub = proxy.subscribe(u.noop);
 
@@ -94,7 +94,7 @@ describe('httpProxy', () => {
 
         const p = Defer<number>();
 
-        const proxy = httpProxy (service, p.resolve) (genLogging());
+        const proxy = httpProxy (service) (genLogging(), p.resolve);
 
         const sub = proxy.subscribe(u.noop);
 
@@ -150,7 +150,7 @@ describe('httpProxy', () => {
 
         const p = Defer<number>();
 
-        const proxy = httpProxy (service, p.resolve) (genLogging());
+        const proxy = httpProxy (service) (genLogging(), p.resolve);
 
         const sub = proxy.pipe(
             o.mergeMap(({ host, port, hook }) => {
