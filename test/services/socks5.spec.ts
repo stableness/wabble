@@ -1,5 +1,4 @@
 import http from 'http';
-import { URL } from 'url';
 
 import {
     function as F,
@@ -7,8 +6,6 @@ import {
     readerTaskEither as RTE,
     stateReaderTaskEither as SRTE,
 } from 'fp-ts';
-
-import * as R from 'ramda';
 
 import {
     tunnel,
@@ -18,9 +15,8 @@ import * as u from '../../src/utils';
 
 import {
     sequence,
-    genFlags,
     genAuth,
-    genLogging,
+    genEnv,
     fetchToString,
     flushHeaders,
     redirect,
@@ -28,7 +24,6 @@ import {
     Result,
     temp,
     TE_ES,
-    Env,
 } from './http.spec';
 
 
@@ -52,11 +47,7 @@ describe('socks5Proxy', () => {
 
     ])('%s', async raw => {
 
-        const url = new URL(R.replace(/ /g, '', raw));
-        const flags = genFlags(url.searchParams);
-        const logging = genLogging({ debug: flags.d });
-
-        const env: Env = { url, flags, logging };
+        const env = genEnv(raw);
 
         const invoke = SRTE.evaluate({ proxy: 0, server: 0 });
 
@@ -84,7 +75,7 @@ describe('socks5Proxy', () => {
 
             RTE.fold(
 
-                error => RTE.fromIO(() => {
+                error => RTE.asks(({ flags }) => {
 
                     if (flags.a || flags.e) {
                         return;
@@ -94,7 +85,7 @@ describe('socks5Proxy', () => {
 
                 }),
 
-                content => RTE.fromIO(() => {
+                content => RTE.asks(({ flags }) => {
 
                     expect(content).toBe(readStr(flags.c ?? ''));
 

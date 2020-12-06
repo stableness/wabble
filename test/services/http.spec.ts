@@ -164,11 +164,7 @@ describe('httpProxy', () => {
 
     ])('%s', async raw => {
 
-        const url = new URL(R.replace(/ /g, '', raw));
-        const flags = genFlags(url.searchParams);
-        const logging = genLogging({ debug: flags.d });
-
-        const env: Env = { url, flags, logging };
+        const env = genEnv(raw);
 
         const invoke = SRTE.evaluate({ proxy: 0, server: 0 });
 
@@ -197,7 +193,7 @@ describe('httpProxy', () => {
 
             RTE.fold(
 
-                error => RTE.fromIO(() => {
+                error => RTE.asks(({ flags }) => {
 
                     if (flags.a || flags.e) {
                         return;
@@ -207,7 +203,7 @@ describe('httpProxy', () => {
 
                 }),
 
-                ([ request, connect ]) => RTE.fromIO(() => {
+                ([ request, connect ]) => RTE.asks(({ flags }) => {
 
                     const content = readStr(flags.c ?? '');
 
@@ -321,6 +317,16 @@ export function genLogging ({ debug = false, warn = false } = {}): Logging {
         },
 
     };
+
+}
+
+export function genEnv (raw: string): Env {
+
+    const url = new URL(R.replace(/ /g, '', raw));
+    const flags = genFlags(url.searchParams);
+    const logging = genLogging({ debug: flags.d });
+
+    return { url, flags, logging };
 
 }
 
