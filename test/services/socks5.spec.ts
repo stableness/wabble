@@ -107,7 +107,7 @@ const socks5: Result<TE_ES> = ports => ({ url }) => {
 
     const { basic: auth } = genAuth(url);
 
-    return TE.of(F.tuple(F.pipe(
+    return TE.fromIO(() => F.tuple(F.pipe(
 
         u.socks5Handshake(url.hostname, ports.server),
 
