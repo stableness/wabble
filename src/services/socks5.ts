@@ -48,9 +48,9 @@ const AUTH_YES  = Uint8Array.from([ 0x05, 0x02 ]);
 const AUTH_ERR  = Uint8Array.from([ 0x01, 0xFF ]);
 const AUTH_SUC  = Uint8Array.from([ 0x01, 0x00 ]);
 const E_METHOD  = Uint8Array.from([ 0x05, 0xFF ]);
+const E_REFUSED = Uint8Array.from([ 0x05, 0x05, ...reply ]);
 const E_COMMAND = Uint8Array.from([ 0x05, 0x07, ...reply ]);
 const E_ATYP    = Uint8Array.from([ 0x05, 0x08, ...reply ]);
-const E_REFUSED = Uint8Array.from([ 0x05, 0x05, ...reply ]);
 const CONTINUE  = Uint8Array.from([ 0x05, 0x00, ...reply ]);
 
 
