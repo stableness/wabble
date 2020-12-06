@@ -115,7 +115,7 @@ export const httpProxy =
 
         o.filter(({ request: { socket, headers }, url: { hostname } }) => {
 
-            // istanbul ignore next
+            /* c8 ignore next 4 */
             if (hostname.length < 1) {
                 socket.end(u.headerJoin([ 'HTTP/1.1 400' ]));
                 return false;
@@ -198,7 +198,7 @@ export const requestOn = Rx.pipe(
 
             const { connection: socket = null } = response;
 
-            // istanbul ignore next
+            /* c8 ignore next 3 */
             if (socket == null) {
                 return;
             }
