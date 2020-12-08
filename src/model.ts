@@ -176,7 +176,7 @@ const dealer$ = config$.pipe(
     })),
 );
 
-const dns$ = config$.pipe(
+const doh$ = config$.pipe(
     o.pluck('doh'),
     o.map(O.map(R.unary(u.DoH))),
 );
@@ -248,19 +248,18 @@ const runner$ = services$.pipe(
 
     o.publish(Rx.pipe(
 
-        o.withLatestFrom(rules$, dns$, (
+        o.withLatestFrom(rules$, doh$, (
                 { host, port, hook },
-                { direct, reject, doh },
-                dns,
+                rules, doh,
         ) => {
 
             const log = logger.child({ host, port });
 
-            const rejection = reject(host);
-            const direction = direct(host);
+            const rejection = rules.reject(host);
+            const direction = rules.direct(host);
 
             const hopTo = /*#__NOINLINE__*/ connect({
-                host, port, hook, dns, doh, logger: log,
+                host, port, hook, doh, testDoH: rules.doh, logger: log,
             });
 
             return { log, rejection, direction, hopTo, hook };

@@ -32,8 +32,8 @@ type Opts = {
     host: string;
     port: number;
     hook: Hook;
-    dns: O.Option<ReturnType<typeof DoH>>;
-    doh: Fn<string, boolean>;
+    doh: O.Option<ReturnType<typeof DoH>>;
+    testDoH: Fn<string, boolean>;
     logger: Logger;
 };
 
@@ -55,12 +55,12 @@ const nsLookup = (host: string) => fpMap.lookup (Eq.eqString) (host) (dnsCache);
 /*#__NOINLINE__*/
 export function connect (connOpts: Opts) {
 
-    const { port, host, doh, hook, logger } = connOpts;
+    const { port, host, testDoH, hook, logger } = connOpts;
 
     /*#__NOINLINE__*/
     return function toServer (server: O.Option<Remote> | 'nothing') {
 
-        const fetchIP = doh(host)
+        const fetchIP = testDoH(host)
             ? /*#__NOINLINE__*/ query(connOpts)
             : T.of(host)
         ;
@@ -126,7 +126,7 @@ export function connect (connOpts: Opts) {
 
 
 /*#__NOINLINE__*/
-function query ({ dns, host, logger }: Opts) {
+function query ({ doh, host, logger }: Opts) {
 
     return F.pipe(
 
@@ -134,7 +134,7 @@ function query ({ dns, host, logger }: Opts) {
         TE.fromOption(() => Error('No cache')),
         TE.alt(() => F.pipe(
 
-            dns,
+            doh,
             O.ap(O.some(host)),
             TE.fromOption(() => Error('No DoH')),
             TE.flatten,
