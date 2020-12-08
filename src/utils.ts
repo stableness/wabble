@@ -626,22 +626,18 @@ export const readFileInStringOf =
 
 export function ObsGet (path: string) {
 
-    const req$ = Rx.defer(() => fetch(path));
+    return Rx.defer(async () => {
 
-    return req$.pipe(
+        const res = await fetch(path);
 
-        o.mergeMap(res => {
+        if (res.ok !== true) {
+            res.body.resume();
+            throw new Error(`code ${ res.status }`);
+        }
 
-            if (res.ok !== true) {
-                res.body.resume();
-                return Rx.throwError(() => Error(`code ${ res.status }`));
-            }
+        return res.text();
 
-            return res.text();
-
-        }),
-
-    );
+    });
 
 }
 
