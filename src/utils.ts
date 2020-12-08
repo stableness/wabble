@@ -1,12 +1,13 @@
 import net from 'net';
 import { URL } from 'url';
 import { once } from 'events';
-import { IncomingMessage, IncomingHttpHeaders, get as httpGet } from 'http';
-import { get as httpsGet } from 'https';
+import { IncomingHttpHeaders } from 'http';
 import crypto from 'crypto';
 import { promisify } from 'util';
 import { PathLike, promises as fs } from 'fs';
 import { pipeline } from 'stream';
+
+import fetch from 'node-fetch';
 
 import memo from 'memoizerific';
 
@@ -625,26 +626,20 @@ export const readFileInStringOf =
 
 export function ObsGet (path: string) {
 
-    const get$: Fn<string, Obs<IncomingMessage>> = R.ifElse(
-        R.startsWith('https'),
-        Rx.bindCallback(httpsGet),
-        Rx.bindCallback(httpGet),
-    );
+    const req$ = Rx.defer(() => fetch(path));
 
-    return get$(path).pipe(
+    return req$.pipe(
 
         o.mergeMap(res => {
 
-            if (res.statusCode !== 200) {
-                res.resume();
-                return Rx.throwError(() => Error(`code ${ res.statusCode }`));
+            if (res.ok !== true) {
+                res.body.resume();
+                return Rx.throwError(() => Error(`code ${ res.status }`));
             }
 
-            return collectAsyncIterable(res);
+            return res.text();
 
         }),
-
-        o.map(R.o(R.toString, Buffer.concat)),
 
     );
 
