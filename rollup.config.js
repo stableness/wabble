@@ -27,7 +27,7 @@ export const suffix = R.useWith(R.replace('.js'), [ R.concat('.'), R.identity ])
 
 export const extendsBuiltin = R.compose(list, R.concat(`
     | http | https | tls | net | crypto | stream | buffer |
-    | util | os | events | url | fs | assert | vm | v8 |
+    | util | os | events | url | fs | assert | vm | v8 | dns |
 `));
 
 const devOrProd = R.partialRight(R.ifElse, [ R.identity, R.empty ]);
