@@ -213,6 +213,8 @@ export const requestOn = Rx.pipe(
                 createConnection: R.always(sink as Socket),
             });
 
+            mock.flushHeaders();
+
             await Promise.all([
                 u.pump(request, mock).finally(destroy),
                 u.pump(source, ...duplex, socket),
