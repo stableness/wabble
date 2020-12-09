@@ -29,11 +29,11 @@ import type { ChainOpts } from './index';
 
 export function chain (opts: ChainOpts, remote: Trojan) {
 
-    const { ipOrHost, port, logger, hook } = opts;
+    const { host, port, logger, hook } = opts;
 
     return F.pipe(
 
-        TE.rightIO(() => makeHead(remote.password, ipOrHost, port)),
+        TE.rightIO(() => makeHead(remote.password, host, port)),
 
         TE.apFirst(TE.fromIO(() => {
 

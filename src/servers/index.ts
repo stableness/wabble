@@ -37,9 +37,7 @@ type Opts = {
     logger: Logger;
 };
 
-export type ChainOpts = Pick<Opts, 'port' | 'logger' | 'hook'> & {
-    ipOrHost: string;
-};
+export type ChainOpts = Pick<Opts, 'host' | 'port' | 'logger' | 'hook'>;
 
 
 
@@ -82,13 +80,9 @@ export function connect (connOpts: Opts) {
 
             TE.fromOption(() => new Error('Has no server to connect')),
 
-            TE.bindTo('remote'),
+            TE.chain(remote => {
 
-            TE.bind('ipOrHost', () => TE.fromTask(fetchIP)),
-
-            TE.chain(({ remote, ipOrHost }) => {
-
-                const opts = { port, logger, hook, ipOrHost };
+                const opts = { host, port, logger, hook };
 
                 if (remote.protocol === 'socks5') {
                     return chainSocks5(opts, remote);

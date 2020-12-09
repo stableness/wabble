@@ -29,11 +29,11 @@ import type { ChainOpts } from './index';
 
 export function chain (opts: ChainOpts, remote: Http) {
 
-    const { ipOrHost, port, logger, hook } = opts;
+    const { host, port, logger, hook } = opts;
 
     return F.pipe(
 
-        TE.rightIO(() => R.join(':', [ ipOrHost, port ])),
+        TE.rightIO(() => R.join(':', [ host, port ])),
 
         TE.apFirst(TE.fromIO(() => {
 
