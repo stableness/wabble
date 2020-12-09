@@ -60,7 +60,7 @@ const config = [
 
         external: extendsBuiltin(dev(`
             | proxy-bind | buffer-pond | async-readable |
-            | ramda | ip | futoin-hkdf | memoizerific |
+            | ramda | ip | futoin-hkdf | memoizerific | node-fetch
             | js-yaml | pino | command-line-args | @stableness/basic-auth |
 
             | rxjs
@@ -181,7 +181,7 @@ const config = [
 
         external: extendsBuiltin(`
             | proxy-bind | buffer-pond | async-readable |
-            | ramda | ip | futoin-hkdf | memoizerific |
+            | ramda | ip | futoin-hkdf | memoizerific | node-fetch
             | js-yaml | pino | command-line-args | @stableness/basic-auth |
 
             | rxjs
