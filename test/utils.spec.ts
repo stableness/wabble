@@ -28,6 +28,7 @@ import {
     EVP_BytesToKey,
     portNormalize,
     isPrivateIP,
+    isBlockedIP,
     headerJoin,
     socks5Handshake,
     incrementLE,
@@ -1054,6 +1055,35 @@ describe('isPrivateIP', () => {
 
     ])('not - %s', item => {
         expect(isPrivateIP(item)).toBe(false);
+    });
+
+});
+
+
+
+
+
+describe('isBlockedIP', () => {
+
+    test.each([
+
+        '0.0.0.0',
+        '0:0:0:0:0:0:0:0',
+        '::',
+
+    ])('yes - %s', item => {
+        expect(isBlockedIP(item)).toBe(true);
+    });
+
+    test.each([
+
+        '',
+        'foobar',
+        '191.1.1.1',
+        '127.0.0.1',
+
+    ])('not - %s', item => {
+        expect(isBlockedIP(item)).toBe(false);
     });
 
 });

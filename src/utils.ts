@@ -11,7 +11,7 @@ import fetch from 'node-fetch';
 
 import memo from 'memoizerific';
 
-import { isPrivate, cidrSubnet } from 'ip';
+import { isPrivate, cidrSubnet, isEqual as eqIP } from 'ip';
 
 import {
     eq as Eq,
@@ -460,6 +460,20 @@ export function portNormalize ({ port, protocol }: URL) {
 export const isPrivateIP = R.both(
     isIP,
     isPrivate,
+);
+
+
+
+
+export const isBlockedIP: Fn<string, boolean> = R.either(
+    R.equals('0.0.0.0'),
+    R.both(
+        isIP,
+        R.anyPass([
+            (ip: string) => eqIP(ip, '0.0.0.0'),
+            (ip: string) => eqIP(ip, '0:0:0:0:0:0:0:0'),
+        ]),
+    ),
 );
 
 
