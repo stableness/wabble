@@ -54,11 +54,9 @@ export function chain (opts: ChainOpts, remote: SS) {
 
         })),
 
-        TE.chain(({ enc, dec }) => u.tryCatchToError(() => {
-            return hook(enc, netConnectTo(remote), dec);
-        })),
+        TE.chain(({ enc, dec }) => hook(enc, netConnectTo(remote), dec)),
 
-        TE.mapLeft(R.tap(() => hook())),
+        TE.mapLeft(R.tap(hook())),
 
     );
 

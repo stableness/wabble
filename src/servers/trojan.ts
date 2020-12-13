@@ -52,9 +52,9 @@ export function chain (opts: ChainOpts, remote: Trojan) {
 
         TE.chain(catchKToError(tunnel(remote))),
 
-        TE.chain(catchKToError(hook)),
+        TE.chain(hook),
 
-        TE.mapLeft(R.tap(() => hook())),
+        TE.mapLeft(R.tap(hook())),
 
     );
 

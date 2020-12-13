@@ -15,7 +15,7 @@ import {
 } from 'fp-ts';
 
 import type { Remote } from '../config';
-import { genDoH, Fn, catchKToError } from '../utils';
+import { genDoH, Fn } from '../utils';
 import { logLevel } from '../model';
 import type { Hook } from '../services/index';
 
@@ -31,7 +31,7 @@ import { chain as chainShadowSocks } from './shadowsocks';
 type Opts = {
     host: string;
     port: number;
-    hook: Hook;
+    hook: (...args: Parameters<Hook>) => TE.TaskEither<Error, void>;
     doh: O.Option<ReturnType<typeof genDoH>>;
     testDoH: Fn<string, boolean>;
     logger: Logger;
@@ -68,8 +68,8 @@ export function connect (connOpts: Opts) {
             return F.pipe(
                 TE.fromTask<never, string>(fetchIP),
                 TE.map(ipOrHost => netConnectTo({ port, host: ipOrHost })),
-                TE.chain(catchKToError(hook)),
-                TE.mapLeft(R.tap(() => hook())),
+                TE.chain(hook),
+                TE.mapLeft(R.tap(hook())),
             );
 
         }
@@ -107,7 +107,7 @@ export function connect (connOpts: Opts) {
 
             }),
 
-            TE.mapLeft(R.tap(() => hook())),
+            TE.mapLeft(R.tap(hook())),
 
         );
 

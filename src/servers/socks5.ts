@@ -48,9 +48,9 @@ export function chain (opts: ChainOpts, remote: Socks5) {
 
         TE.chain(tunnel(remote)),
 
-        TE.chain(catchKToError(hook)),
+        TE.chain(hook),
 
-        TE.mapLeft(R.tap(() => hook())),
+        TE.mapLeft(R.tap(hook())),
 
     );
 

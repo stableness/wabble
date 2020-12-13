@@ -259,7 +259,8 @@ const runner$ = services$.pipe(
             const direction = rules.direct(host);
 
             const hopTo = /*#__NOINLINE__*/ connect({
-                host, port, hook, doh, testDoH: rules.doh, logger: log,
+                host, port, doh, testDoH: rules.doh, logger: log,
+                hook: u.catchKToError(hook),
             });
 
             return { log, rejection, direction, hopTo, hook };
@@ -271,7 +272,7 @@ const runner$ = services$.pipe(
             if (rejection) {
 
                 log.info('Reject');
-                void hook();
+                hook().catch(u.noop);
                 return false;
 
             }
