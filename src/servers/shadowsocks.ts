@@ -29,7 +29,7 @@ export function chain (opts: ChainOpts, remote: SS) {
 
     return F.pipe(
 
-        IO.of(u.socks5Handshake(ipOrHost, port).subarray(3)),
+        IO.fromIO(() => u.socks5Handshake(ipOrHost, port).subarray(3)),
         IO.map(cryptoPairsC(remote)),
         IO.map(E.fromNullable(Error('Has no crypto to perform'))),
 

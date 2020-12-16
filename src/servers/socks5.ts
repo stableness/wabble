@@ -29,7 +29,7 @@ export function chain (opts: ChainOpts, remote: Socks5) {
 
     return F.pipe(
 
-        TE.right(socks5Handshake(ipOrHost, port)),
+        TE.rightIO(() => socks5Handshake(ipOrHost, port)),
 
         TE.apFirst(TE.fromIO(() => {
 

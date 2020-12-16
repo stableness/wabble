@@ -33,7 +33,7 @@ export function chain (opts: ChainOpts, remote: Trojan) {
 
     return F.pipe(
 
-        TE.right(makeHead(remote.password, ipOrHost, port)),
+        TE.rightIO(() => makeHead(remote.password, ipOrHost, port)),
 
         TE.apFirst(TE.fromIO(() => {
 

@@ -33,7 +33,7 @@ export function chain (opts: ChainOpts, remote: Http) {
 
     return F.pipe(
 
-        TE.right(R.join(':', [ ipOrHost, port ])),
+        TE.rightIO(() => R.join(':', [ ipOrHost, port ])),
 
         TE.apFirst(TE.fromIO(() => {
 
