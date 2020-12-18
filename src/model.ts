@@ -280,7 +280,7 @@ const runner$ = services$.pipe(
             if (direction) {
 
                 void u.run(F.pipe(
-                    hopTo('nothing'),
+                    hopTo('origin'),
                     TE.apFirst(TE.fromIO(() => log.info('Direct'))),
                 ));
 

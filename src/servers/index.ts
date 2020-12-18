@@ -56,14 +56,14 @@ export function connect (connOpts: Opts) {
     const { port, host, testDoH, hook, logger } = connOpts;
 
     /*#__NOINLINE__*/
-    return function toServer (server: O.Option<Remote> | 'nothing') {
+    return function toServer (server: O.Option<Remote> | 'origin') {
 
         const fetchIP = testDoH(host)
             ? /*#__NOINLINE__*/ query(connOpts)
             : T.of(host)
         ;
 
-        if (server === 'nothing') {
+        if (server === 'origin') {
 
             return F.pipe(
                 TE.fromTask<never, string>(fetchIP),
