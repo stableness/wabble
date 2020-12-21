@@ -83,11 +83,12 @@ rules:
     # plain text match
     - google
 
-    # prefix with: BEGIN, FULL, END, REG,
+    # prefix with: BEGIN, FULL, END, REG, CIDR,
     - BEGIN,admin.
     -  FULL,www.instagram.com
     -   END,youtube.com
     -   REG,(www|mobile)\.twitter\.com$
+    -  CIDR,8.8.8.0/24
 
   direct:
 
