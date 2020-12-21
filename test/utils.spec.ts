@@ -237,6 +237,8 @@ describe('rules', () => {
             'REG,google\\.',
             'END,.io',
             'BEGIN,mobile.',
+            'CIDR,192.168.0.1/16',
+            'CIDR,178.0.0.1/24',
         ]);
 
         test.each([
@@ -248,6 +250,10 @@ describe('rules', () => {
             'api.google.xyz',
             'example.io',
             'mobile.example.xyz',
+            '192.168.1.2',
+            '192.168.255.1',
+            '178.0.0.2',
+            '178.0.0.128',
 
         ])('yes - %s', item => {
             expect(tests(item)).toBe(true);
@@ -262,6 +268,8 @@ describe('rules', () => {
             'api.googleeeeeeee.xyz',
             'example.ioo',
             'v1.mobile.example.com',
+            '192.167.1.2',
+            '178.0.1.2',
 
         ])('not - %s', item => {
             expect(tests(item)).toBe(false);
