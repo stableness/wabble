@@ -126,11 +126,9 @@ export const rules = run(function () {
             [
                 R.startsWith('CIDR,'), R.pipe(
                     R.replace('CIDR,', ''),
-                    R.pipe(
-                        cidrSubnet,
-                        R.prop('contains'),
-                        R.both(isIP),
-                    ),
+                    cidrSubnet,
+                    R.prop('contains'),
+                    R.both(isIP),
                 ),
             ],
             [
