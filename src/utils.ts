@@ -11,7 +11,7 @@ import fetch from 'node-fetch';
 
 import memo from 'memoizerific';
 
-import { isPrivate } from 'ip';
+import { isPrivate, cidrSubnet } from 'ip';
 
 import {
     eq as Eq,
@@ -123,6 +123,16 @@ export const rules = run(function () {
     const through = R.o(
         testWith,
         R.map(R.cond([
+            [
+                R.startsWith('CIDR,'), R.pipe(
+                    R.replace('CIDR,', ''),
+                    R.pipe(
+                        cidrSubnet,
+                        R.prop('contains'),
+                        R.both(isIP),
+                    ),
+                ),
+            ],
             [
                 R.startsWith('REG,'), R.pipe(
                     R.replace('REG,', ''),
