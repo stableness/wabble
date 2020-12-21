@@ -85,6 +85,15 @@ export const mem = {
 
 
 
+export const isIP = R.o(
+    R.complement(R.equals(0)),
+    net.isIP,
+);
+
+
+
+
+
 export function testWith (list: Iterable<Fn<string, boolean>>) {
 
     return R.memoizeWith(R.identity, test);
@@ -440,7 +449,7 @@ export function portNormalize ({ port, protocol }: URL) {
 
 
 export const isPrivateIP = R.both(
-    R.o(R.complement(R.equals(0)), net.isIP),
+    isIP,
     isPrivate,
 );
 
