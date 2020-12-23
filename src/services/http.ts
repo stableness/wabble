@@ -4,7 +4,7 @@ import { Duplex, PassThrough } from 'stream';
 
 import http, { IncomingMessage, ServerResponse } from 'http';
 
-import { bind, mirror } from 'proxy-bind';
+import { bind } from 'proxy-bind';
 
 import {
     option as O,
@@ -201,24 +201,35 @@ export const requestOn = Rx.pipe(
                 return response.writeHead(503).end();
             }
 
-            const { noop: read } = u;
-            const [ source, { write } ] = mirror(new PassThrough());
-            const [ sink, { destroy } ] = mirror(new Duplex({ read, write }));
+            const source = new PassThrough();
+
+            const sink = new Duplex({
+                read: u.noop,
+                write: source.write.bind(source),
+            });
 
             const { method, headers, url: reqURL = '' } = request;
 
             const mock = http.request(reqURL, {
                 method,
                 headers: omitHopHeaders(headers),
-                createConnection: R.always(sink as Socket),
+                createConnection: F.constant(sink as Socket),
             });
 
             mock.flushHeaders();
 
             await Promise.all([
-                u.pump(request, mock).finally(destroy),
+
+                u.pump(request, mock),
                 u.pump(source, ...duplex, socket),
-            ]);
+
+            ]).finally(() => {
+                [ request, socket, source, sink, mock ].forEach(item => {
+                    if (item.destroyed === false) {
+                        item.destroy();
+                    }
+                });
+            });
 
         },
 
