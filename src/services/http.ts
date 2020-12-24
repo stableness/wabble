@@ -1,12 +1,13 @@
 import type { Socket } from 'net';
 import { URL } from 'url';
-import { Duplex, PassThrough } from 'stream';
+import { Duplex, PassThrough, Readable } from 'stream';
 
 import http, { IncomingMessage, ServerResponse } from 'http';
 
 import { bind } from 'proxy-bind';
 
 import {
+    io as IO,
     option as O,
     either as E,
     function as F,
@@ -204,32 +205,40 @@ export const requestOn = Rx.pipe(
             const source = new PassThrough();
 
             const sink = new Duplex({
+                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                // @ts-ignore
+                readable: false,
                 read: u.noop,
                 write: source.write.bind(source),
+                destroy: u.noop,
             });
 
             const { method, headers, url: reqURL = '' } = request;
 
-            const mock = http.request(reqURL, {
+            const encoder = http.request(reqURL, {
                 method,
                 headers: omitHopHeaders(headers),
                 createConnection: F.constant(sink as Socket),
             });
 
-            mock.flushHeaders();
+            encoder.flushHeaders();
 
-            await Promise.all([
+            const mock = Readable.from(
+                /*#__NOINLINE__*/ concat(source, request),
+                {
+                    objectMode: false,
+                    autoDestroy: true,
+                },
+            );
 
-                u.pump(request, mock),
-                u.pump(source, ...duplex, socket),
-
-            ]).finally(() => {
-                [ request, socket, source, sink, mock ].forEach(item => {
-                    if (item.destroyed === false) {
-                        item.destroy();
-                    }
-                });
-            });
+            await u.pump(mock, ...duplex, socket).finally(
+                /*#__NOINLINE__*/ destroy([
+                    request,
+                    response,
+                    encoder,
+                    source,
+                ]),
+            );
 
         },
 
@@ -279,7 +288,7 @@ export function mapRequest (
 ) {
     return {
         type: 'request' as const,
-        url: mapURL(request.url ?? ''),
+        url: new URL(request.url ?? ''),
         request,
         response,
     };
@@ -296,18 +305,12 @@ export function mapConnect (
 ) {
     return {
         type: 'connect' as const,
-        url: mapURL(`http://${ request.url }`),
+        url: new URL(`http://${ request.url }`),
         request,
         socket,
         head,
     };
 }
-
-
-
-
-
-export const mapURL = u.mem.in256(R.unary(R.constructN(1, URL)));
 
 
 
@@ -332,4 +335,28 @@ const CONST_PROXY_AUTHENTICATION = F.constant(u.headerJoin([
     'HTTP/1.1 407 Proxy Authentication Required',
     'Proxy-Authenticate: Basic realm="proxy auth please"',
 ]));
+
+
+
+
+
+type Item = Pick<Readable, 'destroyed' | 'destroy'>;
+
+const destroy = /*#__NOINLINE__*/ IO.traverseArray<Item, void>(item => () => {
+    if (item.destroyed !== true) {
+        item.destroy();
+    }
+});
+
+
+
+
+
+type AI = AsyncIterable<Buffer>;
+
+// eslint-disable-next-line @typescript-eslint/require-await
+const concat = async function* mock (header: AI, body: AI) {
+    yield* header;
+    yield* body;
+};
 
