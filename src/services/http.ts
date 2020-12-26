@@ -202,26 +202,32 @@ export const requestOn = Rx.pipe(
                 return response.writeHead(503).end();
             }
 
-            const source = new PassThrough();
+            const { method = 'GET', headers } = request;
 
-            const sink = new Duplex({
-                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                // @ts-ignore
-                readable: false,
-                read: u.noop,
-                write: source.write.bind(source),
+            const source = new PassThrough({
                 destroy: manualDestroy,
-            });
+            }) as unknown as Socket;
 
-            const { method, headers, url: reqURL = '' } = request;
+            const encoder = new http.OutgoingMessage();
 
-            const encoder = http.request(reqURL, {
-                method,
-                headers: omitHopHeaders(headers),
-                createConnection: F.constant(sink as Socket),
-            });
+            encoder.useChunkedEncodingByDefault = !bodilessMethod(method);
+            encoder.connection = source;
+
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
+            source._httpMessage = encoder;
+
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+            encoder._storeHeader(
+                `${ method } ${ url.pathname } HTTP/1.1\r\n`,
+                omitHopHeaders(headers),
+            );
 
             encoder.flushHeaders();
+
+
 
             await Promise.all([
 
@@ -326,6 +332,21 @@ export const omitHopHeaders = R.omit([
     'trailer',
     'te',
 ]);
+
+
+
+
+
+const bodilessMethod: u.Fn<string, boolean> = method => [
+
+    'GET',
+    'HEAD',
+    'DELETE',
+    'OPTIONS',
+    'TRACE',
+    'CONNECT',
+
+].includes(method.toUpperCase());
 
 
 
