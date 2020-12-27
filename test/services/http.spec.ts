@@ -457,7 +457,7 @@ export const temp = u.run(function () {
             const ser = http.createServer((req, res) => {
 
                 if (req.method === 'GET' && req.url === url.pathname) {
-                    res.writeHead(200);
+                    res.setHeader('Content-Length', flags.c?.length ?? 0);
                     res.write(flags.c ?? '');
                 } else {
                     res.writeHead(404);
