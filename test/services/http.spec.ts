@@ -459,9 +459,11 @@ export const temp = u.run(function () {
                 if (req.method === 'GET' && req.url === url.pathname) {
                     res.writeHead(200);
                     res.write(flags.c ?? '');
-                    res.end();
+                } else {
+                    res.writeHead(404);
                 }
 
+                res.end();
                 req.resume();
 
             });
