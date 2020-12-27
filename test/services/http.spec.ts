@@ -175,10 +175,11 @@ describe('httpProxy', () => {
                 proxy: temp.proxy,
                 REQUEST: temp.REQUEST,
                 CONNECT: temp.CONNECT,
+                CONNECT_H: temp.CONNECT_HEAD,
             })),
 
-            RTE.map(({ proxy, server, REQUEST, CONNECT }) => ({
-                task: TE.sequenceArray([ REQUEST, CONNECT ]),
+            RTE.map(({ proxy, server, REQUEST, CONNECT, CONNECT_H }) => ({
+                task: TE.sequenceArray([ REQUEST, CONNECT, CONNECT_H ]),
                 close () {
                     proxy.close();
                     server.close();
@@ -203,12 +204,13 @@ describe('httpProxy', () => {
 
                 }),
 
-                ([ request, connect ]) => RTE.asks(({ flags }) => {
+                ([ request, connect, connectH ]) => RTE.asks(({ flags }) => {
 
                     const content = readStr(flags.c ?? '');
 
                     expect(request).toBe(content);
                     expect(connect).toBe(content);
+                    expect(connectH).toBe(content);
 
                 }),
 
@@ -390,6 +392,46 @@ export const temp = u.run(function () {
 
 
 
+    const CONNECT_HEAD: Result<TE_ES> = ports => ({ url }) => {
+
+        const { headers } = genAuth(url);
+
+        return TE.of(F.tuple(F.pipe(
+
+            u.tryCatchToError(async () => {
+
+                const req = http.request({
+                    headers,
+                    host: url.hostname,
+                    port: ports.proxy,
+                    method: 'CONNECT',
+                    path: R.join(':', [ url.hostname, ports.server ]),
+                });
+
+                req.write(u.headerJoin([
+                    `GET ${ url.pathname } HTTP/1.1`,
+                    `Host: ${ req.path }`,
+                    'Connection: close',
+                ]));
+
+                await once(req, 'connect');
+
+                return F.pipe(
+                    await u.collectAsyncIterable(req.socket),
+                    Buffer.concat,
+                    R.toString,
+                    R.split('\r\n\r\n'),
+                    R.last,
+                ) as string;
+
+            }),
+
+        ), ports));
+
+    };
+
+
+
     const proxy: Result<Closing> = ports => ({ url, logging, flags }) => {
 
         const trimAuth: typeof genAuth = R.o(
@@ -485,7 +527,7 @@ export const temp = u.run(function () {
 
 
 
-    return { proxy, server, REQUEST, CONNECT };
+    return { proxy, server, REQUEST, CONNECT, CONNECT_HEAD };
 
 });
 

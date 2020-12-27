@@ -256,7 +256,7 @@ export const connectOn = Rx.pipe(
         (item): item is Connect => item.type === 'connect',
     ),
 
-    o.map(({ socket, url }) => ({
+    o.map(({ socket, url, head }) => ({
 
         host: url.hostname,
         port: u.portNormalize(url),
@@ -266,6 +266,10 @@ export const connectOn = Rx.pipe(
             if (R.isEmpty(duplex)) {
                 socket.resume();
                 return socket.end(u.headerJoin([ 'HTTP/1.0 503' ]));
+            }
+
+            if (head.length > 0) {
+                socket.unshift(head);
             }
 
             socket.write(u.headerJoin([ 'HTTP/1.0 200' ]));
