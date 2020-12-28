@@ -210,7 +210,7 @@ export const requestOn = Rx.pipe(
                 readable: false,
                 read: u.noop,
                 write: source.write.bind(source),
-                destroy: u.noop,
+                destroy: manualDestroy,
             });
 
             const { method, headers, url: reqURL = '' } = request;
@@ -223,22 +223,18 @@ export const requestOn = Rx.pipe(
 
             encoder.flushHeaders();
 
-            const mock = Readable.from(
-                /*#__NOINLINE__*/ concat(source, request),
-                {
-                    objectMode: false,
-                    autoDestroy: true,
-                },
-            );
+            await Promise.all([
 
-            await u.pump(mock, ...duplex, socket).finally(
-                /*#__NOINLINE__*/ destroy([
-                    request,
-                    response,
-                    encoder,
-                    source,
-                ]),
-            );
+                u.pump(request, encoder),
+                u.pump(source, ...duplex, socket),
+
+            ]).finally(/*#__NOINLINE__*/ destroyArray([
+
+                request,
+                response,
+                encoder,
+
+            ]));
 
         },
 
@@ -344,23 +340,20 @@ const CONST_PROXY_AUTHENTICATION = F.constant(u.headerJoin([
 
 
 
+const manualDestroy = function (this: Duplex) {
+    this.destroyed = true;
+    this.emit('close');
+};
+
+
+
+
+
 type Item = Pick<Readable, 'destroyed' | 'destroy'>;
 
-const destroy = /*#__NOINLINE__*/ IO.traverseArray<Item, void>(item => () => {
+const destroyArray = /*#__NOINLINE__*/ IO.traverseArray((item: Item) => () => {
     if (item.destroyed !== true) {
         item.destroy();
     }
 });
-
-
-
-
-
-type AI = AsyncIterable<Buffer>;
-
-// eslint-disable-next-line @typescript-eslint/require-await
-const concat = async function* mock (header: AI, body: AI) {
-    yield* header;
-    yield* body;
-};
 
