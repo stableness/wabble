@@ -117,6 +117,7 @@ rules:
 
 - `GET  /health`
 - `GET  /metrics`
+- `GET  /dump`
 - `POST /test-domain`
 - `POST /reload`
 - `POST /exit`
