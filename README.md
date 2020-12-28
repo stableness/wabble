@@ -9,6 +9,14 @@
 
 
 
+## Templates
+
+- https://github.com/stableness/joggle ([create](https://github.com/stableness/joggle/generate), [download](https://github.com/stableness/joggle/archive/master.zip))
+
+
+
+
+
 ## `setting.yml`
 
 ```yaml
@@ -121,12 +129,4 @@ rules:
 - `POST /test-domain`
 - `POST /reload`
 - `POST /exit`
-
-
-
-
-
-## Templates
-
-- https://github.com/stableness/joggle ([create](https://github.com/stableness/joggle/generate), [download](https://github.com/stableness/joggle/archive/master.zip))
 
