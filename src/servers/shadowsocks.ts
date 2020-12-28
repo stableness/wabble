@@ -201,16 +201,13 @@ function genAEADEncrypt (
             { authTagLength },
         );
 
-        const cipherText = Buffer.concat([
-            cipher.update(chunk),
-            cipher.final(),
-        ]);
-
-        const authTag = cipher.getAuthTag();
+        const _4 = cipher.update(chunk);
+        const _5 = cipher.final();
+        const _1 = cipher.getAuthTag();
 
         u.incrementLE(nonce);
 
-        return Buffer.concat([ cipherText, authTag ]);
+        return Buffer.concat([ _4, _5, _1 ]);
 
     };
 
