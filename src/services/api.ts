@@ -18,7 +18,7 @@ import * as o from 'rxjs/operators';
 import { bind } from 'proxy-bind';
 
 import type { Config, API } from '../config';
-import { CurryT, rxTap, str2arr, collectAsyncIterable, noop } from '../utils';
+import * as u from '../utils';
 
 
 
@@ -39,7 +39,7 @@ export function establish (api$: Rx.Observable<Config['api']>) {
 
             stateOfReq('GET /health'),
 
-            S.map(rxTap(({ res }) => {
+            S.map(u.rxTap(({ res }) => {
                 res.writeHead(200, { Via: 'potato' });
                 res.write('Still Alive\n');
                 res.end();
@@ -85,7 +85,7 @@ export function establish (api$: Rx.Observable<Config['api']>) {
 
             stateOfReq('POST /reload'),
 
-            S.map(rxTap(({ res }) => {
+            S.map(u.rxTap(({ res }) => {
                 res.writeHead(204).end();
             })),
 
@@ -95,7 +95,7 @@ export function establish (api$: Rx.Observable<Config['api']>) {
 
             stateOfReq('GET /dump'),
 
-            S.map(rxTap(({ res }) => {
+            S.map(u.rxTap(({ res }) => {
 
                 const format = R.pipe(
                     R.dropLast(5),
@@ -115,7 +115,7 @@ export function establish (api$: Rx.Observable<Config['api']>) {
                     'Content-Disposition': `attachment; filename="${ name }"`,
                 });
 
-                pipeline(getHeapSnapshot(), res, noop);
+                pipeline(getHeapSnapshot(), res, u.noop);
 
             })),
 
@@ -125,7 +125,7 @@ export function establish (api$: Rx.Observable<Config['api']>) {
 
             stateOfReq('POST /exit'),
 
-            S.map(rxTap(({ res }) => {
+            S.map(u.rxTap(({ res }) => {
                 res.writeHead(204).end();
             })),
 
@@ -135,7 +135,7 @@ export function establish (api$: Rx.Observable<Config['api']>) {
 
             stateOfReq('OPTIONS /*'),
 
-            S.map(rxTap(({ res }) => {
+            S.map(u.rxTap(({ res }) => {
                 res.writeHead(204, {
                     'Access-Control-Max-Age': 3_600,
                     'Access-Control-Allow-Methods': R.join(',', METHODS),
@@ -146,7 +146,7 @@ export function establish (api$: Rx.Observable<Config['api']>) {
         ),
 
         notFound$: S.gets<ObsJob, ObsJob>(
-            rxTap(({ res }) => {
+            u.rxTap(({ res }) => {
                 res.writeHead(404).end();
             }),
         ),
@@ -166,11 +166,11 @@ type ObsJob = Rx.Observable<Job>;
 
 type Req = `${ 'GET' | 'POST' | 'HEAD' | 'PUT' | 'OPTIONS' } /${ string }`;
 
-const stateOfReq: CurryT<[ Req, S.State<ObsJob, ObsJob> ]> =
+const stateOfReq: u.CurryT<[ Req, S.State<ObsJob, ObsJob> ]> =
     r => s => Rx.partition(s, reqEq(r))
 ;
 
-const reqEq: CurryT<[ Req, Job, boolean ]> = R.useWith(
+const reqEq: u.CurryT<[ Req, Job, boolean ]> = R.useWith(
     R.where, [
         F.flow(
             R.split(' '),
@@ -191,7 +191,7 @@ const reqEq: CurryT<[ Req, Job, boolean ]> = R.useWith(
 
 
 // eslint-disable-next-line deprecation/deprecation
-const from = F.flow(collectAsyncIterable, Rx.from);
+const from = F.flow(u.collectAsyncIterable, Rx.from);
 
 const sequenceState = apply.sequenceS(S.state);
 
@@ -199,7 +199,7 @@ const optionToSetup = O.fold(F.constant(Rx.EMPTY), setup);
 
 
 
-const METHODS = str2arr(`
+const METHODS = u.str2arr(`
     GET
     POST
     PUT
@@ -208,7 +208,7 @@ const METHODS = str2arr(`
     OPTIONS
 `);
 
-const HEADERS = str2arr(`
+const HEADERS = u.str2arr(`
     Authorization
     Content-Type
     X-Requested-With
