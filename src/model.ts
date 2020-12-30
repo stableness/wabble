@@ -20,8 +20,9 @@ import { bind } from 'proxy-bind';
 import type { Options } from './bin';
 
 import { connect } from './servers/index';
-import { combine, establish } from './services/index';
+import { combine } from './services/index';
 import { convert } from './settings/index';
+import { establish } from './services/api';
 
 import * as u from './utils';
 
