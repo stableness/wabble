@@ -1,3 +1,4 @@
+import { URL } from 'url';
 import { createServer, IncomingMessage, ServerResponse } from 'http';
 
 import { pipeline } from 'stream';
@@ -26,14 +27,14 @@ import * as u from '../utils';
 
 export function establish (api$: Rx.Observable<Config['api']>) {
 
-    const compute = S.evaluate(
+    const [ address$, job$ ] = split(
         api$.pipe(
-            o.switchMap(optionToSetup),
+            o.switchMap(O.fold(F.constant(Rx.EMPTY), setup)),
             o.share(),
         ),
     );
 
-    return compute(sequenceState({
+    return S.evaluate (job$) (sequenceState({
 
         health$: F.pipe(
 
@@ -149,6 +150,21 @@ export function establish (api$: Rx.Observable<Config['api']>) {
             res.writeHead(404).end();
         })),
 
+        address$: S.gets(F.constant(
+            address$.pipe(
+                o.first(),
+                o.map(addr => ({
+                    ...addr,
+                    to (path: string) {
+                        return new URL(
+                            path,
+                            `http://${ addr.address }:${ addr.port }`,
+                        );
+                    },
+                })),
+            ),
+        )),
+
     }));
 
 }
@@ -157,14 +173,23 @@ export function establish (api$: Rx.Observable<Config['api']>) {
 
 
 
+type Obs <T> = Rx.Observable<T>;
+
+type Address = { address: string, family: string, port: number };
+type Address$ = Obs<Address>;
+
 type Job = { req: IncomingMessage, res: ServerResponse };
-type ObsJob = Rx.Observable<Job>;
+type Job$ = Obs<Job>;
 
 
+
+export const split: u.Fn<Obs<Address | Job>, [ Address$, Job$ ]> =
+    s => Rx.partition(s, R.propSatisfies(R.is(Number), 'port')) as never
+;
 
 type Req = `${ 'GET' | 'POST' | 'HEAD' | 'PUT' | 'OPTIONS' } /${ string }`;
 
-const stateOfReq: u.CurryT<[ Req, S.State<ObsJob, ObsJob> ]> =
+const stateOfReq: u.Fn<Req, S.State<Job$, Job$>> =
     r => s => Rx.partition(s, reqEq(r))
 ;
 
@@ -193,8 +218,6 @@ const from = F.flow(u.collectAsyncIterable, Rx.from);
 
 const sequenceState = apply.sequenceS(S.state);
 
-const optionToSetup = O.fold(F.constant(Rx.EMPTY), setup);
-
 
 
 const METHODS = u.str2arr(`
@@ -218,7 +241,7 @@ const HEADERS = u.str2arr(`
 
 function setup ({ port, host, cors }: API) {
 
-    return new Rx.Observable<Job>(subject => {
+    return new Rx.Observable<Address | Job>(subject => {
 
         const { next, error, complete } = bind(subject);
 
@@ -232,9 +255,20 @@ function setup ({ port, host, cors }: API) {
 
         }
 
+        function onListening () {
+
+            const address = server.address();
+
+            if (address != null && typeof address !== 'string') {
+                next(address);
+            }
+
+        }
+
         const server = createServer()
 
             .addListener('request', onRequest)
+            .addListener('listening', onListening)
             .addListener('error', error)
             .addListener('close', complete)
 
@@ -247,6 +281,7 @@ function setup ({ port, host, cors }: API) {
             server
 
                 .removeListener('request', onRequest)
+                .removeListener('listening', onListening)
                 .removeListener('error', error)
                 .removeListener('close', complete)
 
