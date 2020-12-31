@@ -145,11 +145,9 @@ export function establish (api$: Rx.Observable<Config['api']>) {
 
         ),
 
-        notFound$: S.gets<ObsJob, ObsJob>(
-            u.rxTap(({ res }) => {
-                res.writeHead(404).end();
-            }),
-        ),
+        notFound$: S.gets(u.rxTap(({ res }) => {
+            res.writeHead(404).end();
+        })),
 
     }));
 
