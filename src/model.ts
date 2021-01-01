@@ -178,7 +178,7 @@ const dealer$ = config$.pipe(
 
 const doh$ = config$.pipe(
     o.pluck('doh'),
-    o.map(O.map(R.unary(u.DoH))),
+    o.map(O.map(R.unary(u.genDoH))),
 );
 
 const services$ = config$.pipe(

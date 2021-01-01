@@ -41,7 +41,7 @@ import {
     split,
     loopNext,
     genLooping,
-    DoH,
+    genDoH,
     sieve,
     run as force,
     rxTap,
@@ -767,11 +767,11 @@ describe('sieve', () => {
 
 
 
-describe('DoH', () => {
+describe('genDoH', () => {
 
     test('invalid endpoint', async () => {
 
-        const doh = DoH('waaaaaaaaaaaaaaaaat');
+        const doh = genDoH('waaaaaaaaaaaaaaaaat');
 
         const results = await force(doh('example.com'));
 
@@ -781,7 +781,7 @@ describe('DoH', () => {
 
     test('invalid path', async () => {
 
-        const doh = DoH(CF_DOH_ENDPOINT, 'waaaaaaaaaaaaaaaaat');
+        const doh = genDoH(CF_DOH_ENDPOINT, 'waaaaaaaaaaaaaaaaat');
 
         const results = await force(doh('example.com'));
 
@@ -793,7 +793,7 @@ describe('DoH', () => {
 
         nock.load(fixtures('doh/valid.json'));
 
-        const doh = DoH(CF_DOH_ENDPOINT);
+        const doh = genDoH(CF_DOH_ENDPOINT);
 
         const results = await force(doh('example.com'));
 
@@ -805,7 +805,7 @@ describe('DoH', () => {
 
         nock.load(fixtures('doh/empty.json'));
 
-        const doh = DoH(CF_DOH_ENDPOINT);
+        const doh = genDoH(CF_DOH_ENDPOINT);
 
         const results = await force(doh('example.com'));
 

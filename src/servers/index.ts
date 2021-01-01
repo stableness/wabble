@@ -15,7 +15,7 @@ import {
 } from 'fp-ts';
 
 import type { Remote } from '../config';
-import { DoH, Fn, catchKToError } from '../utils';
+import { genDoH, Fn, catchKToError } from '../utils';
 import { logLevel } from '../model';
 import type { Hook } from '../services/index';
 
@@ -32,7 +32,7 @@ type Opts = {
     host: string;
     port: number;
     hook: Hook;
-    doh: O.Option<ReturnType<typeof DoH>>;
+    doh: O.Option<ReturnType<typeof genDoH>>;
     testDoH: Fn<string, boolean>;
     logger: Logger;
 };
