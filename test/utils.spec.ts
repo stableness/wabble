@@ -1,4 +1,5 @@
 import { URL } from 'url';
+import DNS from 'dns';
 import { Writable, Readable } from 'stream';
 
 import nock from 'nock';
@@ -43,6 +44,7 @@ import {
     loopNext,
     genLooping,
     genDoH,
+    genDNS,
     sieve,
     run as force,
     rxTap,
@@ -65,6 +67,12 @@ import { CF_DOH_ENDPOINT } from '../src/settings/reading';
 import {
     paths,
 } from './__helpers__';
+
+
+
+
+
+jest.mock('dns');
 
 
 
@@ -846,6 +854,96 @@ describe('genDoH', () => {
         const results = await force(doh('example.com'));
 
         expect(E.isRight(results)).toBe(false);
+
+    });
+
+});
+
+
+
+
+
+describe('genDNS', () => {
+
+    const setServers = jest.fn();
+    const resolve4 = jest.fn();
+
+
+
+    beforeAll(() => {
+
+        DNS.promises = {
+
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
+            Resolver: function () {
+                return {
+                    setServers,
+                    resolve4,
+                };
+            },
+
+        };
+
+    });
+
+    beforeEach(() => {
+        setServers.mockRestore();
+        resolve4.mockReset();
+    });
+
+    afterAll(() => {
+        jest.clearAllMocks();
+    });
+
+
+
+    test.each([
+
+        [                             ],
+        [            'not ip address' ],
+        [ '1.1.1.1', 'not ip address' ],
+
+    ])('invalid resolver [ %s, %s ]', async (...list) => {
+
+        setServers.mockImplementationOnce(() => {
+            throw new Error('invalid ips');
+        });
+
+        const dns = genDNS(list);
+
+        const results = await force(dns('example.com'));
+
+        expect(resolve4).not.toHaveBeenCalled();
+        expect(E.isLeft(results)).toBe(true);
+
+    });
+
+    test('empty result', async () => {
+
+        const dns = genDNS('1.1.1.1');
+
+        resolve4.mockResolvedValueOnce([]);
+
+        const results = await force(dns('example.com'));
+
+        expect(results).toStrictEqual(E.left(new Error('empty result')));
+
+    });
+
+    test('normal result', async () => {
+
+        const dns = genDNS('1.1.1.1');
+
+        const entries = [
+            { address: '127.0.0.1', ttl: 42 },
+        ];
+
+        resolve4.mockResolvedValueOnce(entries);
+
+        const results = await force(dns('example.com'));
+
+        expect(results).toStrictEqual(E.right(entries));
 
     });
 
