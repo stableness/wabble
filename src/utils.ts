@@ -1,4 +1,5 @@
 import net from 'net';
+import { promises as pDNS } from 'dns';
 import { URL } from 'url';
 import { once } from 'events';
 import { IncomingHttpHeaders } from 'http';
@@ -762,6 +763,51 @@ export function genDoH (endpoint: string, path = '@stableness/dohdec') {
     );
 
 }
+
+
+
+
+
+export function genDNS (servers: string | readonly string[]) {
+
+    const arr = typeof servers === 'string' ? [ servers ] : servers;
+
+    const setServers = F.pipe(
+
+        RNEA.fromReadonlyArray(arr),
+        E.fromOption(() => new Error('empty resolver')),
+        E.chain(list => E.tryCatch(() => {
+
+            const resolver = new pDNS.Resolver();
+            resolver.setServers(list);
+
+            return resolver;
+
+        }, E.toError)),
+
+    );
+
+    return (name: string) => F.pipe(
+
+        TE.fromEither(setServers),
+        TE.chain(resolve4(name)),
+
+    );
+
+}
+
+const resolve4 = (name: string) => (resolver: pDNS.Resolver) => F.pipe(
+
+    tryCatchToError(() => {
+        return resolver.resolve4(name, { ttl: true });
+    }),
+
+    TE.chain(F.flow(
+        RNEA.fromArray,
+        TE.fromOption(() => new Error('empty result')),
+    )),
+
+);
 
 
 
