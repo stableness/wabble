@@ -156,12 +156,12 @@ const rules$ = config$.pipe(
         reject: R.either(
             rules.reject.yes,
             R.both(
-                R.complement(rules.reject.not),
+                F.not(rules.reject.not),
                 reject,
             ),
         ),
         direct: R.both(
-            R.complement(rules.proxy.all),
+            F.not(rules.proxy.all),
             R.anyPass([ rules.direct.all, direct, u.isPrivateIP ]),
         ),
         doh: R.either(rules.direct.doh, rules.proxy.doh),

@@ -14,14 +14,14 @@ import { option2B, catchKToError } from '../utils';
 
 
 // :: number[] -> boolean
-export const do_not_have_authentication = R.complement(R.includes(0x02));
+export const do_not_have_authentication = F.not(R.includes(0x02));
 
 
 
 
 
 // :: Option -> boolean
-export const do_not_require = R.complement(option2B);
+export const do_not_require = F.not(option2B);
 
 
 

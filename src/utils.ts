@@ -86,7 +86,7 @@ export const mem = {
 
 
 export const isIP = R.o(
-    R.complement(R.equals(0)),
+    F.not(R.equals(0)),
     net.isIP,
 );
 
@@ -479,7 +479,7 @@ export const readTrimmedNonEmptyString = F.pipe(
     Dc.string,
     Dc.map(R.trim),
     Dc.refine(
-        R.complement(R.equals('')) as (str: string) => str is NonEmptyString,
+        F.not(R.equals('')) as (str: string) => str is NonEmptyString,
         'NonEmptyString',
     ),
 );
