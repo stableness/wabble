@@ -20,8 +20,9 @@ import {
     either as E,
     taskEither as TE,
     option as O,
+    string as Str,
     function as F,
-    nonEmptyArray as NEA,
+    readonlyNonEmptyArray as RNEA,
 } from 'fp-ts';
 
 import * as Dc from 'io-ts/Decoder';
@@ -315,9 +316,16 @@ export function split ({ at }: { at: number }) {
 
 
 
+export function toError (e: unknown): Error {
+    return e instanceof Error ? e : new Error(String(e));
+}
+
 // :: (() -> Promise a) -> TaskEither Error a
 export function tryCatchToError <A> (fn: F.Lazy<Promise<A>>) {
-    return TE.tryCatch(fn, E.toError);
+    return F.pipe(
+        TE.tryCatch(fn),
+        TE.mapLeft(toError),
+    );
 }
 
 
@@ -327,7 +335,7 @@ export function tryCatchToError <A> (fn: F.Lazy<Promise<A>>) {
 // :: (a -> Promise b) -> a -> TaskEither Error b
 export function catchKToError <A extends ReadonlyArray<unknown>, B>
 (fn: (...args: A) => Promise<B>) {
-    return TE.tryCatchK(fn, E.toError);
+    return TE.tryCatchK(fn, toError);
 }
 
 
@@ -343,7 +351,7 @@ export async function unwrapTaskEither <E, A> (task: TE.TaskEither<E, A>) {
         return result.right;
     }
 
-    throw E.toError(result.left);
+    throw toError(result.left);
 
 }
 
@@ -592,8 +600,8 @@ export const basicInfo = run(function () {
 
 export const decoderNonEmptyArrayOf = F.flow(
     Dc.array,
-    Dc.map(NEA.fromArray),
-    Dc.refine(O.isSome, 'NonEmptyArray'),
+    Dc.map(RNEA.fromReadonlyArray),
+    Dc.refine(O.isSome, 'ReadonlyNonEmptyArray'),
     Dc.map(R.prop('value')),
 );
 
@@ -610,14 +618,12 @@ export const option2B = O.fold(F.constFalse, F.constTrue);
 
 export const eqBasic = F.pipe(
 
-    Eq.getStructEq<Basic>({
-        password: Eq.eqString,
-        username: Eq.eqString,
+    Eq.struct<Basic>({
+        password: Str.Eq,
+        username: Str.Eq,
     }),
 
     R.prop('equals'),
-
-    R.curry,
 
 );
 

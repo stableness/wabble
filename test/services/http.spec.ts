@@ -4,7 +4,6 @@ import { once } from 'events';
 import { URL, URLSearchParams as SearchParams } from 'url';
 
 import {
-    apply,
     option as O,
     function as F,
     either as E,
@@ -169,18 +168,19 @@ describe('httpProxy', () => {
 
         const invoke = SRTE.evaluate({ proxy: 0, server: 0 });
 
-        await RTE.run(F.pipe(
+        await u.run(F.pipe(
 
-            invoke(sequence({
-                server: temp.server,
-                proxy: temp.proxy,
-                REQUEST: temp.REQUEST,
-                CONNECT: temp.CONNECT,
-                CONNECT_H: temp.CONNECT_HEAD,
-            })),
+            invoke(F.pipe(
+                SRTE.of({}) as never,
+                SRTE.apS('server', temp.server),
+                SRTE.apS('proxy', temp.proxy),
+                SRTE.apS('REQUEST', temp.REQUEST),
+                SRTE.apS('CONNECT', temp.CONNECT),
+                SRTE.apS('CONNECT_H', temp.CONNECT_HEAD),
+            )),
 
             RTE.map(({ proxy, server, REQUEST, CONNECT, CONNECT_H }) => ({
-                task: TE.sequenceArray([ REQUEST, CONNECT, CONNECT_H ]),
+                task: TE.sequenceReadonlyArray([ REQUEST, CONNECT, CONNECT_H ]),
                 close () {
                     proxy.close();
                     server.close();
@@ -217,7 +217,7 @@ describe('httpProxy', () => {
 
             ),
 
-        ), env);
+        )(env));
 
     });
 
@@ -226,8 +226,6 @@ describe('httpProxy', () => {
 
 
 
-
-export const sequence = apply.sequenceS(SRTE.stateReaderTaskEither);
 
 export const flushHeaders = R.tap((req: Req) => req.flushHeaders());
 

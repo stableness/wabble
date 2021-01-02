@@ -6,7 +6,6 @@ import { pipeline } from 'stream';
 import { getHeapSnapshot } from 'v8';
 
 import {
-    apply,
     option as O,
     state as S,
     function as F,
@@ -35,9 +34,11 @@ export function establish (api$: Rx.Observable<Config['api']>) {
         ),
     );
 
-    return S.evaluate (job$) (sequenceState({
+    return S.evaluate (job$) (F.pipe(
 
-        health$: F.pipe(
+        S.of({}) as never,
+
+        S.apS('health$', F.pipe(
 
             stateOfReq('GET /health'),
 
@@ -47,9 +48,9 @@ export function establish (api$: Rx.Observable<Config['api']>) {
                 res.end();
             })),
 
-        ),
+        )),
 
-        metrics$: F.pipe(
+        S.apS('metrics$', F.pipe(
 
             stateOfReq('GET /metrics'),
 
@@ -64,9 +65,9 @@ export function establish (api$: Rx.Observable<Config['api']>) {
                 },
             }))),
 
-        ),
+        )),
 
-        test_domain$: F.pipe(
+        S.apS('test_domain$', F.pipe(
 
             stateOfReq('POST /test-domain'),
 
@@ -93,10 +94,9 @@ export function establish (api$: Rx.Observable<Config['api']>) {
                     },
                 })),
             ))),
+        )),
 
-        ),
-
-        reload$: F.pipe(
+        S.apS('reload$', F.pipe(
 
             stateOfReq('POST /reload'),
 
@@ -104,9 +104,9 @@ export function establish (api$: Rx.Observable<Config['api']>) {
                 res.writeHead(204).end();
             })),
 
-        ),
+        )),
 
-        dump$: F.pipe(
+        S.apS('dump$', F.pipe(
 
             stateOfReq('GET /dump'),
 
@@ -134,9 +134,9 @@ export function establish (api$: Rx.Observable<Config['api']>) {
 
             })),
 
-        ),
+        )),
 
-        exit$: F.pipe(
+        S.apS('exit$', F.pipe(
 
             stateOfReq('POST /exit'),
 
@@ -144,9 +144,9 @@ export function establish (api$: Rx.Observable<Config['api']>) {
                 res.writeHead(204).end();
             })),
 
-        ),
+        )),
 
-        cors$: F.pipe(
+        S.apS('cors$', F.pipe(
 
             stateOfReq('OPTIONS /*'),
 
@@ -158,13 +158,13 @@ export function establish (api$: Rx.Observable<Config['api']>) {
                 }).end();
             })),
 
-        ),
+        )),
 
-        notFound$: S.gets(u.rxTap(({ res }) => {
+        S.apS('notFound$', S.gets(u.rxTap(({ res }) => {
             res.writeHead(404).end();
-        })),
+        }))),
 
-        address$: S.gets(F.constant(
+        S.apS('address$', S.gets(F.constant(
             address$.pipe(
                 o.first(),
                 o.map(addr => ({
@@ -177,9 +177,9 @@ export function establish (api$: Rx.Observable<Config['api']>) {
                     },
                 })),
             ),
-        )),
+        ))),
 
-    }));
+    ));
 
 }
 
@@ -229,8 +229,6 @@ const reqEq: u.CurryT<[ Req, Job, boolean ]> = R.useWith(
 
 // eslint-disable-next-line deprecation/deprecation
 const from = F.flow(u.collectAsyncIterable, Rx.from);
-
-const sequenceState = apply.sequenceS(S.state);
 
 
 

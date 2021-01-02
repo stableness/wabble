@@ -2,13 +2,12 @@ import { promises as pDNS } from 'dns';
 
 import {
     either as E,
-    task as T,
     taskEither as TE,
     function as F,
     readonlyNonEmptyArray as RNEA,
 } from 'fp-ts';
 
-import { run, tryCatchToError } from './index';
+import { run, tryCatchToError, toError } from './index';
 
 
 
@@ -43,7 +42,7 @@ export function genDoH (endpoint: string, path = '@stableness/dohdec') {
 
     return (name: string) => F.pipe(
 
-        T.fromTask(() => doh),
+        F.constant(doh),
 
         TE.chain(dns => {
             return tryCatchToError(() => {
@@ -52,7 +51,7 @@ export function genDoH (endpoint: string, path = '@stableness/dohdec') {
         }),
 
         TE.chain(({ answers }) => F.pipe(
-            RNEA.fromArray(answers),
+            RNEA.fromReadonlyArray(answers),
             TE.fromOption(() => new Error('empty result')),
         )),
 
@@ -95,7 +94,7 @@ export function genDoT (conn: Conn, path = '@stableness/dohdec') {
 
     return (name: string, opts?: LookupOpts) => F.pipe(
 
-        T.fromTask(() => dot),
+        F.constant(dot),
 
         TE.chain(dns => {
             return tryCatchToError(() => {
@@ -104,7 +103,7 @@ export function genDoT (conn: Conn, path = '@stableness/dohdec') {
         }),
 
         TE.chain(({ answers }) => F.pipe(
-            RNEA.fromArray(answers),
+            RNEA.fromReadonlyArray(answers),
             TE.fromOption(() => new Error('empty result')),
         )),
 
@@ -133,7 +132,8 @@ export function genDNS (servers: string | readonly string[]) {
 
             return resolver;
 
-        }, E.toError)),
+        })),
+        E.mapLeft(toError),
 
     );
 
@@ -153,7 +153,7 @@ export const resolve4 = (name: string) => (resolver: pDNS.Resolver) => F.pipe(
     }),
 
     TE.chain(F.flow(
-        RNEA.fromArray,
+        RNEA.fromReadonlyArray,
         TE.fromOption(() => new Error('empty result')),
     )),
 

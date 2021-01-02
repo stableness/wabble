@@ -139,10 +139,11 @@ export const socks5Proxy =
                         TE.chain(([ VER ]) => {
 
                             if (VER === 0x01) {
-                                return readSequenceS({
-                                    username: frameToString,
-                                    password: frameToString,
-                                });
+                                return F.pipe(
+                                    TE.Do,
+                                    apSeq('username', frameToString),
+                                    apSeq('password', frameToString),
+                                );
                             }
 
                             return F.pipe(
@@ -279,7 +280,7 @@ export const socks5Proxy =
 
 
 
-const readSequenceS = apply.sequenceS(TE.taskEitherSeq);
+const apSeq = apply.apS(TE.ApplicativeSeq);
 
 const leftIOErr = F.flow(
     Error,

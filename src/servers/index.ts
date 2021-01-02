@@ -9,8 +9,8 @@ import {
     task as T,
     taskEither as TE,
     readerTaskEither as RTE,
-    map as fpMap,
-    eq as Eq,
+    readonlyMap as fpMap,
+    string as Str,
     either as E,
     option as O,
     function as F,
@@ -246,7 +246,7 @@ const setCache: u.CurryT<[
 };
 
 const dnsCache = new Map<string, string>();
-const nsLookup = (host: string) => fpMap.lookup (Eq.eqString) (host) (dnsCache);
+const nsLookup = (host: string) => fpMap.lookup (Str.Eq) (host) (dnsCache);
 const updateCache = setCache(dnsCache);
 
 

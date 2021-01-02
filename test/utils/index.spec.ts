@@ -450,7 +450,7 @@ describe('unwrapTaskEither', () => {
     test('reject', async () => {
 
         const wat = new Error('wat');
-        const task = TE.throwError(wat);
+        const task = TE.left(wat);
 
         await expect(unwrapTaskEither(task)).rejects.toThrow(wat);
 
@@ -459,7 +459,7 @@ describe('unwrapTaskEither', () => {
     test('reject non error', async () => {
 
         const wat = 'wat';
-        const task = TE.throwError(wat);
+        const task = TE.left(wat);
 
         await expect(unwrapTaskEither(task)).rejects.toThrow(wat);
 
@@ -715,7 +715,9 @@ describe('readOptionalString', () => {
 
     ])('%p', (raw, result) => {
 
-        expect(equals(readOptionalString(raw), result)).toBe(true);
+        const eq = equals(readOptionalString(raw));
+
+        expect(eq(result)).toBe(true);
 
     });
 

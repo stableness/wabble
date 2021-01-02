@@ -82,10 +82,12 @@ const decodeServers = F.pipe(
         const port = u.portNormalize(uri);
         const proto = R.init(protocol);
 
-        const hasAuth = F.constant(R.not(u.eqBasic(
-            { username, password },
-            { username: '', password: '' },
-        )));
+        const hasAuth = F.constant(
+            R.not(
+                // eslint-disable-next-line max-len
+                u.eqBasic ({ username, password }) ({ username: '', password: '' }),
+            ),
+        );
 
         const baseWith = R.mergeLeft({
             host: hostname,
@@ -359,7 +361,7 @@ export const convert: u.Fn<unknown, Config> = F.flow(
 type TagsOnlyRemote = Partial<Remote> & Pick<Remote, 'tags'>;
 
 export function filterTags
-<T extends TagsOnlyRemote> (servers: T[], tags?: string[]) {
+<T extends TagsOnlyRemote> (servers: readonly T[], tags?: string[]) {
 
     // tags
     const t = R.uniq(tags ?? []);

@@ -126,7 +126,7 @@ const config$ = loader$.pipe(
     o.map(R.unary(loadYAML)),
     o.map(convert),
     o.catchError(err => {
-        const { message } = E.toError(err);
+        const { message } = u.toError(err);
         logger.error(message);
         return Rx.EMPTY;
     }),

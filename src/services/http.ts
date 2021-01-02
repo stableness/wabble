@@ -358,7 +358,8 @@ const manualDestroy = function (this: Duplex) {
 
 type Item = Pick<Readable, 'destroyed' | 'destroy'>;
 
-const destroyArray = /*#__NOINLINE__*/ IO.traverseArray((item: Item) => () => {
+// eslint-disable-next-line max-len
+const destroyArray = /*#__NOINLINE__*/ IO.traverseReadonlyArray((item: Item) => () => {
     if (item.destroyed !== true) {
         item.destroy();
     }
