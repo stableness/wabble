@@ -1,6 +1,6 @@
 import pino from 'pino';
 
-import { safeLoad } from 'js-yaml';
+import { load as loadYAML } from 'js-yaml';
 
 import * as R from 'ramda';
 
@@ -119,7 +119,7 @@ const loader$ = new Rx.ReplaySubject<string>(1);
 
 const config$ = loader$.pipe(
     o.switchMap(u.loadPath),
-    o.map(R.unary(safeLoad)),
+    o.map(R.unary(loadYAML)),
     o.map(convert),
     o.catchError(err => {
         const { message } = E.toError(err);
