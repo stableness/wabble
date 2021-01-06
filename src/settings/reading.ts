@@ -238,6 +238,80 @@ export const decodeAPI = F.pipe(
 
 
 
+const { MAX_SAFE_INTEGER: MAX_INT } = Number;
+
+export const decodeResolver = F.pipe(
+
+    Dc.partial({
+
+        ttl: Dc.partial({
+            min: Dc.number,
+            max: Dc.number,
+        }),
+
+        list: F.pipe(
+
+            baseURI,
+
+            Dc.parse(({ uri }) => {
+
+                const proto = Dc.union(
+                    Dc.literal('https'),
+                    Dc.literal('udp'),
+                    Dc.literal('tls'),
+                );
+
+                return F.pipe(
+
+                    R.init(uri.protocol),
+
+                    proto.decode,
+
+                    E.fold(
+                        () => Dc.failure(uri.protocol, 'invalid NS resolver'),
+                        protocol => Dc.success({ uri, protocol }),
+                    ),
+
+                );
+
+            }),
+
+            u.decoderNonEmptyArrayOf,
+
+        ),
+
+    }),
+
+    Dc.map(({ ttl, list }) => {
+
+        return {
+
+            ttl: F.pipe(
+                O.fromNullable(ttl),
+                O.map(opts => {
+
+                    const min = R.max(0, opts.min ?? 0);
+                    const max = R.clamp(min, MAX_INT, opts.max ?? MAX_INT);
+
+                    const calc = R.clamp(min, max);
+
+                    return { min, max, calc };
+
+                }),
+            ),
+
+            list: O.fromNullable(list),
+
+        };
+
+    }),
+
+);
+
+
+
+
+
 export const { decode: decodeConfig } = F.pipe(
 
     Dc.type({
