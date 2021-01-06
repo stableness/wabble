@@ -164,7 +164,6 @@ const rules$ = config$.pipe(
             F.not(rules.proxy.all),
             R.anyPass([ rules.direct.all, direct, u.isPrivateIP ]),
         ),
-        doh: R.either(rules.direct.doh, rules.proxy.doh),
     })),
 );
 
@@ -174,11 +173,6 @@ const dealer$ = config$.pipe(
     o.map(next => ({
         hit: () => O.fromNullable(next()),
     })),
-);
-
-const doh$ = config$.pipe(
-    o.pluck('doh'),
-    o.map(O.map(R.unary(u.genDoH))),
 );
 
 const services$ = config$.pipe(
@@ -248,9 +242,9 @@ const runner$ = services$.pipe(
 
     o.publish(Rx.pipe(
 
-        o.withLatestFrom(rules$, doh$, (
+        o.withLatestFrom(rules$, (
                 { host, port, hook },
-                rules, doh,
+                rules,
         ) => {
 
             const log = logger.child({ host, port });
@@ -259,8 +253,10 @@ const runner$ = services$.pipe(
             const direction = rules.direct(host);
 
             const hopTo = /*#__NOINLINE__*/ connect({
-                host, port, doh, testDoH: rules.doh, logger: log,
+                host,
+                port,
                 hook: u.catchKToError(hook),
+                logger: log,
             });
 
             return { log, rejection, direction, hopTo, hook };

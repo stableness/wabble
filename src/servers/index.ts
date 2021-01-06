@@ -32,8 +32,6 @@ type Opts = {
     host: string;
     port: number;
     hook: (...args: Parameters<Hook>) => TE.TaskEither<Error, void>;
-    doh: O.Option<ReturnType<typeof genDoH>>;
-    testDoH: Fn<string, boolean>;
     logger: Logger;
 };
 
@@ -53,15 +51,10 @@ const nsLookup = (host: string) => fpMap.lookup (Eq.eqString) (host) (dnsCache);
 /*#__NOINLINE__*/
 export function connect (connOpts: Opts) {
 
-    const { port, host, testDoH, hook, logger } = connOpts;
+    const { port, host, hook, logger } = connOpts;
 
     /*#__NOINLINE__*/
     return function toServer (server: O.Option<Remote> | 'origin') {
-
-        const fetchIP = testDoH(host)
-            ? /*#__NOINLINE__*/ query(connOpts)
-            : T.of(host)
-        ;
 
         if (server === 'origin') {
 

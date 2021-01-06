@@ -10,49 +10,12 @@ import {
 
     convert,
     filterTags,
-    decodeDoH,
     decodeResolver,
     decodeAPI,
-    CF_DOH_ENDPOINT,
 
 } from '../../src/settings/reading';
 
 import * as u from '../../src/utils';
-
-
-
-
-
-describe('readDoH', () => {
-
-    const { decode: readDoH } = decodeDoH;
-
-    test.each([
-        42,
-        'wat',
-        null,
-        undefined,
-    ])('%s', value => {
-        expect(E.isLeft(readDoH(value))).toBe(true);
-    });
-
-    test('true', () => {
-        expect(readDoH(true)).toStrictEqual(E.right(CF_DOH_ENDPOINT));
-    });
-
-    test('false', () => {
-        expect(readDoH(false)).toStrictEqual(E.right(void 0));
-    });
-
-    test('custom', () => {
-
-        const DOH = '     https://ecs-doh.dnswarden.com/uncensored-ecs     ';
-
-        expect(readDoH(DOH)).toStrictEqual(E.right(DOH.trim()));
-
-    });
-
-});
 
 
 

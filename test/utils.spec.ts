@@ -62,8 +62,6 @@ import {
 
 } from '../src/utils';
 
-import { CF_DOH_ENDPOINT } from '../src/settings/reading';
-
 import {
     paths,
 } from './__helpers__';
@@ -812,6 +810,8 @@ describe('sieve', () => {
 
 
 describe('genDoH', () => {
+
+    const CF_DOH_ENDPOINT = 'https://cloudflare-dns.com/dns-query';
 
     test('invalid endpoint', async () => {
 

@@ -25,35 +25,6 @@ const baseURI = Dc.type({ uri: u.readURL });
 
 
 
-export const CF_DOH_ENDPOINT = 'https://cloudflare-dns.com/dns-query' as HttpOrHttps;
-
-export type HttpOrHttps = string & { readonly HttpOrHttps: unique symbol };
-
-export const trimmedStartsWithHttpOrHttps = F.pipe(
-    u.readTrimmedNonEmptyString,
-    Dc.refine(
-        R.either(
-            R.startsWith('http://'),
-            R.startsWith('https://'),
-        ) as (str: string) => str is HttpOrHttps,
-        'HttpOrHttps',
-    ),
-);
-
-const flagOnToCloudFlare = F.pipe(
-    Dc.boolean,
-    Dc.map(on => on ? CF_DOH_ENDPOINT : void 0),
-);
-
-export const decodeDoH = Dc.union(
-    flagOnToCloudFlare,
-    trimmedStartsWithHttpOrHttps,
-);
-
-
-
-
-
 const decodeServices = F.pipe(
 
     baseURI,
@@ -325,7 +296,6 @@ export const { decode: decodeConfig } = F.pipe(
     Dc.intersect(Dc.partial({
 
         api: decodeAPI,
-        doh: decodeDoH,
         tags: u.readTrimmedNonEmptyStringArr,
 
         sieve: Dc.partial({
@@ -347,14 +317,12 @@ export const convert: u.Fn<unknown, Config> = F.flow(
 
     E.mapLeft(Dc.draw),
 
-    E.map(({ services, doh, servers, rules, tags, sieve, api }) => ({
+    E.map(({ services, servers, rules, tags, sieve, api }) => ({
 
         rules,
         services,
 
         servers: filterTags(servers, tags),
-
-        doh: O.fromNullable(doh),
 
         api: O.fromNullable(api),
 

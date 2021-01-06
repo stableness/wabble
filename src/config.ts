@@ -139,8 +139,6 @@ export interface Config {
 
     services: RNEA.ReadonlyNonEmptyArray<Service>;
 
-    doh: O.Option<string>;
-
     api: O.Option<API>;
 
     servers: ReadonlyArray<Remote>;
