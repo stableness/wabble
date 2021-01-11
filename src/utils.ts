@@ -16,6 +16,7 @@ import { isPrivate, cidrSubnet } from 'ip';
 import {
     eq as Eq,
     either as E,
+    task as T,
     taskEither as TE,
     option as O,
     function as F,
@@ -24,6 +25,8 @@ import {
 } from 'fp-ts';
 
 import * as Dc from 'io-ts/Decoder';
+
+import { bind } from 'proxy-bind';
 
 import { parse as parseBasicAuth } from '@stableness/basic-auth';
 
@@ -702,11 +705,11 @@ export function timeout (ms: number) {
 export function genDoH (endpoint: string, path = '@stableness/dohdec') {
 
     type Result = { name: string, type: 1 | 28 | 5, TTL: number, data: string };
-    type Response = Partial<Record<'answers' | 'Answer', Result[]>>;
+    type Response = Partial<Record<'Answer', Result[]>>;
 
     interface Class {
         new (opts?: { url?: string }): this;
-        getJSON (opts: { name: string }): Promise<Response>;
+        lookup (name: string): Promise<Response>;
     }
 
     const doh = run(tryCatchToError(async () => {
@@ -715,24 +718,15 @@ export function genDoH (endpoint: string, path = '@stableness/dohdec') {
         return new pkg.DNSoverHTTPS({ url: endpoint });
     }));
 
-    return catchKToError(async (name: string) => {
+    return (name: string) => F.pipe(
 
-        const dns = F.pipe(
-            await doh,
-            E.fold(err => { throw err }, F.identity),
-        );
+        T.fromTask(() => doh),
+        TE.map(dns => catchKToError(bind(dns).lookup)),
+        TE.chain(query => query(name)),
+        TE.map(({ Answer = [] }) => RNEA.fromArray(Answer)),
+        TE.chain(TE.fromOption(() => new Error('empty'))),
 
-        const { answers, Answer } = await dns.getJSON({ name });
-
-        const list = RNEA.fromArray(answers ?? Answer ?? []);
-
-        if (O.isNone(list)) {
-            throw new Error('empty');
-        }
-
-        return list.value;
-
-    });
+    );
 
 }
 
