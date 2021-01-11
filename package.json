@@ -34,7 +34,7 @@
   "sideEffects": false,
   "dependencies": {
     "@stableness/basic-auth": "^102.0.1",
-    "@stableness/dohdec": "^102.1.0",
+    "@stableness/dohdec": "^103.1.0",
     "async-readable": "~0.4.2",
     "buffer-pond": "~0.8.2",
     "command-line-args": "^5.1.1",
