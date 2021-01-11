@@ -26,8 +26,6 @@ import {
 
 import * as Dc from 'io-ts/Decoder';
 
-import { bind } from 'proxy-bind';
-
 import { parse as parseBasicAuth } from '@stableness/basic-auth';
 
 import HKDF from 'futoin-hkdf';
@@ -721,10 +719,17 @@ export function genDoH (endpoint: string, path = '@stableness/dohdec') {
     return (name: string) => F.pipe(
 
         T.fromTask(() => doh),
-        TE.map(dns => catchKToError(bind(dns).lookup)),
-        TE.chain(query => query(name)),
-        TE.map(({ Answer = [] }) => RNEA.fromArray(Answer)),
-        TE.chain(TE.fromOption(() => new Error('empty'))),
+
+        TE.chain(dns => {
+            return tryCatchToError(() => {
+                return dns.lookup(name);
+            });
+        }),
+
+        TE.chain(({ Answer = [] }) => F.pipe(
+            RNEA.fromArray(Answer),
+            TE.fromOption(() => new Error('empty result')),
+        )),
 
     );
 
