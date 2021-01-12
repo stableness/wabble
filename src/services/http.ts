@@ -20,7 +20,7 @@ import * as o from 'rxjs/operators';
 
 import type { Logging } from '../model';
 import type { Service } from '../config';
-import * as u from '../utils';
+import * as u from '../utils/index';
 
 import { do_not_require } from './utils';
 

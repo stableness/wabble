@@ -18,7 +18,7 @@ import {
 } from 'fp-ts';
 
 import type { Remote } from '../config';
-import * as u from '../utils';
+import * as u from '../utils/index';
 import { logLevel, Resolver } from '../model';
 import type { Hook } from '../services/index';
 

@@ -14,7 +14,7 @@ import { toTransform } from 'buffer-pond';
 
 import { logLevel } from '../model';
 import type { ShadowSocks as SS } from '../config';
-import * as u from '../utils';
+import * as u from '../utils/index';
 import * as ShadowSocks from '../settings/utils/shadowsocks';
 
 import { ChainOpts, netConnectTo } from './index';

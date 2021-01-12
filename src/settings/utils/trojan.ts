@@ -6,7 +6,7 @@ import {
 
 import * as Dc from 'io-ts/Decoder';
 
-import * as u from '../../utils';
+import * as u from '../../utils/index';
 
 
 

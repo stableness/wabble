@@ -19,7 +19,7 @@ import * as o from 'rxjs/operators';
 import { bind } from 'proxy-bind';
 
 import type { Config, API } from '../config';
-import * as u from '../utils';
+import * as u from '../utils/index';
 
 
 

@@ -7,7 +7,7 @@ import {
 
 import type { Read } from 'async-readable';
 
-import { option2B, catchKToError } from '../utils';
+import { option2B, catchKToError } from '../utils/index';
 
 
 

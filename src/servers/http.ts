@@ -19,7 +19,7 @@ import {
     option2B,
     catchKToError,
     toBasicCredentials,
-} from '../utils';
+} from '../utils/index';
 
 import type { ChainOpts } from './index';
 

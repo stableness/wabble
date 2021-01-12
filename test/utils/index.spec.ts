@@ -60,11 +60,11 @@ import {
     basicInfo,
     groupBy,
 
-} from '../src/utils';
+} from '../../src/utils';
 
 import {
     paths,
-} from './__helpers__';
+} from '../__helpers__';
 
 
 
@@ -1190,5 +1190,5 @@ describe('isBlockedIP', () => {
 
 
 
-const fixtures = paths(__dirname, '__fixtures__');
+const fixtures = paths(__dirname, '../__fixtures__');
 

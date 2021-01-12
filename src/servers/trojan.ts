@@ -19,7 +19,7 @@ import {
     timeout,
     catchKToError,
     socks5Handshake,
-} from '../utils';
+} from '../utils/index';
 
 import type { ChainOpts } from './index';
 

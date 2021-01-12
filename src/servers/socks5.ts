@@ -15,7 +15,7 @@ import {
     socks5Handshake,
     catchKToError,
     writeToTaskEither,
-} from '../utils';
+} from '../utils/index';
 
 import { ChainOpts, netConnectTo } from './index';
 

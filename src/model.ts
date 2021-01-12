@@ -26,7 +26,7 @@ import { convert } from './settings/index';
 
 import type { NSResolver } from './config';
 
-import * as u from './utils';
+import * as u from './utils/index';
 
 
 

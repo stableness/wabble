@@ -36,7 +36,7 @@ import * as R from 'ramda';
 import * as Rx from 'rxjs';
 import * as o from 'rxjs/operators';
 
-import type { Basic } from './config';
+import type { Basic } from '../config';
 
 
 

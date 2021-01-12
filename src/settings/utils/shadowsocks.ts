@@ -1,6 +1,6 @@
 import * as R from 'ramda';
 
-import { EVP_BytesToKey, Fn } from '../../utils';
+import { EVP_BytesToKey, Fn } from '../../utils/index';
 
 
 

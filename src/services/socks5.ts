@@ -30,7 +30,7 @@ import {
     constErr,
     catchKToError,
     writeToTaskEither,
-} from '../utils';
+} from '../utils/index';
 
 import {
     readFrame,

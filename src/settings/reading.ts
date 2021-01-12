@@ -10,7 +10,7 @@ import * as Dc from 'io-ts/Decoder';
 
 import type { Config, Remote } from '../config';
 
-import * as u from '../utils';
+import * as u from '../utils/index';
 
 import * as Trojan from './utils/trojan';
 import * as ShadowSocks from './utils/shadowsocks';
