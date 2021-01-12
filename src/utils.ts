@@ -719,7 +719,7 @@ export function sieve (list: string) {
 
 export function timeout (ms: number) {
 
-    return new Promise((_resolve, reject) => {
+    return new Promise<never>((_resolve, reject) => {
         setTimeout(() => reject(Error('timeout')), ms);
     });
 
