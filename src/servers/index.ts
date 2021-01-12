@@ -19,6 +19,7 @@ import {
 
 import type { Remote } from '../config';
 import * as u from '../utils/index';
+import type { DoH_query, DNS_query } from 'src/utils/resolver';
 import { logLevel, Resolver } from '../model';
 import type { Hook } from '../services/index';
 
@@ -163,7 +164,7 @@ function resolve (opts: Opts) {
 
 
 /*#__NOINLINE__*/
-const fromDoH = (opts: Opts) => (query: u.DoH_query) => {
+const fromDoH = (opts: Opts) => (query: DoH_query) => {
 
     const { host, logger } = opts;
 
@@ -201,7 +202,7 @@ const fromDoH = (opts: Opts) => (query: u.DoH_query) => {
 
 
 /*#__NOINLINE__*/
-const fromDNS = (opts: Opts) => (query: u.DNS_query) => {
+const fromDNS = (opts: Opts) => (query: DNS_query) => {
 
     const { host, logger } = opts;
 

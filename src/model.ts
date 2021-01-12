@@ -27,6 +27,7 @@ import { convert } from './settings/index';
 import type { NSResolver } from './config';
 
 import * as u from './utils/index';
+import { genDNS, genDoH } from './utils/resolver';
 
 
 
@@ -193,8 +194,8 @@ const resolver$ = config$.pipe(
     o.map(R.evolve({
         list: O.map(R.o(
             R.evolve({
-                https: A.map(({ uri }: NSResolver) => u.genDoH(uri.href)),
-                udp: A.map(({ uri }: NSResolver) => u.genDNS(uri.host)),
+                https: A.map(({ uri }: NSResolver) => genDoH(uri.href)),
+                udp: A.map(({ uri }: NSResolver) => genDNS(uri.host)),
             }),
             u.groupBy(R.prop('protocol')),
         )),
