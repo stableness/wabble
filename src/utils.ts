@@ -729,6 +729,8 @@ export function timeout (ms: number) {
 
 
 
+export type DoH_query = ReturnType<typeof genDoH>;
+
 export function genDoH (endpoint: string, path = '@stableness/dohdec') {
 
     type Result = { name: string, type: 1 | 28 | 5, TTL: number, data: string };
@@ -767,6 +769,8 @@ export function genDoH (endpoint: string, path = '@stableness/dohdec') {
 
 
 
+
+export type DNS_query = ReturnType<typeof genDNS>;
 
 export function genDNS (servers: string | readonly string[]) {
 
