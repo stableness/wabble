@@ -296,6 +296,7 @@ export const { decode: decodeConfig } = F.pipe(
     Dc.intersect(Dc.partial({
 
         api: decodeAPI,
+        resolver: decodeResolver,
         tags: u.readTrimmedNonEmptyStringArr,
 
         sieve: Dc.partial({
@@ -317,7 +318,7 @@ export const convert: u.Fn<unknown, Config> = F.flow(
 
     E.mapLeft(Dc.draw),
 
-    E.map(({ services, servers, rules, tags, sieve, api }) => ({
+    E.map(({ services, resolver, servers, rules, tags, sieve, api }) => ({
 
         rules,
         services,
@@ -325,6 +326,11 @@ export const convert: u.Fn<unknown, Config> = F.flow(
         servers: filterTags(servers, tags),
 
         api: O.fromNullable(api),
+
+        resolver: resolver ?? {
+            ttl: O.none,
+            list: O.none,
+        },
 
         sieve: {
             direct: O.fromNullable(sieve?.direct),
