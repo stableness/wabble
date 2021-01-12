@@ -31,9 +31,15 @@ api:
 
 
 
-doh: true # 1) [true] enables DoH (via https://cloudflare-dns.com/dns-query)
-          # 2) [false] disables DoH
-          # 3) or specify another provider's endpoint
+resolver:
+
+  ttl:
+    min: 3600   # minimum to 1 hour
+    max: 86400  # maximum to 1 day
+
+  list:
+    - uri:   udp://8.8.8.8
+    - uri: https://cloudflare-dns.com/dns-query
 
 
 
@@ -102,9 +108,6 @@ rules:
 
     - END,.cn
     - FULL,localhost
-
-    # prepend with DOH, to enable DNS over Https
-    - DOH,END,cdninstagram.com
 
   reject:
 

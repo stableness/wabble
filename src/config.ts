@@ -1,9 +1,13 @@
+import { URL } from 'url';
+
 import type {
     option as O,
     readonlyNonEmptyArray as RNEA,
 } from 'fp-ts';
 
 import * as SS from './settings/utils/shadowsocks';
+
+import { Fn } from './utils';
 
 
 
@@ -134,12 +138,30 @@ export interface API {
 
 
 
+export interface NSResolver {
+
+    protocol: 'https' | 'udp' | 'tls';
+
+    uri: URL;
+
+}
+
+
+
+
 
 export interface Config {
 
     services: RNEA.ReadonlyNonEmptyArray<Service>;
 
-    doh: O.Option<string>;
+    resolver: {
+        ttl: O.Option<{
+            min: number;
+            max: number;
+            calc: Fn<number>;
+        }>;
+        list: O.Option<RNEA.ReadonlyNonEmptyArray<NSResolver>>;
+    };
 
     api: O.Option<API>;
 

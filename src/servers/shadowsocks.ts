@@ -25,11 +25,11 @@ import { ChainOpts, netConnectTo } from './index';
 
 export function chain (opts: ChainOpts, remote: SS) {
 
-    const { ipOrHost, port, logger, hook } = opts;
+    const { host, port, logger, hook } = opts;
 
     return F.pipe(
 
-        IO.fromIO(() => u.socks5Handshake(ipOrHost, port).subarray(3)),
+        IO.fromIO(() => u.socks5Handshake(host, port).subarray(3)),
         IO.map(cryptoPairsC(remote)),
         IO.map(E.fromNullable(Error('Has no crypto to perform'))),
 
@@ -54,11 +54,9 @@ export function chain (opts: ChainOpts, remote: SS) {
 
         })),
 
-        TE.chain(({ enc, dec }) => u.tryCatchToError(() => {
-            return hook(enc, netConnectTo(remote), dec);
-        })),
+        TE.chain(({ enc, dec }) => hook(enc, netConnectTo(remote), dec)),
 
-        TE.mapLeft(R.tap(() => hook())),
+        TE.mapLeft(R.tap(hook())),
 
     );
 

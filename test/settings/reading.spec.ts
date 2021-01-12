@@ -2,52 +2,20 @@ import * as R from 'ramda';
 
 import {
     either as E,
+    option as O,
+    function as F,
 } from 'fp-ts';
 
 import {
 
     convert,
     filterTags,
-    decodeDoH,
+    decodeResolver,
     decodeAPI,
-    CF_DOH_ENDPOINT,
 
 } from '../../src/settings/reading';
 
-
-
-
-
-describe('readDoH', () => {
-
-    const { decode: readDoH } = decodeDoH;
-
-    test.each([
-        42,
-        'wat',
-        null,
-        undefined,
-    ])('%s', value => {
-        expect(E.isLeft(readDoH(value))).toBe(true);
-    });
-
-    test('true', () => {
-        expect(readDoH(true)).toStrictEqual(E.right(CF_DOH_ENDPOINT));
-    });
-
-    test('false', () => {
-        expect(readDoH(false)).toStrictEqual(E.right(void 0));
-    });
-
-    test('custom', () => {
-
-        const DOH = '     https://ecs-doh.dnswarden.com/uncensored-ecs     ';
-
-        expect(readDoH(DOH)).toStrictEqual(E.right(DOH.trim()));
-
-    });
-
-});
+import * as u from '../../src/utils';
 
 
 
@@ -83,6 +51,104 @@ describe('decodeAPI', () => {
         const result = { port: 8080, cors: true, shared: true, host: '0.0.0.0' }; // eslint-disable-line max-len
 
         expect(readAPI(origin)).toStrictEqual(E.right(result));
+
+    });
+
+});
+
+
+
+
+
+describe('decodeResolver', () => {
+
+    const { decode: readResolver } = decodeResolver;
+
+    test.each([
+        42,
+        'wat',
+        null,
+        undefined,
+        true,
+        false,
+        [],
+    ])('%s', value => {
+        expect(E.isLeft(readResolver(value))).toBe(true);
+    });
+
+    test('uri', () => {
+
+        const decodeURIs = R.pipe(
+            u.str2arr,
+            R.map(R.objOf('uri')),
+            R.objOf('list'),
+            readResolver,
+        );
+
+        expect(E.isRight(decodeURIs(`
+
+            https://cloudflare-dns.com/dns-query
+              udp://127.0.0.1:5354
+              tls://1.1.1.1:853
+
+        `))).toBe(true);
+
+        expect(E.isRight(decodeURIs(`
+
+            http://cloudflare-dns.com/dns-query
+             tcp://127.0.0.1:5354
+              ss:foobar
+
+        `))).not.toBe(true);
+
+    });
+
+    test.each([
+
+        [
+            { },
+            { min: 0, max: Number.MAX_SAFE_INTEGER },
+        ],
+
+        [
+            { min: 500 },
+            { min: 500, max: Number.MAX_SAFE_INTEGER },
+        ],
+
+        [
+            {         max: 900 },
+            { min: 0, max: 900 },
+        ],
+
+        [
+            { min: -5, max: 9 },
+            { min:  0, max: 9 },
+        ],
+
+        [
+            { min: 1, max: 9 },
+            { min: 1, max: 9 },
+        ],
+
+        [
+            { min: 9, max: 1 },
+            { min: 9, max: 9 },
+        ],
+
+    ])('ttl - %p', (origin, result) => {
+
+        const either = readResolver({ ttl: origin });
+
+        if (E.isLeft(either)) {
+            return expect(E.isRight(either)).toBe(true);
+        }
+
+        const ttl = F.pipe(
+            either.right.ttl,
+            O.map(R.pick([ 'min', 'max' ])),
+        );
+
+        expect(ttl).toStrictEqual(O.some(result));
 
     });
 

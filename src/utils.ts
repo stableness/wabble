@@ -1,4 +1,5 @@
 import net from 'net';
+import { promises as pDNS } from 'dns';
 import { URL } from 'url';
 import { once } from 'events';
 import { IncomingHttpHeaders } from 'http';
@@ -11,7 +12,7 @@ import fetch from 'node-fetch';
 
 import memo from 'memoizerific';
 
-import { isPrivate, cidrSubnet } from 'ip';
+import { isPrivate, cidrSubnet, isEqual as eqIP } from 'ip';
 
 import {
     eq as Eq,
@@ -465,6 +466,20 @@ export const isPrivateIP = R.both(
 
 
 
+export const isBlockedIP: Fn<string, boolean> = R.either(
+    R.equals('0.0.0.0'),
+    R.both(
+        isIP,
+        R.anyPass([
+            (ip: string) => eqIP(ip, '0.0.0.0'),
+            (ip: string) => eqIP(ip, '0:0:0:0:0:0:0:0'),
+        ]),
+    ),
+);
+
+
+
+
 
 export const str2arr = R.o(R.split(/\s+/), R.trim);
 
@@ -673,6 +688,20 @@ export const loadPath: Fn<string, Rx.Observable<string>> = R.ifElse(
 
 
 
+export const groupBy = function <T, R extends string> (fn: (v: T) => R) {
+
+    return function (list: readonly T[]): { [key in R]: T[] } {
+
+        return R.groupBy(fn, list) as never;
+
+    };
+
+};
+
+
+
+
+
 export function sieve (list: string) {
 
     type Has = (domain: string) => boolean;
@@ -699,6 +728,8 @@ export function timeout (ms: number) {
 
 
 
+
+export type DoH_query = ReturnType<typeof genDoH>;
 
 export function genDoH (endpoint: string, path = '@stableness/dohdec') {
 
@@ -734,6 +765,53 @@ export function genDoH (endpoint: string, path = '@stableness/dohdec') {
     );
 
 }
+
+
+
+
+
+export type DNS_query = ReturnType<typeof genDNS>;
+
+export function genDNS (servers: string | readonly string[]) {
+
+    const arr = typeof servers === 'string' ? [ servers ] : servers;
+
+    const setServers = F.pipe(
+
+        RNEA.fromReadonlyArray(arr),
+        E.fromOption(() => new Error('empty resolver')),
+        E.chain(list => E.tryCatch(() => {
+
+            const resolver = new pDNS.Resolver();
+            resolver.setServers(list);
+
+            return resolver;
+
+        }, E.toError)),
+
+    );
+
+    return (name: string) => F.pipe(
+
+        TE.fromEither(setServers),
+        TE.chain(resolve4(name)),
+
+    );
+
+}
+
+const resolve4 = (name: string) => (resolver: pDNS.Resolver) => F.pipe(
+
+    tryCatchToError(() => {
+        return resolver.resolve4(name, { ttl: true });
+    }),
+
+    TE.chain(F.flow(
+        RNEA.fromArray,
+        TE.fromOption(() => new Error('empty result')),
+    )),
+
+);
 
 
 

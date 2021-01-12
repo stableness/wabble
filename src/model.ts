@@ -9,6 +9,7 @@ import {
     option as O,
     taskEither as TE,
     function as F,
+    readonlyArray as A,
     readonlyNonEmptyArray as RNEA,
 } from 'fp-ts';
 
@@ -22,6 +23,8 @@ import type { Options } from './bin';
 import { connect } from './servers/index';
 import { combine, establish } from './services/index';
 import { convert } from './settings/index';
+
+import type { NSResolver } from './config';
 
 import * as u from './utils';
 
@@ -164,7 +167,6 @@ const rules$ = config$.pipe(
             F.not(rules.proxy.all),
             R.anyPass([ rules.direct.all, direct, u.isPrivateIP ]),
         ),
-        doh: R.either(rules.direct.doh, rules.proxy.doh),
     })),
 );
 
@@ -176,17 +178,39 @@ const dealer$ = config$.pipe(
     })),
 );
 
-const doh$ = config$.pipe(
-    o.pluck('doh'),
-    o.map(O.map(R.unary(u.genDoH))),
-);
-
 const services$ = config$.pipe(
     o.pluck('services'),
 );
 
 const api$ = config$.pipe(
     o.pluck('api'),
+);
+
+export type Resolver = Rx.ObservedValueOf<typeof resolver$>;
+
+const resolver$ = config$.pipe(
+    o.pluck('resolver'),
+    o.map(R.evolve({
+        list: O.map(R.o(
+            R.evolve({
+                https: A.map(({ uri }: NSResolver) => u.genDoH(uri.href)),
+                udp: A.map(({ uri }: NSResolver) => u.genDNS(uri.host)),
+            }),
+            u.groupBy(R.prop('protocol')),
+        )),
+    })),
+    o.map(({ ttl, list }) => {
+
+        const trim = O.chain(
+            <T> (arr: readonly T[] = []) => RNEA.fromReadonlyArray(arr),
+        );
+
+        const doh = trim(O.map (R.prop('https')) (list));
+        const dns = trim(O.map (R.prop('udp')) (list));
+
+        return { ttl, doh, dns };
+
+    }),
 );
 
 
@@ -248,9 +272,9 @@ const runner$ = services$.pipe(
 
     o.publish(Rx.pipe(
 
-        o.withLatestFrom(rules$, doh$, (
+        o.withLatestFrom(rules$, resolver$, (
                 { host, port, hook },
-                rules, doh,
+                rules, resolver,
         ) => {
 
             const log = logger.child({ host, port });
@@ -259,7 +283,11 @@ const runner$ = services$.pipe(
             const direction = rules.direct(host);
 
             const hopTo = /*#__NOINLINE__*/ connect({
-                host, port, hook, doh, testDoH: rules.doh, logger: log,
+                host,
+                port,
+                resolver,
+                hook: u.catchKToError(hook),
+                logger: log,
             });
 
             return { log, rejection, direction, hopTo, hook };
@@ -271,7 +299,7 @@ const runner$ = services$.pipe(
             if (rejection) {
 
                 log.info('Reject');
-                void hook();
+                hook().catch(u.noop);
                 return false;
 
             }
@@ -279,7 +307,7 @@ const runner$ = services$.pipe(
             if (direction) {
 
                 void u.run(F.pipe(
-                    hopTo('nothing'),
+                    hopTo('origin'),
                     TE.apFirst(TE.fromIO(() => log.info('Direct'))),
                 ));
 
@@ -404,5 +432,6 @@ export const { has: errToIgnoresBy } = bind(new Set([
     'ERR_STREAM_DESTROYED',
     'ERR_STREAM_WRITE_AFTER_END',
     'ERR_STREAM_PREMATURE_CLOSE',
+    'BLOCKED_HOST',
 ]));
 

@@ -25,35 +25,6 @@ const baseURI = Dc.type({ uri: u.readURL });
 
 
 
-export const CF_DOH_ENDPOINT = 'https://cloudflare-dns.com/dns-query' as HttpOrHttps;
-
-export type HttpOrHttps = string & { readonly HttpOrHttps: unique symbol };
-
-export const trimmedStartsWithHttpOrHttps = F.pipe(
-    u.readTrimmedNonEmptyString,
-    Dc.refine(
-        R.either(
-            R.startsWith('http://'),
-            R.startsWith('https://'),
-        ) as (str: string) => str is HttpOrHttps,
-        'HttpOrHttps',
-    ),
-);
-
-const flagOnToCloudFlare = F.pipe(
-    Dc.boolean,
-    Dc.map(on => on ? CF_DOH_ENDPOINT : void 0),
-);
-
-export const decodeDoH = Dc.union(
-    flagOnToCloudFlare,
-    trimmedStartsWithHttpOrHttps,
-);
-
-
-
-
-
 const decodeServices = F.pipe(
 
     baseURI,
@@ -238,6 +209,80 @@ export const decodeAPI = F.pipe(
 
 
 
+const { MAX_SAFE_INTEGER: MAX_INT } = Number;
+
+export const decodeResolver = F.pipe(
+
+    Dc.partial({
+
+        ttl: Dc.partial({
+            min: Dc.number,
+            max: Dc.number,
+        }),
+
+        list: F.pipe(
+
+            baseURI,
+
+            Dc.parse(({ uri }) => {
+
+                const proto = Dc.union(
+                    Dc.literal('https'),
+                    Dc.literal('udp'),
+                    Dc.literal('tls'),
+                );
+
+                return F.pipe(
+
+                    R.init(uri.protocol),
+
+                    proto.decode,
+
+                    E.fold(
+                        () => Dc.failure(uri.protocol, 'invalid NS resolver'),
+                        protocol => Dc.success({ uri, protocol }),
+                    ),
+
+                );
+
+            }),
+
+            u.decoderNonEmptyArrayOf,
+
+        ),
+
+    }),
+
+    Dc.map(({ ttl, list }) => {
+
+        return {
+
+            ttl: F.pipe(
+                O.fromNullable(ttl),
+                O.map(opts => {
+
+                    const min = R.max(0, opts.min ?? 0);
+                    const max = R.clamp(min, MAX_INT, opts.max ?? MAX_INT);
+
+                    const calc = R.clamp(min, max);
+
+                    return { min, max, calc };
+
+                }),
+            ),
+
+            list: O.fromNullable(list),
+
+        };
+
+    }),
+
+);
+
+
+
+
+
 export const { decode: decodeConfig } = F.pipe(
 
     Dc.type({
@@ -251,7 +296,7 @@ export const { decode: decodeConfig } = F.pipe(
     Dc.intersect(Dc.partial({
 
         api: decodeAPI,
-        doh: decodeDoH,
+        resolver: decodeResolver,
         tags: u.readTrimmedNonEmptyStringArr,
 
         sieve: Dc.partial({
@@ -273,16 +318,19 @@ export const convert: u.Fn<unknown, Config> = F.flow(
 
     E.mapLeft(Dc.draw),
 
-    E.map(({ services, doh, servers, rules, tags, sieve, api }) => ({
+    E.map(({ services, resolver, servers, rules, tags, sieve, api }) => ({
 
         rules,
         services,
 
         servers: filterTags(servers, tags),
 
-        doh: O.fromNullable(doh),
-
         api: O.fromNullable(api),
+
+        resolver: resolver ?? {
+            ttl: O.none,
+            list: O.none,
+        },
 
         sieve: {
             direct: O.fromNullable(sieve?.direct),

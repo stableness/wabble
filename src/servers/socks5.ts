@@ -25,11 +25,11 @@ import { ChainOpts, netConnectTo } from './index';
 
 export function chain (opts: ChainOpts, remote: Socks5) {
 
-    const { ipOrHost, port, logger, hook } = opts;
+    const { host, port, logger, hook } = opts;
 
     return F.pipe(
 
-        TE.rightIO(() => socks5Handshake(ipOrHost, port)),
+        TE.rightIO(() => socks5Handshake(host, port)),
 
         TE.apFirst(TE.fromIO(() => {
 
@@ -48,9 +48,9 @@ export function chain (opts: ChainOpts, remote: Socks5) {
 
         TE.chain(tunnel(remote)),
 
-        TE.chain(catchKToError(hook)),
+        TE.chain(hook),
 
-        TE.mapLeft(R.tap(() => hook())),
+        TE.mapLeft(R.tap(hook())),
 
     );
 
