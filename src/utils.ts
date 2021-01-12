@@ -673,6 +673,20 @@ export const loadPath: Fn<string, Rx.Observable<string>> = R.ifElse(
 
 
 
+export const groupBy = function <T, R extends string> (fn: (v: T) => R) {
+
+    return function (list: readonly T[]): { [key in R]: T[] } {
+
+        return R.groupBy(fn, list) as never;
+
+    };
+
+};
+
+
+
+
+
 export function sieve (list: string) {
 
     type Has = (domain: string) => boolean;

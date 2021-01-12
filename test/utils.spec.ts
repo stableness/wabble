@@ -55,6 +55,7 @@ import {
     collectAsyncIterable,
     loadPath,
     basicInfo,
+    groupBy,
 
 } from '../src/utils';
 
@@ -608,6 +609,40 @@ describe('timeout', () => {
         await expect(future).rejects.toThrow();
 
     }, 10);
+
+});
+
+
+
+
+
+describe('groupBy', () => {
+
+    test('', () => {
+
+        const list = [
+
+            { n: 10, shape: 'triangle' as const },
+
+            { n: 20, shape: 'square' as const },
+            { n: 21, shape: 'square' as const },
+
+            { n: 30, shape: 'circular' as const },
+            { n: 31, shape: 'circular' as const },
+            { n: 32, shape: 'circular' as const },
+
+        ];
+
+        const { triangle, square, circular } = F.pipe(
+            list,
+            groupBy(R.prop('shape')),
+        );
+
+        expect(triangle.length).toBe(1);
+        expect(square.length).toBe(2);
+        expect(circular.length).toBe(3);
+
+    });
 
 });
 
