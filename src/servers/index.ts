@@ -19,7 +19,7 @@ import {
 
 import type { Remote } from '../config';
 import * as u from '../utils/index';
-import type { DoH_query, DNS_query } from 'src/utils/resolver';
+import type { DoH_query, DNS_query, DoT_query } from 'src/utils/resolver';
 import { logLevel, Resolver } from '../model';
 import type { Hook } from '../services/index';
 
@@ -139,7 +139,7 @@ const race = F.flow(
 /*#__NOINLINE__*/
 function resolve (opts: Opts) {
 
-    const { host, resolver: { timeout, doh, dns } } = opts;
+    const { host, resolver: { timeout, doh, dot, dns } } = opts;
 
     return F.pipe(
 
@@ -151,11 +151,12 @@ function resolve (opts: Opts) {
 
         O.alt(() => race([
             O.some(RNEA.of(T.delay (timeout) (timeoutTE))),
-            O.map (RNEA.map(/*#__NOINLINE__*/ fromDoH(opts))) (doh),
+            O.map (RNEA.map(/*#__NOINLINE__*/ from_DoH_DoT(opts, 'DoH'))) (doh),
+            O.map (RNEA.map(/*#__NOINLINE__*/ from_DoH_DoT(opts, 'DoT'))) (dot),
             O.map (RNEA.map(/*#__NOINLINE__*/ fromDNS(opts))) (dns),
         ])),
 
-        TE.fromOption(() => Error('No cache nor DoH or DNS')),
+        TE.fromOption(() => Error('No cache nor DoH, DoT or DNS')),
         TE.flatten,
         TE.alt(() => TE.right(host)),
 
@@ -169,8 +170,10 @@ function resolve (opts: Opts) {
 
 
 
+type Query = DoH_query | DoT_query;
+
 /*#__NOINLINE__*/
-const fromDoH = (opts: Opts) => (query: DoH_query) => {
+const from_DoH_DoT = (opts: Opts, type: string) => (query: Query) => {
 
     const { host, logger } = opts;
 
@@ -193,7 +196,7 @@ const fromDoH = (opts: Opts) => (query: DoH_query) => {
                 return;
             }
 
-            logger.child({ ip }).trace('DoH');
+            logger.child({ ip }).trace(type);
 
         })),
 
