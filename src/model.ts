@@ -200,7 +200,7 @@ const resolver$ = config$.pipe(
             u.groupBy(R.prop('protocol')),
         )),
     })),
-    o.map(({ ttl, list }) => {
+    o.map(({ ttl, list, timeout }) => {
 
         const trim = O.chain(
             <T> (arr: readonly T[] = []) => RNEA.fromReadonlyArray(arr),
@@ -209,7 +209,7 @@ const resolver$ = config$.pipe(
         const doh = trim(O.map (R.prop('https')) (list));
         const dns = trim(O.map (R.prop('udp')) (list));
 
-        return { ttl, doh, dns };
+        return { ttl, timeout, doh, dns };
 
     }),
 );

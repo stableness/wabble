@@ -32,6 +32,8 @@ api:
 
 
 resolver:
+  
+  timeout: 80  # default as 80 milliseconds
 
   ttl:
     min: 3600   # minimum to 1 hour

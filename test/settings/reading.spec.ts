@@ -104,6 +104,23 @@ describe('decodeResolver', () => {
     });
 
     test.each([
+        [      0,  0 ],
+        [    -99,  0 ],
+        [     42, 42 ],
+        [ void 0, 80 ],
+    ])('timeout - %d %d', (timeout, result) => {
+
+        const either = readResolver(timeout == null ? {} : { timeout });
+
+        if (E.isLeft(either)) {
+            return expect(E.isRight(either)).toBe(true);
+        }
+
+        expect(either.right.timeout).toBe(result);
+
+    });
+
+    test.each([
 
         [
             { },

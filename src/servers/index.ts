@@ -120,10 +120,15 @@ const checkBlockingHost = TE.filterOrElse(F.not(u.isBlockedIP), () => {
 
 
 
+const timeoutTE = TE.left(new Error('timeout'));
+
+
+
 const race = F.flow(
     A.compact,
-    RNEA.flatten as never,
-    RNEA.fromReadonlyArray as never,
+    <T> (queue: readonly T[]) =>
+        // bailout if only have the timeout task in queue
+        queue.length < 2 ? O.none : O.some(queue.flat() as never),
     O.map(monoid.fold(T.getRaceMonoid<E.Either<Error, string>>())),
 );
 
@@ -134,7 +139,7 @@ const race = F.flow(
 /*#__NOINLINE__*/
 function resolve (opts: Opts) {
 
-    const { host, resolver: { doh, dns } } = opts;
+    const { host, resolver: { timeout, doh, dns } } = opts;
 
     return F.pipe(
 
@@ -145,6 +150,7 @@ function resolve (opts: Opts) {
         O.map(TE.right),
 
         O.alt(() => race([
+            O.some(RNEA.of(T.delay (timeout) (timeoutTE))),
             O.map (RNEA.map(/*#__NOINLINE__*/ fromDoH(opts))) (doh),
             O.map (RNEA.map(/*#__NOINLINE__*/ fromDNS(opts))) (dns),
         ])),
