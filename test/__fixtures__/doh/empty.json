@@ -2,38 +2,23 @@
 {
   "scope": "https://cloudflare-dns.com:443",
   "method": "GET",
-  "path": "/dns-query?name=example.com&type=A",
+  "path": "/dns-query?dns=AAABAAABAAAAAAABE3dhYWFhYWFhYWFhYWFhYWFhYXQDY29tAAABAAEAACkQAAAAAAAAAA",
   "body": "",
   "status": 200,
-  "response": {
-    "Status": 0,
-    "TC": false,
-    "RD": true,
-    "RA": true,
-    "AD": true,
-    "CD": false,
-    "Question": [
-      {
-        "name": "example.com",
-        "type": 1
-      }
-    ],
-    "Answer": [
-    ]
-  },
+  "response": "000081830001000000010001137761616161616161616161616161616161617403636f6d0000010001c0200006000100000384003d01610c67746c642d73657276657273036e657400056e73746c640c766572697369676e2d677273c0205fff7654000007080000038400093a800001518000002904d0000000000000",
   "rawHeaders": [
     "Date",
-    "Sat, 28 Nov 2020 16:12:47 GMT",
+    "Wed, 13 Jan 2021 22:38:31 GMT",
     "Content-Type",
-    "application/dns-json",
+    "application/dns-message",
     "Content-Length",
-    "187",
+    "125",
     "Connection",
     "close",
     "Access-Control-Allow-Origin",
     "*",
     "cf-request-id",
-    "06b139efa7000036878d912000000001",
+    "079f7f9d6f0000eb047538a000000001",
     "Expect-CT",
     "max-age=604800, report-uri=\"https://report-uri.cloudflare.com/cdn-cgi/beacon/expect-ct\"",
     "Vary",
@@ -41,8 +26,8 @@
     "Server",
     "cloudflare",
     "CF-RAY",
-    "5f955f5f7cb73687-LAX"
+    "61129ba8b965eb04-LAX"
   ],
-  "responseIsBinary": false
+  "responseIsBinary": true
 }
 ]

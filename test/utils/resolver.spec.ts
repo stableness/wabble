@@ -71,7 +71,7 @@ describe('genDoH', () => {
 
         const doh = genDoH(CF_DOH_ENDPOINT);
 
-        const results = await u.run(doh('example.com'));
+        const results = await u.run(doh('waaaaaaaaaaaaaaaaat.com'));
 
         expect(E.isRight(results)).toBe(false);
 

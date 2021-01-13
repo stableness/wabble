@@ -18,18 +18,18 @@ export type DoH_query = ReturnType<typeof genDoH>;
 
 export function genDoH (endpoint: string, path = '@stableness/dohdec') {
 
-    type Result = { name: string, type: 1 | 28 | 5, TTL: number, data: string };
-    type Response = Partial<Record<'Answer', Result[]>>;
+    type Result = { name: string, type: 'A', ttl: number, data: string };
+    type Response = Record<'answers', Result[]>;
 
     interface Class {
-        new(opts?: { url?: string }): this;
-        lookup(name: string): Promise<Response>;
+        new(opts?: { url?: string, preferPost?: boolean }): this;
+        lookup(name: string, opts?: { json?: boolean }): Promise<Response>;
     }
 
     const doh = run(tryCatchToError(async () => {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const pkg: { DNSoverHTTPS: Class } = await import(path);
-        return new pkg.DNSoverHTTPS({ url: endpoint });
+        return new pkg.DNSoverHTTPS({ url: endpoint, preferPost: false });
     }));
 
     return (name: string) => F.pipe(
@@ -38,12 +38,12 @@ export function genDoH (endpoint: string, path = '@stableness/dohdec') {
 
         TE.chain(dns => {
             return tryCatchToError(() => {
-                return dns.lookup(name);
+                return dns.lookup(name, { json: false });
             });
         }),
 
-        TE.chain(({ Answer = [] }) => F.pipe(
-            RNEA.fromArray(Answer),
+        TE.chain(({ answers }) => F.pipe(
+            RNEA.fromArray(answers),
             TE.fromOption(() => new Error('empty result')),
         )),
 

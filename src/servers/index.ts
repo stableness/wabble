@@ -179,15 +179,15 @@ const fromDoH = (opts: Opts) => (query: DoH_query) => {
         query(host),
 
         TE.map(/*#__NOINLINE__*/ A.findFirst(R.where({
-            type: R.equals(1),
+            type: R.equals('A'),
             data: R.is(String),
         }))),
 
         TE.chain(TE.fromOption(() => Error('No valid entries'))),
 
-        TE.chainFirst(({ data: ip, TTL }) => TE.fromIO(() => {
+        TE.chainFirst(({ data: ip, ttl }) => TE.fromIO(() => {
 
-            updateCache (opts) (ip) (TTL);
+            updateCache (opts) (ip) (ttl);
 
             if (R.not(logLevel.on.trace)) {
                 return;
