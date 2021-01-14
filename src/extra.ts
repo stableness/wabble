@@ -1,4 +1,4 @@
-export * from './utils';
+export * from './utils/index';
 export { logging, errToIgnoresBy, catchException } from './model';
 
 export { convert } from './settings/index';
