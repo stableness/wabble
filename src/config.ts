@@ -161,6 +161,7 @@ export interface Config {
             calc: Fn<number>;
         }>;
         list: O.Option<RNEA.ReadonlyNonEmptyArray<NSResolver>>;
+        timeout: number;
     };
 
     api: O.Option<API>;

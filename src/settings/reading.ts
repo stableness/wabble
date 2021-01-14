@@ -210,10 +210,13 @@ export const decodeAPI = F.pipe(
 
 
 const { MAX_SAFE_INTEGER: MAX_INT } = Number;
+const DEFAULT_RESOLVER_TIMEOUT = 80;
 
 export const decodeResolver = F.pipe(
 
     Dc.partial({
+
+        timeout: Dc.number,
 
         ttl: Dc.partial({
             min: Dc.number,
@@ -253,7 +256,7 @@ export const decodeResolver = F.pipe(
 
     }),
 
-    Dc.map(({ ttl, list }) => {
+    Dc.map(({ ttl, list, timeout = DEFAULT_RESOLVER_TIMEOUT }) => {
 
         return {
 
@@ -272,6 +275,8 @@ export const decodeResolver = F.pipe(
             ),
 
             list: O.fromNullable(list),
+
+            timeout: R.clamp(0, MAX_INT, timeout),
 
         };
 
@@ -330,6 +335,7 @@ export const convert: u.Fn<unknown, Config> = F.flow(
         resolver: resolver ?? {
             ttl: O.none,
             list: O.none,
+            timeout: DEFAULT_RESOLVER_TIMEOUT,
         },
 
         sieve: {

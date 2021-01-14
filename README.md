@@ -32,14 +32,17 @@ api:
 
 
 resolver:
+  
+  timeout: 80  # default as 80 milliseconds
 
   ttl:
     min: 3600   # minimum to 1 hour
     max: 86400  # maximum to 1 day
 
   list:
-    - uri:   udp://8.8.8.8
-    - uri: https://cloudflare-dns.com/dns-query
+    - uri:   udp://1.1.1.1             # DNS
+    - uri:   tls://1.1.1.1             # DNS over TLS   (DoT)
+    - uri: https://1.1.1.1/dns-query   # DNS over HTTPS (DoH)
 
 
 

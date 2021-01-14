@@ -19,7 +19,7 @@ import {
 
 import type { Remote } from '../config';
 import * as u from '../utils/index';
-import type { DoH_query, DNS_query } from 'src/utils/resolver';
+import type { DoH_query, DNS_query, DoT_query } from 'src/utils/resolver';
 import { logLevel, Resolver } from '../model';
 import type { Hook } from '../services/index';
 
@@ -120,10 +120,15 @@ const checkBlockingHost = TE.filterOrElse(F.not(u.isBlockedIP), () => {
 
 
 
+const timeoutTE = TE.left(new Error('timeout'));
+
+
+
 const race = F.flow(
     A.compact,
-    RNEA.flatten as never,
-    RNEA.fromReadonlyArray as never,
+    <T> (queue: readonly T[]) =>
+        // bailout if only have the timeout task in queue
+        queue.length < 2 ? O.none : O.some(queue.flat() as never),
     O.map(monoid.fold(T.getRaceMonoid<E.Either<Error, string>>())),
 );
 
@@ -134,7 +139,7 @@ const race = F.flow(
 /*#__NOINLINE__*/
 function resolve (opts: Opts) {
 
-    const { host, resolver: { doh, dns } } = opts;
+    const { host, resolver: { timeout, doh, dot, dns } } = opts;
 
     return F.pipe(
 
@@ -145,11 +150,13 @@ function resolve (opts: Opts) {
         O.map(TE.right),
 
         O.alt(() => race([
-            O.map (RNEA.map(/*#__NOINLINE__*/ fromDoH(opts))) (doh),
+            O.some(RNEA.of(T.delay (timeout) (timeoutTE))),
+            O.map (RNEA.map(/*#__NOINLINE__*/ from_DoH_DoT(opts, 'DoH'))) (doh),
+            O.map (RNEA.map(/*#__NOINLINE__*/ from_DoH_DoT(opts, 'DoT'))) (dot),
             O.map (RNEA.map(/*#__NOINLINE__*/ fromDNS(opts))) (dns),
         ])),
 
-        TE.fromOption(() => Error('No cache nor DoH or DNS')),
+        TE.fromOption(() => Error('No cache nor DoH, DoT or DNS')),
         TE.flatten,
         TE.alt(() => TE.right(host)),
 
@@ -163,8 +170,10 @@ function resolve (opts: Opts) {
 
 
 
+type Query = DoH_query | DoT_query;
+
 /*#__NOINLINE__*/
-const fromDoH = (opts: Opts) => (query: DoH_query) => {
+const from_DoH_DoT = (opts: Opts, type: string) => (query: Query) => {
 
     const { host, logger } = opts;
 
@@ -173,21 +182,21 @@ const fromDoH = (opts: Opts) => (query: DoH_query) => {
         query(host),
 
         TE.map(/*#__NOINLINE__*/ A.findFirst(R.where({
-            type: R.equals(1),
+            type: R.equals('A'),
             data: R.is(String),
         }))),
 
         TE.chain(TE.fromOption(() => Error('No valid entries'))),
 
-        TE.chainFirst(({ data: ip, TTL }) => TE.fromIO(() => {
+        TE.chainFirst(({ data: ip, ttl }) => TE.fromIO(() => {
 
-            updateCache (opts) (ip) (TTL);
+            updateCache (opts) (ip) (ttl);
 
             if (R.not(logLevel.on.trace)) {
                 return;
             }
 
-            logger.child({ ip }).trace('DoH');
+            logger.child({ ip }).trace(type);
 
         })),
 

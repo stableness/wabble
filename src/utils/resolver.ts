@@ -14,22 +14,31 @@ import { run, tryCatchToError } from './index';
 
 
 
+interface Result_DoH_DoT {
+    name: string;
+    type: 'A' | 'AAAA';
+    ttl: number;
+    data: string;
+}
+
+interface Res_DoH_DoT {
+    answers: Result_DoH_DoT[];
+}
+
+
+
 export type DoH_query = ReturnType<typeof genDoH>;
 
 export function genDoH (endpoint: string, path = '@stableness/dohdec') {
 
-    type Result = { name: string, type: 1 | 28 | 5, TTL: number, data: string };
-    type Response = Partial<Record<'Answer', Result[]>>;
-
-    interface Class {
-        new(opts?: { url?: string }): this;
-        lookup(name: string): Promise<Response>;
+    interface ResolverDoH {
+        new(opts?: { url?: string, preferPost?: boolean }): this;
+        lookup(name: string, opts?: { json?: boolean }): Promise<Res_DoH_DoT>;
     }
 
     const doh = run(tryCatchToError(async () => {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        const pkg: { DNSoverHTTPS: Class } = await import(path);
-        return new pkg.DNSoverHTTPS({ url: endpoint });
+        const pkg = await import(path) as { DNSoverHTTPS: ResolverDoH };
+        return new pkg.DNSoverHTTPS({ url: endpoint, preferPost: false });
     }));
 
     return (name: string) => F.pipe(
@@ -38,12 +47,64 @@ export function genDoH (endpoint: string, path = '@stableness/dohdec') {
 
         TE.chain(dns => {
             return tryCatchToError(() => {
-                return dns.lookup(name);
+                return dns.lookup(name, { json: false });
             });
         }),
 
-        TE.chain(({ Answer = [] }) => F.pipe(
-            RNEA.fromArray(Answer),
+        TE.chain(({ answers }) => F.pipe(
+            RNEA.fromArray(answers),
+            TE.fromOption(() => new Error('empty result')),
+        )),
+
+    );
+
+}
+
+
+
+type Conn = { hostname: string, port?: string };
+
+export type DoT_query = ReturnType<typeof genDoT>;
+
+export function genDoT (conn: Conn, path = '@stableness/dohdec') {
+
+    type ConstructOpts = Partial<{
+        host: string;
+        port: number;
+        verbose: boolean;
+    }>;
+
+    type LookupOpts = Partial<{
+        decode: boolean;
+        id: number;
+    }>;
+
+    interface ResolverDoT {
+        new(opts?: ConstructOpts): this;
+        lookup(name: string, opts?: LookupOpts): Promise<Res_DoH_DoT>;
+    }
+
+    const { hostname: host, port: portS = '' } = conn;
+
+    const port = +portS || 853;
+
+    const dot = run(tryCatchToError(async () => {
+        const pkg = await import(path) as { DNSoverTLS: ResolverDoT };
+        return new pkg.DNSoverTLS({ host, port });
+    }));
+
+    return (name: string, opts?: LookupOpts) => F.pipe(
+
+        T.fromTask(() => dot),
+
+        TE.chain(dns => {
+            return tryCatchToError(() => {
+                return dns.lookup(name, opts);
+            });
+        }),
+
+        TE.chain(({ answers }) => F.pipe(
+            RNEA.fromArray(answers),
             TE.fromOption(() => new Error('empty result')),
         )),
 
