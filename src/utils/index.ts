@@ -492,7 +492,7 @@ export const readTrimmedNonEmptyString = F.pipe(
     Dc.string,
     Dc.map(R.trim),
     Dc.refine(
-        F.not(R.equals('')) as (str: string) => str is NonEmptyString,
+        F.not(R.equals('')) as F.Refinement<string, NonEmptyString>,
         'NonEmptyString',
     ),
 );
