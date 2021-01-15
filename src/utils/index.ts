@@ -424,16 +424,16 @@ export function HKDF_SHA1 (
 
 export const numberToUInt16BE = R.cond([
 
-    [    R.equals(443), R.always(Buffer.from([ 0x01, 0xBB ])) ],
-    [     R.equals(80), R.always(Buffer.from([ 0x00, 0x50 ])) ],
-    [ R.equals(0x3FFF), R.always(Buffer.from([ 0x3F, 0xFF ])) ],
+    [    R.equals(443), F.constant(Uint8Array.from([ 0x01, 0xBB ])) ],
+    [     R.equals(80), F.constant(Uint8Array.from([ 0x00, 0x50 ])) ],
+    [ R.equals(0x3FFF), F.constant(Uint8Array.from([ 0x3F, 0xFF ])) ],
 
-    [ R.lte(0xFFFF), R.always(Buffer.from([ 0xFF, 0xFF ])) ],
-    [      R.gte(0), R.always(Buffer.from([ 0x00, 0x00 ])) ],
+    [ R.lte(0xFFFF), F.constant(Uint8Array.from([ 0xFF, 0xFF ])) ],
+    [      R.gte(0), F.constant(Uint8Array.from([ 0x00, 0x00 ])) ],
 
     [ R.T, mem.in100(_numberToUInt16BE) ],
 
-]) as Fn<number, Buffer>;
+]) as Fn<number, Uint8Array>;
 
 function _numberToUInt16BE (num: number) {
 
