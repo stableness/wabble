@@ -81,7 +81,7 @@ describe('decodeResolver', () => {
         const decodeURIs = R.pipe(
             u.str2arr,
             R.map(R.objOf('uri')),
-            R.objOf('list'),
+            R.objOf('upstream'),
             readResolver,
         );
 

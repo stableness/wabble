@@ -223,7 +223,7 @@ export const decodeResolver = F.pipe(
             max: Dc.number,
         }),
 
-        list: F.pipe(
+        upstream: F.pipe(
 
             baseURI,
 
@@ -256,7 +256,7 @@ export const decodeResolver = F.pipe(
 
     }),
 
-    Dc.map(({ ttl, list, timeout = DEFAULT_RESOLVER_TIMEOUT }) => {
+    Dc.map(({ ttl, upstream, timeout = DEFAULT_RESOLVER_TIMEOUT }) => {
 
         return {
 
@@ -274,7 +274,7 @@ export const decodeResolver = F.pipe(
                 }),
             ),
 
-            list: O.fromNullable(list),
+            upstream: O.fromNullable(upstream),
 
             timeout: R.clamp(0, MAX_INT, timeout),
 
@@ -334,7 +334,7 @@ export const convert: u.Fn<unknown, Config> = F.flow(
 
         resolver: resolver ?? {
             ttl: O.none,
-            list: O.none,
+            upstream: O.none,
             timeout: DEFAULT_RESOLVER_TIMEOUT,
         },
 

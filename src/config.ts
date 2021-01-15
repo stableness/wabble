@@ -160,7 +160,7 @@ export interface Config {
             max: number;
             calc: Fn<number>;
         }>;
-        list: O.Option<RNEA.ReadonlyNonEmptyArray<NSResolver>>;
+        upstream: O.Option<RNEA.ReadonlyNonEmptyArray<NSResolver>>;
         timeout: number;
     };
 

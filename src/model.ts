@@ -192,7 +192,7 @@ export type Resolver = Rx.ObservedValueOf<typeof resolver$>;
 const resolver$ = config$.pipe(
     o.pluck('resolver'),
     o.map(R.evolve({
-        list: O.map(R.o(
+        upstream: O.map(R.o(
             R.evolve({
                 https: A.map(({ uri }: NSResolver) => genDoH(uri.href)),
                 tls: A.map(({ uri }: NSResolver) => genDoT(uri)),
@@ -201,15 +201,15 @@ const resolver$ = config$.pipe(
             u.groupBy(R.prop('protocol')),
         )),
     })),
-    o.map(({ ttl, list, timeout }) => {
+    o.map(({ ttl, upstream, timeout }) => {
 
         const trim = O.chain(
             <T> (arr: readonly T[] = []) => RNEA.fromReadonlyArray(arr),
         );
 
-        const doh = trim(O.map (R.prop('https')) (list));
-        const dot = trim(O.map (R.prop('tls')) (list));
-        const dns = trim(O.map (R.prop('udp')) (list));
+        const doh = trim(O.map (R.prop('https')) (upstream));
+        const dot = trim(O.map (R.prop('tls')) (upstream));
+        const dns = trim(O.map (R.prop('udp')) (upstream));
 
         return { ttl, timeout, doh, dot, dns };
 
