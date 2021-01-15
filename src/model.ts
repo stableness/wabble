@@ -174,9 +174,7 @@ const rules$ = config$.pipe(
 const dealer$ = config$.pipe(
     o.pluck('servers'),
     o.map(u.loopNext),
-    o.map(next => ({
-        hit: () => O.fromNullable(next()),
-    })),
+    o.map(hit => ({ hit })),
 );
 
 const services$ = config$.pipe(
@@ -322,10 +320,18 @@ const runner$ = services$.pipe(
 
         }),
 
-        o.withLatestFrom(dealer$, ({ log, hopTo }, dealer) => {
+        o.withLatestFrom(dealer$, ({ log, hopTo, hook }, dealer) => {
+
+            // try 3 times
+            const server = dealer.hit() ?? dealer.hit() ?? dealer.hit();
+
+            if (server == null) {
+                void hook();
+                throw new Error('no remote available');
+            }
 
             const task = F.pipe(
-                hopTo(dealer.hit()),
+                hopTo(server),
                 TE.apFirst(TE.fromIO(() => log.info('Proxy'))),
             );
 

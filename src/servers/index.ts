@@ -50,7 +50,7 @@ export type ChainOpts = Pick<Opts, 'host' | 'port' | 'logger' | 'hook'>;
 export function connect (opts: Opts) {
 
     /*#__NOINLINE__*/
-    return function toServer (server: O.Option<Remote> | 'origin') {
+    return function toServer (server: Remote | 'origin') {
 
         const { port, hook } = opts;
 
@@ -67,33 +67,29 @@ export function connect (opts: Opts) {
 
         return F.pipe(
 
-            server,
+            resolve(opts),
 
-            TE.fromOption(() => new Error('Has no server to connect')),
+            TE.chain(() => {
 
-            TE.apFirst(resolve(opts)),
-
-            TE.chain(remote => {
-
-                if (remote.protocol === 'socks5') {
-                    return chainSocks5(opts, remote);
+                if (server.protocol === 'socks5') {
+                    return chainSocks5(opts, server);
                 }
 
-                if (remote.protocol === 'trojan') {
-                    return chainTrojan(opts, remote);
+                if (server.protocol === 'trojan') {
+                    return chainTrojan(opts, server);
                 }
 
-                if (remote.protocol === 'ss') {
-                    return chainShadowSocks(opts, remote);
+                if (server.protocol === 'ss') {
+                    return chainShadowSocks(opts, server);
                 }
 
-                if (remote.protocol === 'http'
-                ||  remote.protocol === 'https' as string) {
-                    return chainHttp(opts, remote);
+                if (server.protocol === 'http'
+                ||  server.protocol === 'https' as string) {
+                    return chainHttp(opts, server);
                 }
 
-                return TE.left(
-                    new Error(`Non supported protocol [${ remote.protocol }]`),
+                return TE.leftIO(() =>
+                    new Error(`Non supported protocol [${ server.protocol }]`),
                 );
 
             }),
