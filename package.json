@@ -11,7 +11,7 @@
     "dev": "TSC_NONPOLLING_WATCHER=true tsc-watch --onSuccess 'npm run -s non.tsc.start'",
     "bundle": "NODE_ENV=production npm run build -- --environment BUILD:prod",
     "lint": "eslint ./ --cache --cache-location ./dist/ --ext .ts -c .eslintrc.yml",
-    "test": "jest --ci --coverage -c jest.config.json"
+    "test": "jest --ci -c jest.config.json"
   },
   "bin": {
     "wabble": "dist/bin.cjs"
