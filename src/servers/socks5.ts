@@ -6,14 +6,12 @@ import {
     function as F,
 } from 'fp-ts';
 
-import { asyncReadable } from 'async-readable';
-
 import { logLevel } from '../model';
 import type { Socks5, Basic } from '../config';
 import {
     mem,
     socks5Handshake,
-    catchKToError,
+    readToTaskEither,
     writeToTaskEither,
 } from '../utils/index';
 
@@ -68,9 +66,7 @@ export const tunnel =
 
     const socket = netConnectTo({ host, port });
 
-    const { read: readPromise } = asyncReadable(socket);
-
-    const read = catchKToError(readPromise);
+    const read = readToTaskEither(socket);
     const write = writeToTaskEither(socket);
 
     return F.pipe(

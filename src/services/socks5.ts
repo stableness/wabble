@@ -2,8 +2,6 @@ import net from 'net';
 
 import { bind } from 'proxy-bind';
 
-import { asyncReadable } from 'async-readable';
-
 import { fromLong as ipFromLong, toString as ipToString } from 'ip';
 
 import {
@@ -28,7 +26,7 @@ import {
     pump,
     noop,
     constErr,
-    catchKToError,
+    readToTaskEither,
     writeToTaskEither,
 } from '../utils/index';
 
@@ -105,12 +103,10 @@ export const socks5Proxy =
 
         o.mergeMap(async socket => {
 
-            const { read: readToPromise } = asyncReadable(socket);
-
-            const read = catchKToError(readToPromise);
+            const read = readToTaskEither(socket);
             const write = writeToTaskEither(socket);
 
-            const frame = readFrame(readToPromise);
+            const frame = readFrame(read);
             const frameToString = TE.map (R.toString) (frame);
 
             const result = await run(F.pipe(

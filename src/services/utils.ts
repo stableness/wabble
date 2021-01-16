@@ -5,9 +5,7 @@ import {
     function as F,
 } from 'fp-ts';
 
-import type { Read } from 'async-readable';
-
-import { option2B, catchKToError } from '../utils/index';
+import { option2B, Fn } from '../utils/index';
 
 
 
@@ -27,15 +25,13 @@ export const do_not_require = F.not(option2B);
 
 
 
-// :: (number -> Promise Buffer) -> TaskEither Error Buffer
-export function readFrame (read: Read) {
-
-    const readTask = catchKToError(read);
+// :: (number -> TaskEither Error Buffer) -> TaskEither Error Buffer
+export function readFrame (read: Fn<number, TE.TaskEither<Error, Buffer>>) {
 
     return F.pipe(
-        readTask(1),
+        read(1),
         TE.map(buffer => buffer.readUInt8(0)),
-        TE.chain(readTask),
+        TE.chain(read),
     );
 
 }

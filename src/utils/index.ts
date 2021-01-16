@@ -9,6 +9,8 @@ import { pipeline } from 'stream';
 
 import fetch from 'node-fetch';
 
+import { asyncReadable } from 'async-readable';
+
 import memo from 'memoizerific';
 
 import { isPrivate, cidrSubnet, isEqual as eqIP } from 'ip';
@@ -355,6 +357,17 @@ export function writeToTaskEither (stream: NodeJS.WritableStream) {
         });
 
     });
+
+}
+
+
+
+
+
+// :: ReadableStream -> number -> TaskEither Error Buffer
+export function readToTaskEither (stream: NodeJS.ReadableStream) {
+
+    return catchKToError(asyncReadable(stream).read);
 
 }
 
