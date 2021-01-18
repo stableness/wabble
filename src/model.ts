@@ -130,8 +130,7 @@ const config$ = loader$.pipe(
         logger.error(message);
         return Rx.EMPTY;
     }),
-    o.publishReplay(1, Number.POSITIVE_INFINITY, Rx.asyncScheduler),
-    o.refCount(),
+    o.shareReplay({ bufferSize: 1, refCount: false }),
 );
 
 const directList$ = config$.pipe(
@@ -271,7 +270,7 @@ const runner$ = services$.pipe(
 
     o.switchMap(combine(logging)),
 
-    o.publish(Rx.pipe(
+    o.connect(Rx.pipe(
 
         o.withLatestFrom(rules$, resolver$, (
                 { host, port, hook },
