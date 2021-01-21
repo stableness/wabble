@@ -110,9 +110,10 @@ const isIP = O.fromPredicate(u.isIP);
 
 
 
-const checkBlockingHost = TE.filterOrElse(F.not(u.isBlockedIP), () => {
-    return new ErrorWithCode('BLOCKED_HOST', 'Blocked via DoH or DNS');
-});
+const checkBlockingHost = TE.filterOrElse(
+    F.not(u.isBlockedIP),
+    F.constant(new u.ErrorWithCode('BLOCKED_HOST', 'Blocked via DoH or DNS')),
+);
 
 
 
