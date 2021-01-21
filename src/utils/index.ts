@@ -206,6 +206,18 @@ export const noop = F.constVoid;
 
 
 
+export class ErrorWithCode extends Error {
+
+    constructor (public code?: string, message?: string) {
+        super(message);
+    }
+
+}
+
+
+
+
+
 export function* chop (max: number, chunk: Uint8Array) {
 
     let buffer = chunk;

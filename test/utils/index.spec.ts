@@ -55,6 +55,7 @@ import {
     loadPath,
     basicInfo,
     groupBy,
+    ErrorWithCode,
 
 } from '../../src/utils';
 
@@ -557,6 +558,22 @@ describe('str2arr', () => {
 
         expect(list).toStrictEqual([ 'foo', 'bar' ]);
 
+    });
+
+});
+
+
+
+
+
+describe('ErrorWithCode', () => {
+
+    test('extends Error', () => {
+        expect(new ErrorWithCode()).toBeInstanceOf(Error);
+    });
+
+    test('has code', () => {
+        expect(new ErrorWithCode('foo')).toHaveProperty('code', 'foo');
     });
 
 });

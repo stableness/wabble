@@ -279,18 +279,6 @@ const updateCache = setCache(dnsCache);
 
 
 
-export class ErrorWithCode extends Error {
-
-    constructor (public code?: string, message?: string) {
-        super(message);
-    }
-
-}
-
-
-
-
-
 export const netConnectTo: u.Fn<net.TcpNetConnectOpts, net.Socket> = R.compose(
 
     R.tap(socket => socket
