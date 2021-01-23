@@ -1,4 +1,5 @@
 import { URL } from 'url';
+import * as QS from 'querystring';
 import { createServer, IncomingMessage, ServerResponse } from 'http';
 
 import { pipeline } from 'stream';
@@ -70,11 +71,24 @@ export function establish (api$: Rx.Observable<Config['api']>) {
             stateOfReq('POST /test-domain'),
 
             S.map(o.mergeMap(({ req, res }) => from(req).pipe(
-                o.map(R.o(R.toString, Buffer.concat)),
-                o.map(domain => ({
+                o.map(F.flow(
+                    R.ifElse(
+                        R.propEq('length', 1),
+                        R.head,
+                        Buffer.concat,
+                    ) as u.Fn<Buffer[], Buffer>,
+                    R.toString,
+                    R.unary(QS.parse),
+                    R.propOr('', 'host') as u.Fn<unknown, string | string[]>,
+                    R.unless(
+                        R.is(String),
+                        R.head,
+                    ) as u.Fn<string | string[], string | undefined>,
+                )),
+                o.map((domain = '') => ({
                     domain,
                     write (text: string) {
-                        res.write(text);
+                        res.write(domain === '' ? 'unknown' : text);
                         res.end();
                     },
                 })),
