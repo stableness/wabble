@@ -229,10 +229,10 @@ export const decodeResolver = F.pipe(
 
             Dc.parse(({ uri }) => {
 
-                const proto = Dc.union(
-                    Dc.literal('https'),
-                    Dc.literal('udp'),
-                    Dc.literal('tls'),
+                const proto = Dc.literal(
+                    'https',
+                    'udp',
+                    'tls',
                 );
 
                 return F.pipe(
