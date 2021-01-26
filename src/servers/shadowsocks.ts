@@ -13,9 +13,10 @@ import {
 import { toTransform } from 'buffer-pond';
 
 import { logLevel } from '../model';
-import type { ShadowSocks as SS } from '../config';
+import type { ShadowSocks } from '../config';
 import * as u from '../utils/index';
-import * as ShadowSocks from '../settings/utils/shadowsocks';
+
+import type { AEAD, Stream } from '../settings/utils/shadowsocks';
 
 import { ChainOpts, netConnectTo } from './index';
 
@@ -23,7 +24,7 @@ import { ChainOpts, netConnectTo } from './index';
 
 
 
-export function chain (opts: ChainOpts, remote: SS) {
+export function chain (opts: ChainOpts, remote: ShadowSocks) {
 
     const { host, port, logger, hook } = opts;
 
@@ -67,12 +68,12 @@ export function chain (opts: ChainOpts, remote: SS) {
 
 
 export const cryptoPairsC =
-    (server: SS) =>
+    (server: ShadowSocks) =>
         (head: Uint8Array) =>
             cryptoPairs(server, head)
 ;
 
-export function cryptoPairs (server: SS, head: Uint8Array) {
+export function cryptoPairs (server: ShadowSocks, head: Uint8Array) {
 
     type RWS = NodeJS.ReadWriteStream;
 
@@ -116,7 +117,7 @@ export function cryptoPairs (server: SS, head: Uint8Array) {
 
 
 export function EncryptAEAD (
-        algorithm: ShadowSocks.AEAD,
+        algorithm: AEAD,
         key: Buffer,
         keySize: number,
         nonceSize: number,
@@ -182,7 +183,7 @@ export function EncryptAEAD (
 }
 
 function genAEADEncrypt (
-        algorithm: ShadowSocks.AEAD,
+        algorithm: AEAD,
         subKey: Buffer,
         nonceSize: number,
         authTagLength: number,
@@ -216,7 +217,7 @@ function genAEADEncrypt (
 
 
 export function DecryptAEAD (
-        algorithm: ShadowSocks.AEAD,
+        algorithm: AEAD,
         key: Buffer,
         keySize: number,
         nonceSize: number,
@@ -253,7 +254,7 @@ export function DecryptAEAD (
 }
 
 function genAEADDecrypt (
-        algorithm: ShadowSocks.AEAD,
+        algorithm: AEAD,
         key: Buffer,
         keySize: number,
         nonceSize: number,
@@ -288,7 +289,7 @@ function genAEADDecrypt (
 
 
 export function EncryptStream (
-        algorithm: ShadowSocks.Stream,
+        algorithm: Stream,
         key: Buffer,
         ivLength: number,
         initBuffer = Uint8Array.of(),
@@ -316,7 +317,7 @@ export function EncryptStream (
 
 
 export function DecryptStream (
-        algorithm: ShadowSocks.Stream,
+        algorithm: Stream,
         key: Buffer,
         ivLength: number,
 ) {
