@@ -254,19 +254,18 @@ export const socks5Proxy =
 
             async hook (...duplex: NodeJS.ReadWriteStream[]) {
 
-                if (R.isEmpty(duplex)) {
-                    socket.resume();
-                    socket.write(E_REFUSED, () => {
-                        socket.destroy();
-                    });
-                    return;
-                }
-
                 socket.write(CONTINUE);
 
                 await pump(socket, ...duplex, socket);
 
             },
+
+            abort: R.once(() => {
+                socket.resume();
+                socket.write(E_REFUSED, () => {
+                    socket.destroy();
+                });
+            }),
 
         })),
 

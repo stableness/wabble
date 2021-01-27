@@ -273,7 +273,7 @@ const runner$ = services$.pipe(
     o.connect(Rx.pipe(
 
         o.withLatestFrom(rules$, resolver$, (
-                { host, port, hook },
+                { host, port, hook, abort },
                 rules, resolver,
         ) => {
 
@@ -287,19 +287,20 @@ const runner$ = services$.pipe(
                 port,
                 resolver,
                 hook: u.catchKToError(hook),
+                abort,
                 logger: log,
             });
 
-            return { log, rejection, direction, hopTo, hook };
+            return { log, rejection, direction, hopTo, abort };
 
         }),
 
-        o.filter(({ rejection, direction, hook, hopTo, log }) => {
+        o.filter(({ rejection, direction, abort, hopTo, log }) => {
 
             if (rejection) {
 
                 log.info('Reject');
-                hook().catch(u.noop);
+                abort();
                 return false;
 
             }
@@ -319,13 +320,13 @@ const runner$ = services$.pipe(
 
         }),
 
-        o.withLatestFrom(dealer$, ({ log, hopTo, hook }, dealer) => {
+        o.withLatestFrom(dealer$, ({ log, hopTo, abort }, dealer) => {
 
             // try 3 times
             const server = dealer.hit() ?? dealer.hit() ?? dealer.hit();
 
             if (server == null) {
-                void hook();
+                abort();
                 throw new Error('no remote available');
             }
 

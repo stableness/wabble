@@ -466,10 +466,11 @@ export const temp = u.run(function () {
 
             source.pipe(
 
-                o.mergeMap(({ host, port, hook }) => {
+                o.mergeMap(({ host, port, hook, abort }) => {
 
                     if (flags.e) {
-                        return hook();
+                        abort();
+                        return Rx.EMPTY;
                     }
 
                     return hook(net.connect({ host, port }));

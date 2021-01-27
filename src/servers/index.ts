@@ -36,11 +36,13 @@ type Opts = {
     host: string;
     port: number;
     hook: (...args: Parameters<Hook>) => TE.TaskEither<Error, void>;
+    abort: () => void;
     resolver: Resolver;
     logger: Logger;
 };
 
-export type ChainOpts = Pick<Opts, 'host' | 'port' | 'logger' | 'hook'>;
+// eslint-disable-next-line max-len
+export type ChainOpts = Pick<Opts, 'host' | 'port' | 'logger' | 'hook' | 'abort'>;
 
 
 
@@ -52,15 +54,15 @@ export function connect (opts: Opts) {
     /*#__NOINLINE__*/
     return function toServer (server: Remote | 'origin') {
 
-        const { port, hook } = opts;
+        const { port, hook, abort } = opts;
 
         if (server === 'origin') {
             return F.pipe(
 
                 resolve(opts),
+                TE.mapLeft(R.tap(abort)),
                 TE.map(host => netConnectTo({ host, port })),
                 TE.chain(hook),
-                TE.mapLeft(R.tap(hook())),
 
             );
         }
@@ -68,6 +70,8 @@ export function connect (opts: Opts) {
         return F.pipe(
 
             resolve(opts),
+
+            TE.mapLeft(R.tap(abort)),
 
             TE.chain(() => {
 
@@ -93,8 +97,6 @@ export function connect (opts: Opts) {
                 );
 
             }),
-
-            TE.mapLeft(R.tap(hook())),
 
         );
 
