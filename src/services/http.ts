@@ -197,11 +197,6 @@ export const requestOn = Rx.pipe(
                 return;
             }
 
-            if (R.isEmpty(duplex)) {
-                socket.resume();
-                return response.writeHead(503).end();
-            }
-
             const source = new PassThrough();
 
             const sink = new Duplex({
@@ -238,6 +233,12 @@ export const requestOn = Rx.pipe(
 
         },
 
+        abort: R.once(() => {
+            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+            response.connection?.resume();
+            response.writeHead(503).end();
+        }),
+
     })),
 
 );
@@ -259,11 +260,6 @@ export const connectOn = Rx.pipe(
 
         async hook (...duplex: NodeJS.ReadWriteStream[]) {
 
-            if (R.isEmpty(duplex)) {
-                socket.resume();
-                return socket.end(u.headerJoin([ 'HTTP/1.0 503' ]));
-            }
-
             if (head.length > 0) {
                 socket.unshift(head);
             }
@@ -273,6 +269,11 @@ export const connectOn = Rx.pipe(
             await u.pump(socket, ...duplex, socket);
 
         },
+
+        abort: R.once(() => {
+            socket.resume();
+            socket.end(u.headerJoin([ 'HTTP/1.0 503' ]));
+        }),
 
     })),
 

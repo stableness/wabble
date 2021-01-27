@@ -23,7 +23,7 @@ import { ChainOpts, netConnectTo } from './index';
 
 export function chain (opts: ChainOpts, remote: Socks5) {
 
-    const { host, port, logger, hook } = opts;
+    const { host, port, logger, hook, abort } = opts;
 
     return F.pipe(
 
@@ -46,9 +46,9 @@ export function chain (opts: ChainOpts, remote: Socks5) {
 
         TE.chain(tunnel(remote)),
 
-        TE.chain(hook),
+        TE.mapLeft(R.tap(abort)),
 
-        TE.mapLeft(R.tap(hook())),
+        TE.chain(hook),
 
     );
 

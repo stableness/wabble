@@ -26,7 +26,7 @@ import { ChainOpts, netConnectTo } from './index';
 
 export function chain (opts: ChainOpts, remote: ShadowSocks) {
 
-    const { host, port, logger, hook } = opts;
+    const { host, port, logger, hook, abort } = opts;
 
     return F.pipe(
 
@@ -35,6 +35,8 @@ export function chain (opts: ChainOpts, remote: ShadowSocks) {
         IO.map(E.fromNullable(Error('Has no crypto to perform'))),
 
         TE.fromIOEither,
+
+        TE.mapLeft(R.tap(abort)),
 
         TE.apFirst(TE.fromIO(() => {
 
@@ -56,8 +58,6 @@ export function chain (opts: ChainOpts, remote: ShadowSocks) {
         })),
 
         TE.chain(({ enc, dec }) => hook(enc, netConnectTo(remote), dec)),
-
-        TE.mapLeft(R.tap(hook())),
 
     );
 

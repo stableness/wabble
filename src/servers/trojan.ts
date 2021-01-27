@@ -29,7 +29,7 @@ import type { ChainOpts } from './index';
 
 export function chain (opts: ChainOpts, remote: Trojan) {
 
-    const { host, port, logger, hook } = opts;
+    const { host, port, logger, hook, abort } = opts;
 
     return F.pipe(
 
@@ -52,9 +52,9 @@ export function chain (opts: ChainOpts, remote: Trojan) {
 
         TE.chain(catchKToError(tunnel(remote))),
 
-        TE.chain(hook),
+        TE.mapLeft(R.tap(abort)),
 
-        TE.mapLeft(R.tap(hook())),
+        TE.chain(hook),
 
     );
 
