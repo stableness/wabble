@@ -18,13 +18,13 @@ import * as u from '../utils/index';
 
 import type { AEAD, Stream } from '../settings/utils/shadowsocks';
 
-import { ChainOpts, netConnectTo } from './index';
+import { netConnectTo, RTE_O_E_V } from './index';
 
 
 
 
 
-export function chain (opts: ChainOpts, remote: ShadowSocks) {
+export const chain: u.Fn<ShadowSocks, RTE_O_E_V> = remote => opts => {
 
     const { host, port, logger, hook, abort } = opts;
 
@@ -61,7 +61,7 @@ export function chain (opts: ChainOpts, remote: ShadowSocks) {
 
     );
 
-}
+};
 
 
 

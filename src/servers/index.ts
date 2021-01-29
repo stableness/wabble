@@ -6,8 +6,10 @@ import * as R from 'ramda';
 
 import {
     monoid,
+    reader as Rd,
     task as T,
     taskEither as TE,
+    readerTaskEither as RTE,
     map as fpMap,
     eq as Eq,
     either as E,
@@ -26,7 +28,7 @@ import type { Hook } from '../services/index';
 import { chain as chainHttp } from './http';
 import { chain as chainSocks5 } from './socks5';
 import { chain as chainTrojan } from './trojan';
-import { chain as chainShadowSocks } from './shadowsocks';
+import { chain as chainSS } from './shadowsocks';
 
 
 
@@ -41,66 +43,47 @@ type Opts = {
     logger: Logger;
 };
 
-// eslint-disable-next-line max-len
-export type ChainOpts = Pick<Opts, 'host' | 'port' | 'logger' | 'hook' | 'abort'>;
+export type ChainOpts = Omit<Opts, 'resolver'>;
+
+export type RTE_O_E_V = RTE.ReaderTaskEither<ChainOpts, Error, void>;
 
 
 
 
 
 /*#__NOINLINE__*/
-export function connect (opts: Opts) {
+export function connect (server: Remote | 'origin') {
 
-    /*#__NOINLINE__*/
-    return function toServer (server: Remote | 'origin') {
+    return F.pipe(
 
-        const { port, hook, abort } = opts;
+        Rd.asks(/*#__NOINLINE__*/ resolve),
 
-        if (server === 'origin') {
-            return F.pipe(
+        RTE.swap,
 
-                resolve(opts),
-                TE.mapLeft(R.tap(abort)),
-                TE.map(host => netConnectTo({ host, port })),
-                TE.chain(hook),
+        RTE.chain(error => Rd.asks(({ abort }) => {
+            abort();
+            return TE.right(error);
+        })),
 
-            );
-        }
+        RTE.swap,
 
-        return F.pipe(
+        RTE.chain(host => {
 
-            resolve(opts),
+            if (server === 'origin') {
 
-            TE.mapLeft(R.tap(abort)),
+                return Rd.asks(({ hook, port }) => {
 
-            TE.chain(() => {
+                    return hook(netConnectTo({ host, port }));
 
-                if (server.protocol === 'socks5') {
-                    return chainSocks5(opts, server);
-                }
+                });
 
-                if (server.protocol === 'trojan') {
-                    return chainTrojan(opts, server);
-                }
+            }
 
-                if (server.protocol === 'ss') {
-                    return chainShadowSocks(opts, server);
-                }
+            return select(server);
 
-                if (server.protocol === 'http'
-                ||  server.protocol === 'https' as string) {
-                    return chainHttp(opts, server);
-                }
+        }),
 
-                return TE.leftIO(() =>
-                    new Error(`Non supported protocol [${ server.protocol }]`),
-                );
-
-            }),
-
-        );
-
-    };
+    );
 
 }
 
@@ -297,4 +280,23 @@ export const netConnectTo: u.Fn<net.TcpNetConnectOpts, net.Socket> = R.compose(
     }),
 
 );
+
+
+
+
+
+const unknownRemote = ({ protocol }: Remote) => {
+    return new Error(`Non supported protocol [${ protocol }]`);
+};
+
+const protocolEq = R.propEq('protocol');
+
+const select: u.Fn<Remote, RTE_O_E_V> = R.cond([
+    [ protocolEq('ss'        ), chainSS ],
+    [ protocolEq('http'    ), chainHttp ],
+    [ protocolEq('https'   ), chainHttp ],
+    [ protocolEq('socks5'), chainSocks5 ],
+    [ protocolEq('trojan'), chainTrojan ],
+    [ R.T, R.o(RTE.left, unknownRemote) ],
+]);
 
