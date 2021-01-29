@@ -7,7 +7,7 @@ import * as R from 'ramda';
 import {
     either as E,
     option as O,
-    taskEither as TE,
+    readerTaskEither as RTE,
     function as F,
     readonlyArray as A,
     readonlyNonEmptyArray as RNEA,
@@ -275,42 +275,36 @@ const runner$ = services$.pipe(
         o.withLatestFrom(rules$, resolver$, (
                 { host, port, hook, abort },
                 rules, resolver,
-        ) => {
+        ) => ({
+            host,
+            port,
+            resolver,
+            abort,
+            hook: u.catchKToError(hook),
+            logger: logger.child({ host, port }),
+            rejection: rules.reject(host),
+            direction: rules.direct(host),
+        })),
 
-            const log = logger.child({ host, port });
+        o.filter(opts => {
 
-            const rejection = rules.reject(host);
-            const direction = rules.direct(host);
-
-            const hopTo = /*#__NOINLINE__*/ connect({
-                host,
-                port,
-                resolver,
-                hook: u.catchKToError(hook),
-                abort,
-                logger: log,
-            });
-
-            return { log, rejection, direction, hopTo, abort };
-
-        }),
-
-        o.filter(({ rejection, direction, abort, hopTo, log }) => {
+            const { abort, rejection, direction, logger: log } = opts;
 
             if (rejection) {
 
                 log.info('Reject');
                 abort();
+
                 return false;
 
             }
 
             if (direction) {
 
-                void u.run(F.pipe(
-                    hopTo('origin'),
-                    TE.apFirst(TE.fromIO(() => log.info('Direct'))),
-                ));
+                void u.run(R.applyTo(opts, F.pipe(
+                    connect('origin'),
+                    RTE.apFirst(RTE.fromIO(() => log.info('Direct'))),
+                )));
 
                 return false;
 
@@ -320,7 +314,9 @@ const runner$ = services$.pipe(
 
         }),
 
-        o.withLatestFrom(dealer$, ({ log, hopTo, abort }, dealer) => {
+        o.withLatestFrom(dealer$, (opts, dealer) => {
+
+            const { abort, logger: log } = opts;
 
             // try 3 times
             const server = dealer.hit() ?? dealer.hit() ?? dealer.hit();
@@ -330,10 +326,10 @@ const runner$ = services$.pipe(
                 throw new Error('no remote available');
             }
 
-            const task = F.pipe(
-                hopTo(server),
-                TE.apFirst(TE.fromIO(() => log.info('Proxy'))),
-            );
+            const task = R.applyTo(opts, F.pipe(
+                connect(server),
+                RTE.apFirst(RTE.fromIO(() => log.info('Proxy'))),
+            ));
 
             return { task, log };
 

@@ -21,13 +21,13 @@ import {
     socks5Handshake,
 } from '../utils/index';
 
-import type { ChainOpts } from './index';
+import type { RTE_O_E_V } from './index';
 
 
 
 
 
-export function chain (opts: ChainOpts, remote: Trojan) {
+export const chain: Fn<Trojan, RTE_O_E_V> = remote => opts => {
 
     const { host, port, logger, hook, abort } = opts;
 
@@ -58,7 +58,7 @@ export function chain (opts: ChainOpts, remote: Trojan) {
 
     );
 
-}
+};
 
 
 

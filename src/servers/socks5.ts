@@ -9,19 +9,20 @@ import {
 import { logLevel } from '../model';
 import type { Socks5, Basic } from '../config';
 import {
+    Fn,
     mem,
     socks5Handshake,
     readToTaskEither,
     writeToTaskEither,
 } from '../utils/index';
 
-import { ChainOpts, netConnectTo } from './index';
+import { netConnectTo, RTE_O_E_V } from './index';
 
 
 
 
 
-export function chain (opts: ChainOpts, remote: Socks5) {
+export const chain: Fn<Socks5, RTE_O_E_V> = remote => opts => {
 
     const { host, port, logger, hook, abort } = opts;
 
@@ -52,7 +53,7 @@ export function chain (opts: ChainOpts, remote: Socks5) {
 
     );
 
-}
+};
 
 
 
