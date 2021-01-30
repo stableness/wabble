@@ -27,6 +27,19 @@ jobs:
         with:
           fetch-depth: 0
 
+      - uses: actions/setup-node@v2-beta
+        with:
+          node-version: 14.x
+
+      - run: npm install --no-save
+        env:
+          ADBLOCK: true
+          DISABLE_OPENCOLLECTIVE: true
+          HUSKY_SKIP_INSTALL: true
+
+      - run: NO_SKIP=on npm run test -- --coverage --verbose
+        timeout-minutes: 2
+
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@master
         env:
