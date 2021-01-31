@@ -56,7 +56,13 @@ export const httpProxy =
                 response: ServerResponse,
         ) {
 
-            if (`${ request.url }`.startsWith('http') === false) {
+            const { url = '' } = request;
+
+            if (url.startsWith('/http://') === true) {
+                request.url = R.tail(url);
+            }
+
+            if (request.url?.startsWith('http://') === false) {
                 return response.writeHead(400).end();
             }
 

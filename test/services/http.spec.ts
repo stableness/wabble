@@ -159,6 +159,7 @@ describe('httpProxy', () => {
 
         'http://   foo:bar   @   localhost   /hello   ?   c=world             ',
         'http://  -foo:bar   @   localhost   /hello   ?   c=world  & a & d    ',
+        'http://                 localhost   /hello   ?   c=world  & p        ',
         'http://                 localhost   /hello   ?   c=world             ',
         'http://                 localhost   /hello   ?   c=world- & e        ',
 
@@ -293,9 +294,10 @@ export function genFlags (search: SearchParams) {
     const a = search.has('a');
     const e = search.has('e');
     const d = search.has('d');
+    const p = search.has('p');
     const c = search.get('c');
 
-    return { a, e, d, c };
+    return { a, e, d, c, p };
 
 }
 
@@ -334,9 +336,11 @@ export function genEnv (raw: string): Env {
 
 export const temp = u.run(function () {
 
-    const REQUEST: Result<TE_ES> = ports => ({ url }) => {
+    const REQUEST: Result<TE_ES> = ports => ({ url, flags }) => {
 
         const { headers } = genAuth(url);
+
+        const p = flags.p ? '/' : '';
 
         return TE.of(F.tuple(fetchToString(
             flushHeaders(
@@ -345,7 +349,7 @@ export const temp = u.run(function () {
                     host: url.hostname,
                     port: ports.proxy,
                     method: 'GET',
-                    path: redirect(url, ports.server),
+                    path: p + redirect(url, ports.server),
                 }),
             ),
         ), ports));
