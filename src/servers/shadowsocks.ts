@@ -240,11 +240,13 @@ export function DecryptAEAD (
 
         while (true) {
 
+            // eslint-disable-next-line no-await-in-loop
             const buffer = decrypt(...u.splitAt2(await read(2 + tagSize)));
             const length = buffer.readUInt16BE(0);
 
             const slice = u.split({ at: length });
 
+            // eslint-disable-next-line no-await-in-loop
             yield decrypt(...slice(await read(length + tagSize)));
 
         }
