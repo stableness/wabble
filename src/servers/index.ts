@@ -6,7 +6,6 @@ import * as R from 'ramda';
 
 import {
     monoid,
-    reader as Rd,
     task as T,
     taskEither as TE,
     readerTaskEither as RTE,
@@ -52,34 +51,23 @@ export type RTE_O_E_V = RTE.ReaderTaskEither<ChainOpts, Error, void>;
 
 
 /*#__NOINLINE__*/
-export function connect (server: Remote | 'origin') {
+export function connect (opts: Opts, server: Remote | 'origin') {
+
+    const { abort, hook, port } = opts;
 
     return F.pipe(
 
-        Rd.asks(/*#__NOINLINE__*/ resolve),
+        /*#__NOINLINE__*/ resolve(opts),
 
-        RTE.swap,
+        TE.mapLeft(R.tap(abort)),
 
-        RTE.chain(error => Rd.asks(({ abort }) => {
-            abort();
-            return TE.right(error);
-        })),
-
-        RTE.swap,
-
-        RTE.chain(host => {
+        TE.chain(host => {
 
             if (server === 'origin') {
-
-                return Rd.asks(({ hook, port }) => {
-
-                    return hook(netConnectTo({ host, port }));
-
-                });
-
+                return hook(netConnectTo({ host, port }));
             }
 
-            return select(server);
+            return select (server) (opts);
 
         }),
 

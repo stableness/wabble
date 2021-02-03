@@ -7,7 +7,7 @@ import * as R from 'ramda';
 import {
     either as E,
     option as O,
-    readerTaskEither as RTE,
+    taskEither as TE,
     function as F,
     readonlyArray as A,
     readonlyNonEmptyArray as RNEA,
@@ -301,10 +301,10 @@ const runner$ = services$.pipe(
 
             if (direction) {
 
-                void u.run(R.applyTo(opts, F.pipe(
-                    connect('origin'),
-                    RTE.apFirst(RTE.fromIO(() => log.info('Direct'))),
-                )));
+                void u.run(F.pipe(
+                    connect(opts, 'origin'),
+                    TE.apFirst(TE.fromIO(() => log.info('Direct'))),
+                ));
 
                 return false;
 
@@ -326,10 +326,10 @@ const runner$ = services$.pipe(
                 throw new Error('no remote available');
             }
 
-            const task = R.applyTo(opts, F.pipe(
-                connect(server),
-                RTE.apFirst(RTE.fromIO(() => log.info('Proxy'))),
-            ));
+            const task = F.pipe(
+                connect(opts, server),
+                TE.apFirst(TE.fromIO(() => log.info('Proxy'))),
+            );
 
             return { task, log };
 
