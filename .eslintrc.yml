@@ -164,6 +164,9 @@ rules:
     - error
     - allowConstantLoopConditions: true
 
+  no-await-in-loop:
+    - error
+
   space-infix-ops:
     - error
     - int32Hint: false
