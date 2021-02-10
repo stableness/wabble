@@ -106,6 +106,16 @@ export function establish (api$: Rx.Observable<Config['api']>) {
 
         ),
 
+        flush_DNS$: F.pipe(
+
+            stateOfReq('POST /flush-dns'),
+
+            S.map(u.rxTap(({ res }) => {
+                res.writeHead(204).end();
+            })),
+
+        ),
+
         dump$: F.pipe(
 
             stateOfReq('GET /dump'),

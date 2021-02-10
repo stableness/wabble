@@ -20,7 +20,7 @@ import { bind } from 'proxy-bind';
 
 import type { Options } from './bin';
 
-import { connect } from './servers/index';
+import { connect, flushDNS } from './servers/index';
 import { combine, establish } from './services/index';
 import { convert } from './settings/index';
 
@@ -377,6 +377,7 @@ function construct (setting: string) {
         health$,
         reload$,
         test_domain$,
+        flush_DNS$,
         exit$,
         metrics$,
         dump$,
@@ -404,6 +405,8 @@ function construct (setting: string) {
                 write({ ...process.memoryUsage() });
             }),
         ),
+
+        flush_DNS$.pipe(o.tap(flushDNS)),
 
         test_domain$.pipe(
             o.withLatestFrom(rules$, (

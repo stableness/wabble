@@ -248,6 +248,7 @@ const setCache: u.CurryT<[
 const dnsCache = new Map<string, string>();
 const nsLookup = (host: string) => fpMap.lookup (Eq.eqString) (host) (dnsCache);
 const updateCache = setCache(dnsCache);
+export const flushDNS = () => dnsCache.clear();
 
 
 

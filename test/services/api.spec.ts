@@ -67,6 +67,7 @@ describe('api', () => {
         'GET     /metrics',
         'GET     /dump',
 
+        'POST    /flush-dns',
         'POST    /test-domain',
         'POST    /reload',
         'POST    /exit',

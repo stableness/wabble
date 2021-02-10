@@ -133,6 +133,7 @@ rules:
 - `GET  /metrics`
 - `GET  /dump`
 - `POST /test-domain`
+- `POST /flush-dns`
 - `POST /reload`
 - `POST /exit`
 
