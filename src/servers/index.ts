@@ -9,7 +9,7 @@ import {
     task as T,
     taskEither as TE,
     readerTaskEither as RTE,
-    map as fpMap,
+    readonlyMap as fpMap,
     eq as Eq,
     either as E,
     option as O,
