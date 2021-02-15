@@ -20,6 +20,7 @@ import {
     either as E,
     taskEither as TE,
     option as O,
+    string as Str,
     function as F,
     readonlyArray as A,
     nonEmptyArray as NEA,
@@ -620,9 +621,9 @@ export const option2B = O.fold(F.constFalse, F.constTrue);
 
 export const eqBasic = F.pipe(
 
-    Eq.getStructEq<Basic>({
-        password: Eq.eqString,
-        username: Eq.eqString,
+    Eq.struct<Basic>({
+        password: Str.Eq,
+        username: Str.Eq,
     }),
 
     R.prop('equals'),

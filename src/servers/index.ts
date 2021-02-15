@@ -10,10 +10,10 @@ import {
     taskEither as TE,
     readerTaskEither as RTE,
     readonlyMap as fpMap,
-    eq as Eq,
     either as E,
     option as O,
     function as F,
+    string as Str,
     readonlyArray as A,
     readonlyNonEmptyArray as RNEA,
 } from 'fp-ts';
@@ -99,7 +99,7 @@ const race = F.flow(
     <T> (queue: readonly T[]) =>
         // bailout if only have the timeout task in queue
         queue.length < 2 ? O.none : O.some(queue.flat() as never),
-    O.map(monoid.fold(T.getRaceMonoid<E.Either<Error, string>>())),
+    O.map(monoid.concatAll(T.getRaceMonoid<E.Either<Error, string>>())),
 );
 
 
@@ -246,7 +246,7 @@ const setCache: u.CurryT<[
 };
 
 const dnsCache = new Map<string, string>();
-const nsLookup = (host: string) => fpMap.lookup (Eq.eqString) (host) (dnsCache);
+const nsLookup = (host: string) => fpMap.lookup (Str.Eq) (host) (dnsCache);
 const updateCache = setCache(dnsCache);
 export const flushDNS = () => dnsCache.clear();
 

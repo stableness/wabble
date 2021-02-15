@@ -5,7 +5,6 @@ import { bind } from 'proxy-bind';
 import { fromLong as ipFromLong, toString as ipToString } from 'ip';
 
 import {
-    apply,
     option as O,
     taskEither as TE,
     either as E,
@@ -139,10 +138,11 @@ export const socks5Proxy =
                         TE.chain(([ VER ]) => {
 
                             if (VER === 0x01) {
-                                return readSequenceS({
-                                    username: frameToString,
-                                    password: frameToString,
-                                });
+                                return F.pipe(
+                                    TE.Do,
+                                    TE.bind('username', () => frameToString),
+                                    TE.bind('password', () => frameToString),
+                                );
                             }
 
                             return F.pipe(
@@ -276,8 +276,6 @@ export const socks5Proxy =
 
 
 
-
-const readSequenceS = apply.sequenceS(TE.taskEitherSeq);
 
 const leftIOErr = F.flow(
     Error,

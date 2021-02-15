@@ -7,6 +7,8 @@ import {
     stateReaderTaskEither as SRTE,
 } from 'fp-ts';
 
+import * as R from 'ramda';
+
 import {
     tunnel,
 } from '../../src/servers/socks5';
@@ -14,7 +16,6 @@ import {
 import * as u from '../../src/utils';
 
 import {
-    sequence,
     genAuth,
     genEnv,
     fetchToString,
@@ -51,13 +52,14 @@ describe('socks5Proxy', () => {
 
         const invoke = SRTE.evaluate({ proxy: 0, server: 0 });
 
-        await RTE.run(F.pipe(
+        await u.run(R.applyTo(env, F.pipe(
 
-            invoke(sequence({
-                server: temp.server,
-                proxy: temp.proxy,
-                task: socks5,
-            })),
+            invoke(F.pipe(
+                SRTE.of({}) as never,
+                SRTE.apS('server', temp.server),
+                SRTE.apS('proxy', temp.proxy),
+                SRTE.apS('task', socks5),
+            )),
 
             RTE.map(({ proxy, server, task }) => ({
                 task,
@@ -93,7 +95,7 @@ describe('socks5Proxy', () => {
 
             ),
 
-        ), env);
+        )));
 
     });
 
