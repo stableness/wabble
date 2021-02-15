@@ -30,7 +30,7 @@ export const chain: u.Fn<ShadowSocks, RTE_O_E_V> = remote => opts => {
 
     return F.pipe(
 
-        IO.fromIO(() => u.socks5Handshake(host, port).subarray(3)),
+        () => u.socks5Handshake(host, port).subarray(3),
         IO.map(cryptoPairsC(remote)),
         IO.map(E.fromNullable(Error('Has no crypto to perform'))),
 

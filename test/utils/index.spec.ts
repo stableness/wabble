@@ -16,7 +16,7 @@ import {
     task as T,
     taskEither as TE,
     function as F,
-    eq as Eq,
+    string as Str,
 } from 'fp-ts';
 
 import {
@@ -722,7 +722,7 @@ describe('readOptionalString', () => {
 
     });
 
-    const { equals } = O.getEq(Eq.eqString);
+    const { equals } = O.getEq(Str.Eq);
 
 });
 

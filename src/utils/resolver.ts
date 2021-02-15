@@ -2,7 +2,6 @@ import { promises as pDNS } from 'dns';
 
 import {
     either as E,
-    task as T,
     taskEither as TE,
     function as F,
     readonlyNonEmptyArray as RNEA,
@@ -43,7 +42,7 @@ export function genDoH (endpoint: string, path = '@stableness/dohdec') {
 
     return (name: string) => F.pipe(
 
-        T.fromTask(() => doh),
+        () => doh,
 
         TE.chain(dns => {
             return tryCatchToError(() => {
@@ -95,7 +94,7 @@ export function genDoT (conn: Conn, path = '@stableness/dohdec') {
 
     return (name: string, opts?: LookupOpts) => F.pipe(
 
-        T.fromTask(() => dot),
+        () => dot,
 
         TE.chain(dns => {
             return tryCatchToError(() => {
