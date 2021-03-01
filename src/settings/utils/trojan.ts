@@ -44,13 +44,13 @@ const CIPHER_TLS13 = list(`
 
 
 
-const codec = Dc.type({
+const codec = Dc.struct({
 
     password: u.readTrimmedNonEmptyString,
 
     ssl: F.pipe(
 
-        Dc.type({
+        Dc.struct({
 
             verify: Dc.boolean,
             verify_hostname: Dc.boolean,

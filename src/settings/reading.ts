@@ -19,7 +19,7 @@ import * as ShadowSocks from './utils/shadowsocks';
 
 
 
-const baseURI = Dc.type({ uri: u.readURL });
+const baseURI = Dc.struct({ uri: u.readURL });
 
 
 
@@ -175,7 +175,7 @@ const decodeServers = F.pipe(
 
 
 
-const decodeRules = Dc.type({
+const decodeRules = Dc.struct({
     proxy: u.readTrimmedNonEmptyStringArr,
     direct: u.readTrimmedNonEmptyStringArr,
     reject: u.readTrimmedNonEmptyStringArr,
@@ -187,7 +187,7 @@ const decodeRules = Dc.type({
 
 export const decodeAPI = F.pipe(
 
-    Dc.type({
+    Dc.struct({
         port: Dc.number,
     }),
 
@@ -290,7 +290,7 @@ export const decodeResolver = F.pipe(
 
 export const { decode: decodeConfig } = F.pipe(
 
-    Dc.type({
+    Dc.struct({
 
         servers: decodeServers,
         services: decodeServices,
