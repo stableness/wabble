@@ -40,7 +40,7 @@
     "command-line-args": "^5.1.1",
     "fp-ts": "^2.9.5",
     "futoin-hkdf": "^1.2.1",
-    "io-ts": "^2.2.10",
+    "io-ts": "^2.2.15",
     "ip": "^1.1.5",
     "js-yaml": "^4.0.0",
     "memoizerific": "^1.11.3",
