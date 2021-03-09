@@ -120,6 +120,7 @@ const config = [
         ]).concat([
             replace({
                 delimiters: [ '<%=', '=>' ],
+                preventAssignment : true,
                 VERSION: pkg.version,
                 NODE_ENV: NODE_ENV || 'production',
             }),
@@ -154,6 +155,7 @@ const config = [
 
         plugins: [
             replace({
+                preventAssignment : true,
                 include: /bin\.js/,
                 'index.cjs': 'index.mjs',
             }),
