@@ -531,7 +531,7 @@ describe('socks5Handshake', () => {
 
     const concat = R.o(
         bind(Uint8Array).from,
-        R.concat([ 0x05, 0x01, 0x00, 0x03 ]),
+        R.concat([ 0x05, 0x01, 0x00, 0x03 ]) as unknown as Fn<Uint8Array>,
     );
 
     const domain = R.useWith(

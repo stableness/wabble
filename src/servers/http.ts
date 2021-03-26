@@ -114,7 +114,7 @@ export const tunnel = (opts: Http) => async (path: string) => {
 
 
 
-export const authToCredentials = O.fold(
+export const authToCredentials = O.fold<string, string>(
     F.constant(''),
     toBasicCredentials,
 );
