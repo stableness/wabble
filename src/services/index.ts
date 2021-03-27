@@ -1,12 +1,11 @@
 import {
     function as F,
-    readonlyNonEmptyArray as RNEA,
+    reader as Rd,
 } from 'fp-ts';
 
 import * as Rx from 'rxjs';
 
-import type { Logging } from '../model';
-import type { Service, Config } from '../config';
+import type { Service } from '../config';
 
 import { httpProxy } from './http';
 import { socks5Proxy } from './socks5';
@@ -25,20 +24,10 @@ export type Hook = Rx.ObservedValueOf<ReturnType<Proxy>>['hook'];
 
 
 
-export const combine = (logging: Logging) => (services: Config['services']) => {
-
-    const source = F.pipe(
-        services,
-        RNEA.map(service => box (service) (logging)),
-    );
-
-    if (source.length === 1) {
-        return RNEA.head(source);
-    }
-
-    return Rx.merge(...source);
-
-};
+export const combine = F.flow(
+    Rd.traverseArray(box),
+    Rd.map(services => Rx.merge(...services)),
+);
 
 
 
