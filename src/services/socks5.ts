@@ -186,7 +186,7 @@ export const socks5Proxy =
 
                 }),
 
-                TE.chain(ATYP => {
+                TE.bind('host', ATYP => {
 
                     if (ATYP === 1) {
                         return F.pipe(
@@ -213,14 +213,12 @@ export const socks5Proxy =
 
                 }),
 
-                TE.bindTo('host'),
-
                 TE.bind('port', () => F.pipe(
                     read(2),
                     TE.map(buf => buf.readUInt16BE(0)),
                 )),
 
-                TE.bind('socket', F.constant(TE.right(socket))),
+                TE.bind('socket', () => TE.right(socket)),
 
             ));
 
