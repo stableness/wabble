@@ -116,6 +116,9 @@ export function cryptoPairs (server: ShadowSocks, head: Uint8Array) {
 
 
 
+const MAX = 0x3FFF;
+const chop = u.chunksOf(MAX);
+
 export function EncryptAEAD (
         algorithm: AEAD,
         key: Buffer,
@@ -140,8 +143,6 @@ export function EncryptAEAD (
         readable.push(Buffer.concat([ salt, pack(head) ]));
     });
 
-    const MAX = 0x3FFF;
-
     return init(new Transform({
 
         transform (
@@ -155,7 +156,7 @@ export function EncryptAEAD (
                 return cb(undefined, pack(chunk));
             }
 
-            for (const slice of u.chop(MAX, chunk)) {
+            for (const slice of chop(chunk)) {
                 this.push(pack(slice));
             }
 
