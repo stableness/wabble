@@ -392,13 +392,16 @@ describe('chop', () => {
 
     ])('%d / %d', (max, chunk, result) => {
 
-        const store = [] as Uint8Array[];
+        expect(
 
-        for (const slice of chop(max, new Uint8Array(chunk).fill(0))) {
-            store.push(slice);
-        }
+            // eslint-disable-next-line deprecation/deprecation
+            chop(max, new Uint8Array(chunk).fill(0)),
 
-        expect(store).toEqual(result.map(size => new Uint8Array(size).fill(0)));
+        ).toEqual(
+
+            result.map(size => new Uint8Array(size).fill(0)),
+
+        );
 
     });
 

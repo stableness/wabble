@@ -21,6 +21,7 @@ import {
     taskEither as TE,
     option as O,
     function as F,
+    readonlyArray as A,
     nonEmptyArray as NEA,
 } from 'fp-ts';
 
@@ -218,20 +219,29 @@ export class ErrorWithCode extends Error {
 
 
 
-export function* chop (max: number, chunk: Uint8Array) {
+/**
+ * @deprecated use chunksOf
+ */
+export function chop (max: number, chunk: Uint8Array) {
 
-    let buffer = chunk;
-
-    while (buffer.length > max) {
-        yield buffer.subarray(0, max);
-        buffer = buffer.subarray(max);
-    }
-
-    if (buffer.length > 0) {
-        yield buffer;
-    }
+    return chunksOf (max) (chunk);
 
 }
+
+export const chunksOf = (at: number) => (chunk: Uint8Array) => {
+
+    return A.unfold(chunk, F.flow(
+
+        O.fromPredicate(xs => xs.length > 0),
+
+        O.map(buf => F.tuple(
+            buf.subarray(0, at),
+            buf.subarray(at),
+        )),
+
+    ));
+
+};
 
 
 
