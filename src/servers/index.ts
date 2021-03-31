@@ -38,6 +38,7 @@ type Opts = {
     host: string;
     port: number;
     hook: (...args: Parameters<Hook>) => TE.TaskEither<Error, void>;
+    // eslint-disable-next-line functional/no-return-void
     abort: () => void;
     resolver: Resolver;
     logger: Logger;

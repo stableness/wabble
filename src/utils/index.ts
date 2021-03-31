@@ -47,6 +47,7 @@ import type { Basic } from '../config';
 export type Fn <I, O = I> = (i: I) => O;
 
 export type CurryT <T extends readonly unknown[]> =
+      // eslint-disable-next-line functional/no-return-void
       T extends [                     ] ? () => void
     : T extends [ infer U             ] ? Fn<U, U>
     : T extends [ infer I,    infer O ] ? Fn<I, O>
@@ -66,7 +67,7 @@ export function run <F extends (...arg: unknown[]) => unknown> (fn: F) {
 
 
 
-export function rxTap <T> (fn: (arg: T) => void) {
+export function rxTap <T> (fn: (arg: T) => unknown) {
     return o.tap({ next: fn });
 }
 
@@ -110,6 +111,7 @@ export function testWith (list: Iterable<Fn<string, boolean>>) {
 
     function test (str: string) {
 
+        // eslint-disable-next-line functional/no-loop-statement
         for (const check of list) {
             if (check(str)) {
                 return true;
@@ -215,9 +217,10 @@ export const noop = F.constVoid;
 
 
 
+// eslint-disable-next-line functional/no-class
 export class ErrorWithCode extends Error {
 
-    constructor (public code?: string, message?: string) {
+    constructor (public readonly code?: string, message?: string) {
         super(message);
     }
 
@@ -271,6 +274,7 @@ export const socks5Handshake = mem.in50((host: string, port: number) =>
 
 export function* genLooping <T> (array: ArrayLike<T>) {
 
+    // eslint-disable-next-line functional/no-loop-statement
     while (array.length > 0) {
         yield* Array.from(array);
     }
@@ -299,7 +303,9 @@ export async function collectAsyncIterable <T> (source: AsyncIterable<T>) {
 
     const list: T[] = [];
 
+    // eslint-disable-next-line functional/no-loop-statement
     for await (const chunk of source) {
+        // eslint-disable-next-line functional/immutable-data
         list.push(chunk);
     }
 
@@ -361,6 +367,7 @@ export async function unwrapTaskEither <E, A> (task: TE.TaskEither<E, A>) {
         return result.right;
     }
 
+    // eslint-disable-next-line functional/no-throw-statement
     throw E.toError(result.left);
 
 }
@@ -684,7 +691,9 @@ export const headerJoin = R.o(
 
 export function incrementLE (buffer: Uint8Array) {
 
+    // eslint-disable-next-line functional/no-loop-statement, functional/no-let
     for (let i = 0; i < buffer.length; i++) {
+        // eslint-disable-next-line functional/immutable-data
         if (buffer[i]++ < 255) {
             break;
         }
@@ -722,6 +731,7 @@ export function ObsGet (path: string) {
 
         if (res.ok !== true) {
             res.body.resume();
+            // eslint-disable-next-line functional/no-throw-statement
             throw new Error(`code ${ res.status }`);
         }
 

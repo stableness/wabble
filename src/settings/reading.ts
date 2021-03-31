@@ -93,7 +93,9 @@ const decodeServers = F.pipe(
             tags: new Set([ ...tags, proto ]),
         });
 
+        // eslint-disable-next-line functional/no-let
         let result;
+        // eslint-disable-next-line functional/no-let
         let error = 'invalid server';
 
         if (proto === 'ss') {
@@ -346,6 +348,7 @@ export const convert: u.Fn<unknown, Config> = F.flow(
     })),
 
     E.fold(
+        // eslint-disable-next-line functional/no-throw-statement
         e => { throw new Error(e) },
         F.identity,
     ),

@@ -30,9 +30,11 @@ export type DoH_query = ReturnType<typeof genDoH>;
 
 export function genDoH (endpoint: string, path = '@stableness/dohdec') {
 
+    // eslint-disable-next-line functional/no-mixed-type
     interface ResolverDoH {
         new(opts?: { url?: string, preferPost?: boolean }): this;
-        lookup(name: string, opts?: { json?: boolean }): Promise<Res_DoH_DoT>;
+        // eslint-disable-next-line functional/no-method-signature
+        lookup (name: string, opts?: { json?: boolean }): Promise<Res_DoH_DoT>;
     }
 
     const doh = run(tryCatchToError(async () => {
@@ -78,8 +80,10 @@ export function genDoT (conn: Conn, path = '@stableness/dohdec') {
         id: number;
     }>;
 
+    // eslint-disable-next-line functional/no-mixed-type
     interface ResolverDoT {
         new(opts?: ConstructOpts): this;
+        // eslint-disable-next-line functional/no-method-signature
         lookup(name: string, opts?: LookupOpts): Promise<Res_DoH_DoT>;
     }
 

@@ -67,6 +67,7 @@
     "@typescript-eslint/parser": "^4.23.0",
     "eslint": "^7.26.0",
     "eslint-plugin-deprecation": "^1.2.1",
+    "eslint-plugin-functional": "^3.2.1",
     "jest": "^27.0.1",
     "jest-circus": "^27.0.1",
     "jest-junit": "^12.0.0",

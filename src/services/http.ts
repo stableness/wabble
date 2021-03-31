@@ -59,6 +59,7 @@ export const httpProxy =
             const { url = '' } = request;
 
             if (url.startsWith('/http://') === true) {
+                // eslint-disable-next-line functional/immutable-data
                 request.url = R.tail(url);
             }
 
@@ -194,6 +195,7 @@ export const requestOn = Rx.pipe(
         host: url.hostname,
         port: u.portNormalize(url),
 
+        // eslint-disable-next-line functional/functional-parameters
         async hook (...duplex: NodeJS.ReadWriteStream[]) {
 
             const { connection: socket = null } = response;
@@ -264,6 +266,7 @@ export const connectOn = Rx.pipe(
         host: url.hostname,
         port: u.portNormalize(url),
 
+        // eslint-disable-next-line functional/functional-parameters
         async hook (...duplex: NodeJS.ReadWriteStream[]) {
 
             if (head.length > 0) {
@@ -348,7 +351,9 @@ const CONST_PROXY_AUTHENTICATION = F.constant(u.headerJoin([
 
 
 const manualDestroy = function (this: Duplex) {
+    // eslint-disable-next-line functional/immutable-data, functional/no-this-expression
     this.destroyed = true;
+    // eslint-disable-next-line functional/no-this-expression
     this.emit('close');
 };
 

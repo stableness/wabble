@@ -106,6 +106,7 @@ export const tunnel = (opts: Trojan) => async (head: Uint8Array) => {
 
     } catch (err) {
         socket.destroy();
+        // eslint-disable-next-line functional/no-throw-statement
         throw err;
     }
 

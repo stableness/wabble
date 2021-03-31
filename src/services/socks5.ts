@@ -242,6 +242,7 @@ export const socks5Proxy =
             host,
             port,
 
+            // eslint-disable-next-line functional/functional-parameters
             async hook (...duplex: NodeJS.ReadWriteStream[]) {
 
                 socket.write(CONTINUE);

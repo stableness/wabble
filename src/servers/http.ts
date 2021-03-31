@@ -97,6 +97,7 @@ export const tunnel = (opts: Http) => async (path: string) => {
 
     } catch (err) {
         req.abort();
+        // eslint-disable-next-line functional/no-throw-statement
         throw err;
     }
 

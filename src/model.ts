@@ -39,7 +39,7 @@ import { genDNS, genDoH, genDoT } from './utils/resolver';
 
 export const VERSION = '<%=VERSION=>' as string;
 
-// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment ,functional/immutable-data
 process.env.NODE_ENV = R.ifElse(
     R.startsWith('<%='),
     R.always('dev'),
@@ -234,10 +234,12 @@ function _load (
     }
 
     if (level.length > 0) {
+        // eslint-disable-next-line functional/immutable-data
         logger.level = readLevel({ ...process.env, LOG_LEVEL: level });
     }
 
     if (quiet === true) {
+        // eslint-disable-next-line functional/immutable-data
         logger.level = 'silent';
     }
 
@@ -329,6 +331,7 @@ const runner$ = services$.pipe(
 
             if (server == null) {
                 abort();
+                // eslint-disable-next-line functional/no-throw-statement
                 throw new Error('no remote available');
             }
 

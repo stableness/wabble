@@ -29,6 +29,7 @@ plugins:
 
   - '@typescript-eslint'
   - deprecation
+  - functional
 
 
 
@@ -37,8 +38,14 @@ plugins:
 extends:
 
   - eslint:recommended
+
   - plugin:@typescript-eslint/recommended
   - plugin:@typescript-eslint/recommended-requiring-type-checking
+
+  - plugin:functional/lite
+  # - plugin:functional/external-recommended
+  # - plugin:functional/recommended
+  # - plugin:functional/stylitic
 
 
 
@@ -163,6 +170,10 @@ rules:
   '@typescript-eslint/no-unnecessary-condition':
     - error
     - allowConstantLoopConditions: true
+
+  functional/prefer-type-literal: off
+
+  functional/prefer-readonly-type: off
 
   no-await-in-loop:
     - error

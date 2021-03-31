@@ -45,6 +45,7 @@ export function box (service: Service) {
         return socks5Proxy(service);
     }
 
+    // eslint-disable-next-line functional/no-throw-statement
     throw new Error(`Non supported protocol [${ protocol }]`);
 
 }

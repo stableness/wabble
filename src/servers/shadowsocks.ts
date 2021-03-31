@@ -224,6 +224,7 @@ export function DecryptAEAD (
             salt,
         );
 
+        // eslint-disable-next-line functional/no-loop-statement
         while (true) {
 
             // eslint-disable-next-line no-await-in-loop
@@ -357,6 +358,7 @@ export function DecryptStream (
 
             } else {
 
+                // eslint-disable-next-line functional/no-this-expression
                 this.push(decipher.update(remain));
 
                 if (reset === true) {
