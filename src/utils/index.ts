@@ -429,11 +429,11 @@ export function EVP_BytesToKey (password: string, keySize: number) {
     const sample = Buffer.from(password);
     const buffer = [] as Buffer[];
 
-    let chuck = Buffer.alloc(0);
+    let chunk = Buffer.alloc(0);
 
-    while (buffer.length * chuck.length < keySize) {
-        chuck = hash.md5(Buffer.concat([ chuck, sample ]));
-        buffer.push(chuck);
+    while (buffer.length * chunk.length < keySize) {
+        chunk = hash.md5(Buffer.concat([ chunk, sample ]));
+        buffer.push(chunk);
     }
 
     return Buffer.concat(buffer, keySize);
