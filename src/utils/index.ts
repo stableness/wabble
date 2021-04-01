@@ -22,8 +22,9 @@ import {
     option as O,
     string as Str,
     function as F,
+    chainRec as CR,
     readonlyArray as A,
-    nonEmptyArray as NEA,
+    readonlyNonEmptyArray as NEA,
 } from 'fp-ts';
 
 import * as Dc from 'io-ts/Decoder';
@@ -427,17 +428,34 @@ export const hash = run(function () {
 
 export function EVP_BytesToKey (password: string, keySize: number) {
 
-    const sample = Buffer.from(password);
-    const buffer = [] as Buffer[];
+    const sample = F.flow(
+        NEA.of as Fn<Buffer, [ Buffer ]>,
+        A.append(Buffer.from(password)),
+        Buffer.concat,
+        hash.md5,
+    );
 
-    let chunk = Buffer.alloc(0);
+    const head = sample(Buffer.alloc(0));
 
-    while (buffer.length * chunk.length < keySize) {
-        chunk = hash.md5(Buffer.concat([ chunk, sample ]));
-        buffer.push(chunk);
-    }
+    const init = {
+        len: head.length,
+        acc: NEA.of(head),
+    };
 
-    return Buffer.concat(buffer, keySize);
+    return CR.tailRec(init, ({ len, acc }) => {
+
+        if (len >= keySize) {
+            return E.right(Buffer.concat(acc, keySize));
+        }
+
+        const chunk = sample(NEA.last(acc));
+
+        return E.left({
+            len: len + chunk.length,
+            acc: A.append (chunk) (acc),
+        });
+
+    });
 
 }
 
