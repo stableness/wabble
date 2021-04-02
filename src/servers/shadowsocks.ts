@@ -190,7 +190,7 @@ function genAEADEncrypt (
         authTagLength: number,
 ) {
 
-    const nonce = Buffer.alloc(nonceSize);
+    const nonce = new Uint8Array(nonceSize);
 
     return function (chunk: Uint8Array) {
 
@@ -266,7 +266,7 @@ function genAEADDecrypt (
 ) {
 
     const subKey = u.HKDF_SHA1(key, salt, keySize);
-    const nonce = Buffer.alloc(nonceSize);
+    const nonce = new Uint8Array(nonceSize);
 
     return function (data: Buffer, tag: Buffer) {
 
