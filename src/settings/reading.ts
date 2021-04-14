@@ -359,7 +359,7 @@ export const convert: u.Fn<unknown, Config> = F.flow(
 type TagsOnlyRemote = Partial<Remote> & Pick<Remote, 'tags'>;
 
 export function filterTags
-<T extends TagsOnlyRemote> (servers: T[], tags?: string[]) {
+<T extends TagsOnlyRemote> (servers: readonly T[], tags?: string[]) {
 
     // tags
     const t = R.uniq(tags ?? []);
