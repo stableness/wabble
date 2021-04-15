@@ -14,13 +14,7 @@ import {
 import { logLevel } from '../model';
 import type { Http } from '../config';
 
-import {
-    Fn,
-    timeout,
-    option2B,
-    catchKToError,
-    toBasicCredentials,
-} from '../utils/index';
+import * as u from '../utils/index';
 
 import type { RTE_O_E_V } from './index';
 
@@ -28,7 +22,7 @@ import type { RTE_O_E_V } from './index';
 
 
 
-export const chain: Fn<Http, RTE_O_E_V> = remote => opts => {
+export const chain: u.Fn<Http, RTE_O_E_V> = remote => opts => {
 
     const { host, port, logger, hook, abort } = opts;
 
@@ -51,7 +45,7 @@ export const chain: Fn<Http, RTE_O_E_V> = remote => opts => {
 
         })),
 
-        TE.chain(catchKToError(tunnel(remote))),
+        TE.chain(u.catchKToError(tunnel(remote))),
 
         TE.mapLeft(R.tap(abort)),
 
@@ -71,7 +65,7 @@ export const tunnel = (opts: Http) => async (path: string) => {
 
     const { protocol, host, port, ssl, auth } = opts;
 
-    const hasAuth = option2B(auth);
+    const hasAuth = u.option2B(auth);
 
     const connect = protocol === 'http' ? http.request : https.request;
 
@@ -98,7 +92,7 @@ export const tunnel = (opts: Http) => async (path: string) => {
 
         await Promise.race([
             once(req, 'connect'),
-            timeout(TIMEOUT),
+            u.timeout(TIMEOUT),
         ]);
 
     } catch (err) {
@@ -116,6 +110,6 @@ export const tunnel = (opts: Http) => async (path: string) => {
 
 export const authToCredentials = O.fold<string, string>(
     F.constant(''),
-    toBasicCredentials,
+    u.toBasicCredentials,
 );
 

@@ -12,14 +12,7 @@ import {
 import { logLevel } from '../model';
 import type { Trojan } from '../config';
 
-import {
-    Fn,
-    mem,
-    hash,
-    timeout,
-    catchKToError,
-    socks5Handshake,
-} from '../utils/index';
+import * as u from '../utils/index';
 
 import type { RTE_O_E_V } from './index';
 
@@ -27,7 +20,7 @@ import type { RTE_O_E_V } from './index';
 
 
 
-export const chain: Fn<Trojan, RTE_O_E_V> = remote => opts => {
+export const chain: u.Fn<Trojan, RTE_O_E_V> = remote => opts => {
 
     const { host, port, logger, hook, abort } = opts;
 
@@ -50,7 +43,7 @@ export const chain: Fn<Trojan, RTE_O_E_V> = remote => opts => {
 
         })),
 
-        TE.chain(catchKToError(tunnel(remote))),
+        TE.chain(u.catchKToError(tunnel(remote))),
 
         TE.mapLeft(R.tap(abort)),
 
@@ -104,7 +97,7 @@ export const tunnel = (opts: Trojan) => async (head: Uint8Array) => {
 
         await Promise.race([
             once(socket, 'secureConnect'),
-            timeout(TIMEOUT),
+            u.timeout(TIMEOUT),
         ]);
 
         if (socket.write(head) !== true) {
@@ -124,17 +117,17 @@ export const tunnel = (opts: Trojan) => async (head: Uint8Array) => {
 
 
 
-export const memHash: Fn<string, Buffer> = R.compose(
+export const memHash: u.Fn<string, Buffer> = R.compose(
     Buffer.from,
     R.invoker(1, 'toString')('hex'),
-    hash.sha224,
+    u.hash.sha224,
 );
 
 
 
 
 
-export const makeHead = mem.in10((
+export const makeHead = u.mem.in10((
         password: string,
         host: string,
         port: number,
@@ -146,7 +139,7 @@ export const makeHead = mem.in10((
 
         0x0D, 0x0A,
 
-        0x01, ...socks5Handshake(host, port).subarray(3),
+        0x01, ...u.socks5Handshake(host, port).subarray(3),
 
         0x0D, 0x0A,
 

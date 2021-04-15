@@ -19,15 +19,7 @@ import * as o from 'rxjs/operators';
 import type { Logging } from '../model';
 import type { Service } from '../config';
 
-import {
-    Fn,
-    run,
-    pump,
-    noop,
-    constErr,
-    readToTaskEither,
-    writeToTaskEither,
-} from '../utils/index';
+import * as u from '../utils/index';
 
 import {
     readFrame,
@@ -58,7 +50,7 @@ const CONTINUE  = Uint8Array.from([ 0x05, 0x00, ...reply ]);
 
 export const socks5Proxy =
     (service: Service) =>
-        (logging: Logging, cb: Fn<number, void> = noop) => {
+        (logging: Logging, cb: u.Fn<number, void> = u.noop) => {
 
     const { logLevel, logger } = logging;
     const { auth, port: servicePort, host: serviceHost } = service;
@@ -102,18 +94,18 @@ export const socks5Proxy =
 
         o.mergeMap(async socket => {
 
-            const read = readToTaskEither(socket);
-            const write = writeToTaskEither(socket);
+            const read = u.readToTaskEither(socket);
+            const write = u.writeToTaskEither(socket);
 
             const frame = readFrame(read);
             const frameToString = TE.map (R.toString) (frame);
 
-            const result = await run(F.pipe(
+            const result = await u.run(F.pipe(
 
                 read(1),
 
                 TE.chain(([ VER ]) =>
-                    VER === 0x05 ? frame : TE.leftIO(constErr(`VER [${ VER }]`)),
+                    VER === 0x05 ? frame : TE.leftIO(u.constErr(`VER [${ VER }]`)),
                 ),
 
                 TE.map<Buffer, number[]>(Array.from),
@@ -235,7 +227,7 @@ export const socks5Proxy =
 
             }
 
-            run(write(result.left.message)).finally(() => {
+            u.run(write(result.left.message)).finally(() => {
                 socket.destroy();
             });
 
@@ -254,7 +246,7 @@ export const socks5Proxy =
 
                 socket.write(CONTINUE);
 
-                await pump(socket, ...duplex, socket);
+                await u.pump(socket, ...duplex, socket);
 
             },
 

@@ -8,13 +8,7 @@ import {
 
 import { logLevel } from '../model';
 import type { Socks5, Basic } from '../config';
-import {
-    Fn,
-    mem,
-    socks5Handshake,
-    readToTaskEither,
-    writeToTaskEither,
-} from '../utils/index';
+import * as u from '../utils/index';
 
 import { netConnectTo, RTE_O_E_V } from './index';
 
@@ -22,13 +16,13 @@ import { netConnectTo, RTE_O_E_V } from './index';
 
 
 
-export const chain: Fn<Socks5, RTE_O_E_V> = remote => opts => {
+export const chain: u.Fn<Socks5, RTE_O_E_V> = remote => opts => {
 
     const { host, port, logger, hook, abort } = opts;
 
     return F.pipe(
 
-        TE.rightIO(() => socks5Handshake(host, port)),
+        TE.rightIO(() => u.socks5Handshake(host, port)),
 
         TE.apFirst(TE.fromIO(() => {
 
@@ -67,8 +61,8 @@ export const tunnel =
 
     const socket = netConnectTo({ host, port });
 
-    const read = readToTaskEither(socket);
-    const write = writeToTaskEither(socket);
+    const read = u.readToTaskEither(socket);
+    const write = u.writeToTaskEither(socket);
 
     return F.pipe(
 
@@ -150,7 +144,7 @@ export const encode = O.fold(
 
     Uint8Array.of,
 
-    mem.in10(({ username, password }: Basic) => Uint8Array.from([
+    u.mem.in10(({ username, password }: Basic) => Uint8Array.from([
         0x01,
         username.length, ...Buffer.from(username),
         password.length, ...Buffer.from(password),
