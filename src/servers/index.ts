@@ -9,7 +9,7 @@ import {
     task as T,
     taskEither as TE,
     readerTaskEither as RTE,
-    readonlyMap as fpMap,
+    readonlyMap as M,
     either as E,
     option as O,
     function as F,
@@ -21,7 +21,7 @@ import {
 import type { Remote } from '../config';
 import * as u from '../utils/index';
 import type { DoH_query, DNS_query, DoT_query } from 'src/utils/resolver';
-import { logLevel, Resolver } from '../model';
+import { logLevel, Resolver, HashMap } from '../model';
 import type { Hook } from '../services/index';
 
 import { chain as chainHttp } from './http';
@@ -109,13 +109,13 @@ const race = F.flow(
 /*#__NOINLINE__*/
 function resolve (opts: Opts) {
 
-    const { host, resolver: { timeout, doh, dot, dns } } = opts;
+    const { host, resolver: { cache, timeout, doh, dot, dns } } = opts;
 
     return F.pipe(
 
         isIP(host),
 
-        O.alt(() => /*#__NOINLINE__*/ nsLookup(host)),
+        O.alt(() => M.lookup (Str.Eq) (host) (cache.read())),
 
         O.map(TE.right),
 
@@ -158,15 +158,15 @@ const from_DoH_DoT = (opts: Opts, type: string) => (query: Query) => {
 
         TE.chain(TE.fromOption(() => Error('No valid entries'))),
 
-        TE.chainFirst(({ data: ip, ttl }) => TE.fromIO(() => {
+        TE.chainFirstW(({ data, ttl }) => {
+            return updateCache (data) (ttl) (opts);
+        }),
 
-            updateCache (opts) (ip) (ttl);
+        TE.chainFirst(({ data: ip }) => TE.fromIO(() => {
 
-            if (R.not(logLevel.on.trace)) {
-                return;
+            if (logLevel.on.trace) {
+                logger.child({ ip }).trace(type);
             }
-
-            logger.child({ ip }).trace(type);
 
         })),
 
@@ -195,15 +195,15 @@ const fromDNS = (opts: Opts) => (query: DNS_query) => {
 
         TE.chain(TE.fromOption(() => Error('No valid entries'))),
 
-        TE.chainFirst(({ address: ip, ttl: TTL }) => TE.fromIO(() => {
+        TE.chainFirstW(({ address, ttl }) => {
+            return updateCache (address) (ttl) (opts);
+        }),
 
-            updateCache (opts) (ip) (TTL);
+        TE.chainFirst(({ address: ip }) => TE.fromIO(() => {
 
-            if (R.not(logLevel.on.trace)) {
-                return;
+            if (logLevel.on.trace) {
+                logger.child({ ip }).trace('DNS');
             }
-
-            logger.child({ ip }).trace('DNS');
 
         })),
 
@@ -217,23 +217,16 @@ const fromDNS = (opts: Opts) => (query: DNS_query) => {
 
 
 
-const setCache: u.CurryT<[
+export const updateCache: u.CurryT<[
 
-    Map<string, string>,
-    Opts,
     string,
     number,
-    void,
+    Pick<Opts, 'host' | 'resolver'>,
+    TE.TaskEither<void, HashMap>,
 
-]> = cache => opts => ip => seconds => {
+]> = ip => seconds => opts => {
 
-    const { host, resolver: { ttl } } = opts;
-
-    if (cache.has(host) === true) {
-        return;
-    }
-
-    cache.set(host, ip);
+    const { host, resolver: { ttl, cache: { read, modify } } } = opts;
 
     const timeout = F.pipe(
         ttl,
@@ -241,14 +234,22 @@ const setCache: u.CurryT<[
         O.getOrElse(() => seconds),
     );
 
-    setTimeout(() => cache.delete(host), timeout * 1000);
+    return F.pipe(
+        TE.rightIO(read),
+        TE.chain(TE.fromPredicate(
+            F.not(M.member (Str.Eq) (host)),
+            F.constVoid,
+        )),
+        TE.chainFirstIOK(() => modify(M.upsertAt (Str.Eq) (host, ip))),
+        TE.chainFirstIOK(() => () => {
+            void u.run(F.pipe(
+                T.fromIO(modify(M.deleteAt (Str.Eq) (host))),
+                T.delay(timeout * 1000),
+            ));
+        }),
+    );
 
 };
-
-const dnsCache = new Map<string, string>();
-const nsLookup = (host: string) => fpMap.lookup (Str.Eq) (host) (dnsCache);
-const updateCache = setCache(dnsCache);
-export const flushDNS = () => dnsCache.clear();
 
 
 

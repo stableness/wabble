@@ -8,7 +8,9 @@ import {
     either as E,
     option as O,
     taskEither as TE,
+    ioRef as Ref,
     function as F,
+    readonlyMap as M,
     readonlyArray as A,
     readonlyNonEmptyArray as RNEA,
 } from 'fp-ts';
@@ -20,7 +22,7 @@ import { bind } from 'proxy-bind';
 
 import type { Options } from './bin';
 
-import { connect, flushDNS } from './servers/index';
+import { connect } from './servers/index';
 import { combine, establish } from './services/index';
 import { convert } from './settings/index';
 
@@ -208,10 +210,14 @@ const resolver$ = config$.pipe(
         const dot = trim(O.map (R.prop('tls')) (upstream));
         const dns = trim(O.map (R.prop('udp')) (upstream));
 
-        return { ttl, timeout, doh, dot, dns };
+        return { ttl, timeout, doh, dot, dns, cache: dnsCache };
 
     }),
 );
+
+export type HashMap = ReadonlyMap<string, string>;
+export type HashMapRef = Ref.IORef<HashMap>;
+const dnsCache: HashMapRef = u.run(Ref.newIORef(M.empty));
 
 
 
@@ -406,7 +412,7 @@ function construct (setting: string) {
             }),
         ),
 
-        flush_DNS$.pipe(o.tap(flushDNS)),
+        flush_DNS$.pipe(o.tap(dnsCache.write(M.empty))),
 
         test_domain$.pipe(
             o.withLatestFrom(rules$, (
