@@ -110,16 +110,13 @@ export const tunnel =
                 return TE.leftIO(() => Error(`VER [${ VER }] REP [${ REP }]`));
             }
 
-            let step = -1;
+            const step = -1;
 
-            switch (ATYP) {
-                case 1: step += 4; break;
-                case 4: step += 16; break;
-                case 3: step += LEN + 1; break;
-                default: return TE.leftIO(() => Error(`ATYP [${ ATYP }]`));
-            }
+            if (ATYP === 1) return read(2 + step + 4);
+            if (ATYP === 4) return read(2 + step + 16);
+            if (ATYP === 3) return read(2 + step + LEN + 1);
 
-            return read(step + 2);
+            return TE.leftIO(() => Error(`ATYP [${ ATYP }]`));
 
         }),
 
