@@ -34,7 +34,6 @@ jobs:
         env:
           ADBLOCK: true
           DISABLE_OPENCOLLECTIVE: true
-          HUSKY_SKIP_INSTALL: true
 
 
 

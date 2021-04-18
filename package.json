@@ -67,7 +67,6 @@
     "@typescript-eslint/parser": "^4.4.0",
     "eslint": "^7.10.0",
     "eslint-plugin-deprecation": "^1.1.0",
-    "husky": "^4.2.5",
     "jest": "^26.4.2",
     "jest-circus": "^26.4.2",
     "jest-junit": "^12.0.0",
