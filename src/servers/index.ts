@@ -10,6 +10,7 @@ import {
     taskEither as TE,
     readerTaskEither as RTE,
     readonlyMap as M,
+    io as IO,
     either as E,
     option as O,
     function as F,
@@ -115,7 +116,10 @@ function resolve (opts: Opts) {
 
         isIP(host),
 
-        O.alt(() => M.lookup (Str.Eq) (host) (cache.read())),
+        O.alt(F.pipe(
+            cache.read,
+            IO.map(M.lookup (Str.Eq) (host)),
+        )),
 
         O.map(TE.right),
 
