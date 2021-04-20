@@ -232,12 +232,6 @@ export const updateCache: u.CurryT<[
 
     const { host, resolver: { ttl, cache: { read, modify } } } = opts;
 
-    const timeout = F.pipe(
-        ttl,
-        O.map(({ calc }) => calc(seconds)),
-        O.getOrElse(() => seconds),
-    );
-
     return F.pipe(
         TE.rightIO(read),
         TE.chain(TE.fromPredicate(
@@ -248,7 +242,11 @@ export const updateCache: u.CurryT<[
         TE.chainFirstIOK(() => () => {
             void u.run(F.pipe(
                 T.fromIO(modify(M.deleteAt (Str.Eq) (host))),
-                T.delay(timeout * 1000),
+                T.delay(1000 * F.pipe(
+                    ttl,
+                    O.map(({ calc }) => calc(seconds)),
+                    O.getOrElse(() => seconds),
+                )),
             ));
         }),
     );

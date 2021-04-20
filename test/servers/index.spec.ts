@@ -46,29 +46,53 @@ describe('updateCache', () => {
     test('empty', async () => {
 
         const cache = u.run(Ref.newIORef(M.empty));
-
-        const ttl = {
-            min: 1,
-            max: 5,
-            calc: R.clamp(1, 5),
-        };
-
-        const task = updateCache (val) (10) ({
-            host: key,
-            resolver: { ...init, cache, ttl: O.some(ttl) },
-        });
+        const delay = 10;
 
         jest.useFakeTimers();
 
-        const result = await task();
+        {
 
-        expect(E.isRight(result)).toBe(true);
-        expect(cache.read().has(key as never)).toBe(true);
-        expect(cache.read().get(key as never)).toBe(val);
+            const task = updateCache (val) (delay) ({
+                host: key,
+                resolver: { ...init, cache },
+            });
 
-        jest.advanceTimersByTime(ttl.max * 1000);
+            const result = await task();
 
-        expect(cache.read().has(key as never)).toBe(false);
+            expect(E.isRight(result)).toBe(true);
+            expect(cache.read().has(key as never)).toBe(true);
+            expect(cache.read().get(key as never)).toBe(val);
+
+            jest.advanceTimersByTime(delay * 1000);
+
+            expect(cache.read().has(key as never)).toBe(false);
+
+        }
+
+        {
+
+            const ttl = {
+                min: 1,
+                max: 5,
+                calc: R.clamp(1, 5),
+            };
+
+            const task = updateCache (val) (delay) ({
+                host: key,
+                resolver: { ...init, cache, ttl: O.some(ttl) },
+            });
+
+            const result = await task();
+
+            expect(E.isRight(result)).toBe(true);
+            expect(cache.read().has(key as never)).toBe(true);
+            expect(cache.read().get(key as never)).toBe(val);
+
+            jest.advanceTimersByTime(ttl.max * 1000);
+
+            expect(cache.read().has(key as never)).toBe(false);
+
+        }
 
     });
 
