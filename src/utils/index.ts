@@ -74,6 +74,12 @@ export function rxTap <T> (fn: (arg: T) => void) {
 
 
 
+export const Undefined = F.constUndefined();
+
+
+
+
+
 export const mem = {
 
     in10: memo(10),
