@@ -70,9 +70,13 @@ export const chain: u.Fn<ShadowSocks, RTE_O_E_V> = remote => opts => {
 export const cryptoPairsC =
     (server: ShadowSocks) =>
         (head: Uint8Array) =>
+            // eslint-disable-next-line deprecation/deprecation
             cryptoPairs(server, head)
 ;
 
+/**
+ * @deprecated use cryptoPairsC
+ */
 export function cryptoPairs (server: ShadowSocks, head: Uint8Array) {
 
     type RWS = NodeJS.ReadWriteStream;
