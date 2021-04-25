@@ -152,7 +152,7 @@ export function EncryptAEAD (
 
     return init(new Transform({
 
-        transform (chunk: Buffer, _enc: string, cb: TransformCallback) {
+        transform (chunk: Uint8Array, _enc: string, cb: TransformCallback) {
 
             cb(u.Undefined, F.pipe(
                 chop(chunk),
@@ -170,7 +170,7 @@ const chop = u.chunksOf(0x3FFF);
 
 function genAEADEncrypt (
         algorithm: AEAD,
-        subKey: Buffer,
+        subKey: Uint8Array,
         nonceSize: number,
         authTagLength: number,
 ) {
@@ -253,7 +253,7 @@ function genAEADDecrypt (
     const subKey = u.HKDF_SHA1(key, salt, keySize);
     const nonce = new Uint8Array(nonceSize);
 
-    return function ([ data, tag ]: [ Buffer, Buffer ]) {
+    return function ([ data, tag ]: [ Uint8Array, Uint8Array ]) {
 
         const decipher = crypto.createDecipheriv(
             algorithm as crypto.CipherCCMTypes,
@@ -278,7 +278,7 @@ function genAEADDecrypt (
 
 export function EncryptStream (
         algorithm: Stream,
-        key: Buffer,
+        key: Uint8Array,
         ivLength: number,
         initBuffer = Uint8Array.of(),
 ) {
@@ -293,7 +293,7 @@ export function EncryptStream (
 
     return init(new Transform({
 
-        transform (chunk: Buffer, _enc: string, cb: TransformCallback) {
+        transform (chunk: Uint8Array, _enc: string, cb: TransformCallback) {
             cb(u.Undefined, cipher.update(chunk));
         },
 
@@ -307,18 +307,20 @@ export function EncryptStream (
 
 export function DecryptStream (
         algorithm: Stream,
-        key: Buffer,
+        key: Uint8Array,
         ivLength: number,
 ) {
 
     type State = ReturnType<typeof read>;
 
     const { read, write } = u.run(Ref.newIORef({
-        remain: Buffer.alloc(0),
+        remain: Uint8Array.of(),
         decipher: u.Undefined as crypto.Decipher | undefined,
     }));
 
-    const mixin = (chunk: Buffer) => ({ decipher, remain: prev }: State) => {
+    const mixin = (chunk: Uint8Array) => (state: State) => {
+
+        const { decipher, remain: prev } = state;
 
         const remain = prev.length > 0
             ? Buffer.concat([ prev, chunk ])
@@ -345,7 +347,7 @@ export function DecryptStream (
 
     return new Transform({
 
-        transform (chunk: Buffer, _enc: string, cb: TransformCallback) {
+        transform (chunk: Uint8Array, _enc: string, cb: TransformCallback) {
 
             const { decipher, remain, reset } = mixin (chunk) (read());
 
@@ -360,7 +362,7 @@ export function DecryptStream (
                 if (reset === true) {
                     u.run(write({
                         decipher,
-                        remain: remain.subarray(0, 0),
+                        remain: Uint8Array.of(),
                     }));
                 }
 
