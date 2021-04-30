@@ -48,7 +48,7 @@
     "pino": "^6.4.1",
     "proxy-bind": "^1.2.1",
     "ramda": "~0.27.1",
-    "rxjs": "7.0.0-rc.3"
+    "rxjs": "^7.0.1"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^17.0.0",
