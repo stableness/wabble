@@ -617,7 +617,7 @@ describe('timeout', () => {
 
     test('', async () => {
 
-        jest.useFakeTimers();
+        jest.useFakeTimers('legacy');
 
         const future = timeout(900);
 
