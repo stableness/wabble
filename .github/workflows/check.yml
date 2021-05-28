@@ -34,7 +34,7 @@ jobs:
 
       - run: npm run lint
 
-      - run: NO_SKIP=on npm run test -- --coverage --verbose
+      - run: NO_SKIP=on npm run test -- --coverage --coverage-provider v8 --verbose
         timeout-minutes: 2
 
       - run: npm run build
