@@ -16,7 +16,7 @@ import {
     function as F,
     string as Str,
     readonlyArray as A,
-    readonlyNonEmptyArray as RNEA,
+    readonlyNonEmptyArray as NA,
 } from 'fp-ts';
 
 import type { Remote } from '../config';
@@ -80,21 +80,6 @@ export function connect (opts: Opts, server: Remote | 'origin') {
 
 
 
-const isIP = O.fromPredicate(u.isIP);
-
-
-
-const checkBlockingHost = TE.filterOrElse(
-    F.not(u.isBlockedIP),
-    F.constant(new u.ErrorWithCode('BLOCKED_HOST', 'Blocked via DoH or DNS')),
-);
-
-
-
-const timeoutTE = TE.left(new Error('timeout'));
-
-
-
 const race = F.flow(
     A.compact,
     <T> (queue: readonly T[]) =>
@@ -107,8 +92,7 @@ const race = F.flow(
 
 
 
-/*#__NOINLINE__*/
-function resolve (opts: Opts) {
+export function resolve (opts: Opts) {
 
     const { host, resolver: { cache, timeout, doh, dot, dns } } = opts;
 
@@ -124,13 +108,13 @@ function resolve (opts: Opts) {
         O.map(TE.right),
 
         O.alt(() => race([
-            O.some(RNEA.of(T.delay (timeout) (timeoutTE))),
-            O.map (RNEA.map(/*#__NOINLINE__*/ from_DoH_DoT(opts, 'DoH'))) (doh),
-            O.map (RNEA.map(/*#__NOINLINE__*/ from_DoH_DoT(opts, 'DoT'))) (dot),
-            O.map (RNEA.map(/*#__NOINLINE__*/ fromDNS(opts))) (dns),
+            O.some(NA.of(T.delay (timeout) (timeoutTE))),
+            O.map (NA.map(fromDoH(opts))) (doh),
+            O.map (NA.map(fromDoT(opts))) (dot),
+            O.map (NA.map(fromDNS(opts))) (dns),
         ])),
 
-        TE.fromOption(() => Error('No cache nor DoH, DoT or DNS')),
+        TE.fromOption(no_cache_nor_DoH_DoT_DNS),
         TE.flatten,
         TE.alt(() => TE.right(host)),
 
@@ -146,8 +130,7 @@ function resolve (opts: Opts) {
 
 type Query = DoH_query | DoT_query;
 
-/*#__NOINLINE__*/
-const from_DoH_DoT = (opts: Opts, type: string) => (query: Query) => {
+const from_DoH_DoT = (type: string) => (opts: Opts) => (query: Query) => {
 
     const { host, logger } = opts;
 
@@ -160,7 +143,7 @@ const from_DoH_DoT = (opts: Opts, type: string) => (query: Query) => {
             data: R.is(String),
         }))),
 
-        TE.chain(TE.fromOption(() => Error('No valid entries'))),
+        TE.chain(TE.fromOption(no_valid_entries)),
 
         TE.chainFirstW(({ data, ttl }) => {
             return updateCache (data) (ttl) (opts);
@@ -180,6 +163,9 @@ const from_DoH_DoT = (opts: Opts, type: string) => (query: Query) => {
 
 };
 
+const fromDoH = from_DoH_DoT('DoH');
+const fromDoT = from_DoH_DoT('DoT');
+
 
 
 
@@ -197,7 +183,7 @@ const fromDNS = (opts: Opts) => (query: DNS_query) => {
             address: R.is(String),
         }))),
 
-        TE.chain(TE.fromOption(() => Error('No valid entries'))),
+        TE.chain(TE.fromOption(no_valid_entries)),
 
         TE.chainFirstW(({ address, ttl }) => {
             return updateCache (address) (ttl) (opts);
@@ -291,4 +277,33 @@ const select: u.Fn<Remote, RTE_O_E_V> = R.cond([
     [ protocolEq('trojan'), chainTrojan ],
     [ R.T, R.o(RTE.left, unknownRemote) ],
 ]);
+
+
+
+
+
+const isIP = O.fromPredicate(u.isIP);
+
+
+
+const checkBlockingHost = TE.filterOrElse(
+    F.not(u.isBlockedIP),
+    F.constant(new u.ErrorWithCode('BLOCKED_HOST', 'Blocked via DoH or DNS')),
+);
+
+
+
+const timeoutTE = TE.left(new Error('timeout'));
+
+
+
+const no_cache_nor_DoH_DoT_DNS = F.constant(
+    new Error('No cache nor DoH, DoT or DNS'),
+);
+
+
+
+const no_valid_entries = F.constant(
+    new Error('No valid entries'),
+);
 
