@@ -35,6 +35,7 @@ import {
     rules,
     HKDF_SHA1,
     Fn,
+    Undefined,
     constErr,
     toBasicCredentials,
     readOptionalString,
@@ -72,6 +73,18 @@ describe('noop', () => {
     test('', () => {
         expect(noop).toBeInstanceOf(Function);
         expect(noop()).toBe(void 0);
+    });
+
+});
+
+
+
+
+
+describe('Undefined', () => {
+
+    test('', () => {
+        expect(Undefined).toBeUndefined();
     });
 
 });

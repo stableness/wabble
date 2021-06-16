@@ -1,11 +1,13 @@
 import crypto from 'crypto';
-import { Transform, TransformCallback, Readable } from 'stream';
+import { Transform, TransformCallback } from 'stream';
 
 import * as R from 'ramda';
 
 import {
     either as E,
-    io as IO,
+    ioRef as Ref,
+    state as S,
+    readonlyArray as A,
     taskEither as TE,
     function as F,
 } from 'fp-ts';
@@ -30,11 +32,8 @@ export const chain: u.Fn<ShadowSocks, RTE_O_E_V> = remote => opts => {
 
     return F.pipe(
 
-        () => u.socks5Handshake(host, port).subarray(3),
-        IO.map(cryptoPairsC(remote)),
-        IO.map(E.fromNullable(Error('Has no crypto to perform'))),
-
-        TE.fromIOEither,
+        TE.rightIO(() => u.socks5Handshake(host, port).subarray(3)),
+        TE.chainEitherK(cryptoPairsCE(remote)),
 
         TE.mapLeft(R.tap(abort)),
 
@@ -70,9 +69,18 @@ export const chain: u.Fn<ShadowSocks, RTE_O_E_V> = remote => opts => {
 export const cryptoPairsC =
     (server: ShadowSocks) =>
         (head: Uint8Array) =>
+            // eslint-disable-next-line deprecation/deprecation
             cryptoPairs(server, head)
 ;
 
+export const cryptoPairsCE = F.flow(
+    cryptoPairsC,
+    E.fromNullableK(new Error('Has no crypto to perform')),
+);
+
+/**
+ * @deprecated use cryptoPairsC
+ */
 export function cryptoPairs (server: ShadowSocks, head: Uint8Array) {
 
     type RWS = NodeJS.ReadWriteStream;
@@ -108,16 +116,13 @@ export function cryptoPairs (server: ShadowSocks, head: Uint8Array) {
 
     }
 
-    return undefined;
+    return u.Undefined;
 
 }
 
 
 
 
-
-const MAX = 0x3FFF;
-const chop = u.chunksOf(MAX);
 
 export function EncryptAEAD (
         algorithm: AEAD,
@@ -132,60 +137,40 @@ export function EncryptAEAD (
     const salt = crypto.randomBytes(saltSize);
     const subKey = u.HKDF_SHA1(key, salt, keySize);
 
-    const encrypt = genAEADEncrypt(
-        algorithm,
-        subKey,
-        nonceSize,
-        tagSize,
+    const pack = F.flow(
+        S.gets(F.flow(
+            A.size as never as u.Fn<Uint8Array, number>,
+            u.numberToUInt16BE,
+        )),
+        A.chain(genAEADEncrypt(algorithm, subKey, nonceSize, tagSize)),
     );
 
     const init = R.tap((readable: Transform) => {
-        readable.push(Buffer.concat([ salt, pack(head) ]));
+        readable.push(salt);
+        readable.push(Buffer.concat(pack(head)));
     });
 
     return init(new Transform({
 
-        transform (
-                this: Readable,
-                chunk: Buffer,
-                _enc: string,
-                cb: TransformCallback,
-        ) {
+        transform (chunk: Uint8Array, _enc: string, cb: TransformCallback) {
 
-            if (chunk.length <= MAX) {
-                return cb(undefined, pack(chunk));
-            }
-
-            for (const slice of chop(chunk)) {
-                this.push(pack(slice));
-            }
-
-            cb();
+            cb(u.Undefined, F.pipe(
+                chop(chunk),
+                A.chain(pack),
+                Buffer.concat,
+            ));
 
         },
 
     }));
 
-
-
-    function pack (chunk: Uint8Array) {
-
-        if (chunk.length < 1) {
-            return Buffer.alloc(0);
-        }
-
-        return Buffer.concat([
-            encrypt(u.numberToUInt16BE(chunk.length)),
-            encrypt(chunk),
-        ]);
-
-    }
-
 }
+
+const chop = u.chunksOf(0x3FFF);
 
 function genAEADEncrypt (
         algorithm: AEAD,
-        subKey: Buffer,
+        subKey: Uint8Array,
         nonceSize: number,
         authTagLength: number,
 ) {
@@ -201,13 +186,13 @@ function genAEADEncrypt (
             { authTagLength },
         );
 
-        const _4 = cipher.update(chunk);
-        const _5 = cipher.final();
-        const _1 = cipher.getAuthTag();
-
         u.incrementLE(nonce);
 
-        return Buffer.concat([ _4, _5, _1 ]);
+        return [
+            cipher.update(chunk),
+            cipher.final(),
+            cipher.getAuthTag(),
+        ] as const;
 
     };
 
@@ -226,7 +211,7 @@ export function DecryptAEAD (
         saltSize: number,
 ) {
 
-    return toTransform(async function* ({ read }) {
+    return toTransform (async function* ({ read }) {
 
         const salt = await read(saltSize);
 
@@ -242,17 +227,17 @@ export function DecryptAEAD (
         while (true) {
 
             // eslint-disable-next-line no-await-in-loop
-            const buffer = decrypt(...u.splitAt2(await read(2 + tagSize)));
+            const buffer = decrypt(u.splitAt2(await read(2 + tagSize)));
             const length = buffer.readUInt16BE(0);
 
             const slice = u.split({ at: length });
 
             // eslint-disable-next-line no-await-in-loop
-            yield decrypt(...slice(await read(length + tagSize)));
+            yield decrypt(slice(await read(length + tagSize)));
 
         }
 
-    })({ objectMode: false });
+    }) ({ objectMode: false });
 
 }
 
@@ -268,7 +253,7 @@ function genAEADDecrypt (
     const subKey = u.HKDF_SHA1(key, salt, keySize);
     const nonce = new Uint8Array(nonceSize);
 
-    return function (data: Buffer, tag: Buffer) {
+    return function ([ data, tag ]: [ Uint8Array, Uint8Array ]) {
 
         const decipher = crypto.createDecipheriv(
             algorithm as crypto.CipherCCMTypes,
@@ -293,7 +278,7 @@ function genAEADDecrypt (
 
 export function EncryptStream (
         algorithm: Stream,
-        key: Buffer,
+        key: Uint8Array,
         ivLength: number,
         initBuffer = Uint8Array.of(),
 ) {
@@ -302,13 +287,14 @@ export function EncryptStream (
     const cipher = crypto.createCipheriv(algorithm, key, iv);
 
     const init = R.tap((readable: Transform) => {
-        readable.push(Buffer.concat([ iv, cipher.update(initBuffer) ]));
+        readable.push(iv);
+        readable.push(cipher.update(initBuffer));
     });
 
     return init(new Transform({
 
-        transform (chunk: Buffer, _enc: string, cb: TransformCallback) {
-            cb(undefined, cipher.update(chunk));
+        transform (chunk: Uint8Array, _enc: string, cb: TransformCallback) {
+            cb(u.Undefined, cipher.update(chunk));
         },
 
     }));
@@ -321,43 +307,68 @@ export function EncryptStream (
 
 export function DecryptStream (
         algorithm: Stream,
-        key: Buffer,
+        key: Uint8Array,
         ivLength: number,
 ) {
 
-    let prevChunk = Buffer.alloc(0);
-    let decipher: crypto.Decipher | undefined;
+    type State = ReturnType<typeof read>;
+
+    const { read, write } = u.run(Ref.newIORef({
+        remain: Uint8Array.of(),
+        decipher: u.Undefined as crypto.Decipher | undefined,
+    }));
+
+    const mixin = (chunk: Uint8Array) => (state: State) => {
+
+        const { decipher, remain: prev } = state;
+
+        const remain = prev.length > 0
+            ? Buffer.concat([ prev, chunk ])
+            : chunk
+        ;
+
+        if (decipher || remain.length < ivLength) {
+            return { decipher, remain };
+        }
+
+        return {
+
+            reset: remain.length > ivLength,
+
+            remain: remain.subarray(ivLength),
+
+            decipher: crypto.createDecipheriv(
+                algorithm, key, remain.subarray(0, ivLength),
+            ),
+
+        };
+
+    };
 
     return new Transform({
 
-        transform (chunk: Buffer, _enc: string, cb: TransformCallback) {
+        transform (chunk: Uint8Array, _enc: string, cb: TransformCallback) {
 
-            let buffer = chunk;
+            const { decipher, remain, reset } = mixin (chunk) (read());
 
             if (decipher == null) {
 
-                if (prevChunk.length > 0) {
-                    buffer = Buffer.concat([ prevChunk, buffer ]);
+                u.run(write({ decipher, remain }));
+
+            } else {
+
+                this.push(decipher.update(remain));
+
+                if (reset === true) {
+                    u.run(write({
+                        decipher,
+                        remain: Uint8Array.of(),
+                    }));
                 }
-
-                if (buffer.length < ivLength) {
-                    prevChunk = buffer;
-                    return cb();
-                }
-
-                decipher = crypto.createDecipheriv(
-                    algorithm, key, buffer.subarray(0, ivLength),
-                );
-
-                if (buffer.length === ivLength) {
-                    return cb();
-                }
-
-                buffer = buffer.subarray(ivLength);
 
             }
 
-            cb(undefined, decipher.update(buffer));
+            cb();
 
         },
 
