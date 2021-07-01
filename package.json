@@ -1,6 +1,6 @@
 {
   "name": "@stableness/wabble",
-  "version": "0.10.2",
+  "version": "0.11.0",
   "description": "http/socks5 proxy client with rules filtering and DoH support in Node.js",
   "esm": "dist/index.mjs",
   "main": "dist/index.cjs",
