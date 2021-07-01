@@ -35,6 +35,8 @@
 
     "assumeChangesOnlyAffectDirectDependencies": true,
 
+    "exactOptionalPropertyTypes": true,
+
     "forceConsistentCasingInFileNames": true,
   }
 }
