@@ -8,7 +8,6 @@ import { bind } from 'proxy-bind';
 import * as R from 'ramda';
 
 import * as Rx from 'rxjs';
-import * as o from 'rxjs/operators';
 
 import {
     option as O,
@@ -797,7 +796,7 @@ describe('sieve', () => {
             Rx.lastValueFrom(
 
                 block.pipe(
-                    o.map(R.applyTo(domain)),
+                    Rx.map(R.applyTo(domain)),
                 ),
 
             ),
@@ -817,7 +816,7 @@ describe('sieve', () => {
             Rx.lastValueFrom(
 
                 __wat.pipe(
-                    o.map(R.applyTo('O_o')),
+                    Rx.map(R.applyTo('O_o')),
                 ),
 
             ),
@@ -964,8 +963,8 @@ describe('Looping', () => {
         const io = loopNext([ 1 ]);
 
         const loop = Rx.range(0, step).pipe(
-            o.map(() => R.defaultTo(0, io())),
-            o.reduce<number, number>(R.add, 0),
+            Rx.map(() => R.defaultTo(0, io())),
+            Rx.reduce<number, number>(R.add, 0),
         );
 
         await expect(

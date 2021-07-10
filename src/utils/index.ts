@@ -36,7 +36,6 @@ import HKDF from 'futoin-hkdf';
 import * as R from 'ramda';
 
 import * as Rx from 'rxjs';
-import * as o from 'rxjs/operators';
 
 import type { Basic } from '../config';
 
@@ -67,7 +66,7 @@ export function run <F extends (...arg: unknown[]) => unknown> (fn: F) {
 
 
 export function rxTap <T> (fn: (arg: T) => void) {
-    return o.tap({ next: fn });
+    return Rx.tap({ next: fn });
 }
 
 
@@ -764,8 +763,8 @@ export function sieve (list: string) {
     type Has = (domain: string) => boolean;
 
     return Rx.defer(() => import(list) as Promise<{ has: Has }>).pipe(
-        o.map(R.prop('has')),
-        o.catchError(R.always(Rx.of(R.F as Has))),
+        Rx.map(R.prop('has')),
+        Rx.catchError(R.always(Rx.of(R.F as Has))),
     );
 
 }

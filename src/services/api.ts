@@ -14,7 +14,6 @@ import {
 import * as R from 'ramda';
 
 import * as Rx from 'rxjs';
-import * as o from 'rxjs/operators';
 
 import { bind } from 'proxy-bind';
 
@@ -29,8 +28,8 @@ export function establish (api$: Rx.Observable<Config['api']>) {
 
     const [ address$, job$ ] = split(
         api$.pipe(
-            o.switchMap(O.fold(F.constant(Rx.EMPTY), setup)),
-            o.share(),
+            Rx.switchMap(O.fold(F.constant(Rx.EMPTY), setup)),
+            Rx.share(),
         ),
     );
 
@@ -54,7 +53,7 @@ export function establish (api$: Rx.Observable<Config['api']>) {
 
             stateOfReq('GET /metrics'),
 
-            S.map(o.map(({ res }) => ({
+            S.map(Rx.map(({ res }) => ({
                 write (data: Record<string, unknown>) {
                     res.writeHead(200, {
                         'Cache-Control': 'private, no-cache, no-store',
@@ -71,8 +70,8 @@ export function establish (api$: Rx.Observable<Config['api']>) {
 
             stateOfReq('POST /test-domain'),
 
-            S.map(o.mergeMap(({ req, res }) => from(req).pipe(
-                o.map(F.flow(
+            S.map(Rx.mergeMap(({ req, res }) => from(req).pipe(
+                Rx.map(F.flow(
                     R.ifElse(
                         R.propEq('length', 1),
                         R.head,
@@ -86,7 +85,7 @@ export function establish (api$: Rx.Observable<Config['api']>) {
                         R.head,
                     ) as u.Fn<string | string[], string | undefined>,
                 )),
-                o.map((domain = '') => ({
+                Rx.map((domain = '') => ({
                     domain,
                     write (text: string) {
                         res.write(domain === '' ? 'unknown' : text);
@@ -176,8 +175,8 @@ export function establish (api$: Rx.Observable<Config['api']>) {
 
         S.apS('address$', S.gets(F.constant(
             address$.pipe(
-                o.first(),
-                o.map(addr => ({
+                Rx.first(),
+                Rx.map(addr => ({
                     ...addr,
                     to (path: string) {
                         return new URL(

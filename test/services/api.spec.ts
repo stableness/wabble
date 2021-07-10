@@ -5,7 +5,6 @@ import {
 } from 'fp-ts';
 
 import * as Rx from 'rxjs';
-import * as o from 'rxjs/operators';
 
 import * as R from 'ramda';
 
@@ -54,7 +53,7 @@ describe('api', () => {
     const { address$, ...routes } = establish(Rx.of(O.some(api)));
 
     const addr$ = address$.pipe(
-        o.shareReplay({ bufferSize: 1, refCount: true }),
+        Rx.shareReplay({ bufferSize: 1, refCount: true }),
     );
 
 
@@ -83,9 +82,9 @@ describe('api', () => {
             Rx.firstValueFrom(
 
                 addr$.pipe(
-                    o.map(addr => addr.to(path)),
-                    o.mergeMap(url => fetch(url, { method })),
-                    o.first(({ ok }) => path === '/404' ? true : ok === true),
+                    Rx.map(addr => addr.to(path)),
+                    Rx.mergeMap(url => fetch(url, { method })),
+                    Rx.first(({ ok }) => path === '/404' ? true : ok === true),
                 ),
 
             ),
@@ -109,8 +108,8 @@ describe('api', () => {
 
         ).pipe(
 
-            o.ignoreElements(),
-            o.takeUntil(done$),
+            Rx.ignoreElements(),
+            Rx.takeUntil(done$),
 
         ).subscribe();
 
@@ -140,7 +139,7 @@ describe('api', () => {
 
             Rx.firstValueFrom(
                 health$.pipe(
-                    o.first(),
+                    Rx.first(),
                 ),
             ),
 
@@ -170,15 +169,15 @@ describe('api', () => {
                 Rx.merge(
 
                     health$.pipe(
-                        o.ignoreElements(),
+                        Rx.ignoreElements(),
                     ),
 
                     address$.pipe(
-                        o.tap(({ address }) => expect(address).toBe(api.host)),
-                        o.map(addr => addr.to('/health')),
-                        o.mergeMap(url => fetch(url, { headers: { origin } })),
-                        o.first(({ ok }) => ok === true),
-                        o.mergeMap(res => {
+                        Rx.tap(({ address }) => expect(address).toBe(api.host)),
+                        Rx.map(addr => addr.to('/health')),
+                        Rx.mergeMap(url => fetch(url, { headers: { origin } })),
+                        Rx.first(({ ok }) => ok === true),
+                        Rx.mergeMap(res => {
 
                             const allowed = res.headers.get(
                                 'Access-Control-Allow-Origin',

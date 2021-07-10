@@ -16,7 +16,6 @@ import {
 } from 'fp-ts';
 
 import * as Rx from 'rxjs';
-import * as o from 'rxjs/operators';
 
 import { bind } from 'proxy-bind';
 
@@ -124,40 +123,40 @@ export function catchException () {
 const loader$ = new Rx.ReplaySubject<string>(1);
 
 const config$ = loader$.pipe(
-    o.switchMap(u.loadPath),
-    o.map(R.unary(loadYAML)),
-    o.map(convert),
-    o.catchError(err => {
+    Rx.switchMap(u.loadPath),
+    Rx.map(R.unary(loadYAML)),
+    Rx.map(convert),
+    Rx.catchError(err => {
         const { message } = E.toError(err);
         logger.error(message);
         return Rx.EMPTY;
     }),
-    o.shareReplay({ bufferSize: 1, refCount: false }),
+    Rx.shareReplay({ bufferSize: 1, refCount: false }),
 );
 
 const directList$ = config$.pipe(
-    o.pluck('sieve', 'direct'),
-    o.map(O.getOrElse(F.constant('@stableness/sieve-tray/lib/china-list'))),
-    o.mergeMap(u.sieve),
-    o.shareReplay({ bufferSize: 1, refCount: false }),
+    Rx.pluck('sieve', 'direct'),
+    Rx.map(O.getOrElse(F.constant('@stableness/sieve-tray/lib/china-list'))),
+    Rx.mergeMap(u.sieve),
+    Rx.shareReplay({ bufferSize: 1, refCount: false }),
 );
 
 const rejectList$ = config$.pipe(
-    o.pluck('sieve', 'reject'),
-    o.map(O.getOrElse(F.constant('@stableness/sieve-tray/lib/block-list'))),
-    o.mergeMap(u.sieve),
-    o.shareReplay({ bufferSize: 1, refCount: false }),
+    Rx.pluck('sieve', 'reject'),
+    Rx.map(O.getOrElse(F.constant('@stableness/sieve-tray/lib/block-list'))),
+    Rx.mergeMap(u.sieve),
+    Rx.shareReplay({ bufferSize: 1, refCount: false }),
 );
 
 const rules$ = config$.pipe(
-    o.pluck('rules'),
-    o.map(R.evolve({
+    Rx.pluck('rules'),
+    Rx.map(R.evolve({
         proxy: u.rules.DOH,
         direct: u.rules.DOH,
         reject: u.rules.NOT,
     })),
-    o.delayWhen(R.always(Rx.combineLatest([ directList$, rejectList$ ]))),
-    o.withLatestFrom(rejectList$, directList$, (rules, reject, direct) => ({
+    Rx.delayWhen(R.always(Rx.combineLatest([ directList$, rejectList$ ]))),
+    Rx.withLatestFrom(rejectList$, directList$, (rules, reject, direct) => ({
         reject: R.either(
             rules.reject.yes,
             R.both(
@@ -173,24 +172,24 @@ const rules$ = config$.pipe(
 );
 
 const dealer$ = config$.pipe(
-    o.pluck('servers'),
-    o.map(u.loopNext),
-    o.map(hit => ({ hit })),
+    Rx.pluck('servers'),
+    Rx.map(u.loopNext),
+    Rx.map(hit => ({ hit })),
 );
 
 const services$ = config$.pipe(
-    o.pluck('services'),
+    Rx.pluck('services'),
 );
 
 const api$ = config$.pipe(
-    o.pluck('api'),
+    Rx.pluck('api'),
 );
 
 export type Resolver = Rx.ObservedValueOf<typeof resolver$>;
 
 const resolver$ = config$.pipe(
-    o.pluck('resolver'),
-    o.map(R.evolve({
+    Rx.pluck('resolver'),
+    Rx.map(R.evolve({
         upstream: O.map(R.o(
             R.evolve({
                 https: A.map(({ uri }: NSResolver) => genDoH(uri.href)),
@@ -200,7 +199,7 @@ const resolver$ = config$.pipe(
             u.groupBy(R.prop('protocol')),
         )),
     })),
-    o.map(({ ttl, upstream, timeout }) => {
+    Rx.map(({ ttl, upstream, timeout }) => {
 
         const trim = O.chain(
             <T> (arr: readonly T[] = []) => RNEA.fromReadonlyArray(arr),
@@ -274,11 +273,11 @@ const runner$ = services$.pipe(
         console.info('listening on [%s:%d] by [%s]', host, port, protocol);
     })),
 
-    o.switchMap(services => combine (services) (logging)),
+    Rx.switchMap(services => combine (services) (logging)),
 
-    o.connect(Rx.pipe(
+    Rx.connect(Rx.pipe(
 
-        o.withLatestFrom(rules$, resolver$, (
+        Rx.withLatestFrom(rules$, resolver$, (
                 { host, port, hook, abort },
                 rules, resolver,
         ) => ({
@@ -292,7 +291,7 @@ const runner$ = services$.pipe(
             direction: rules.direct(host),
         })),
 
-        o.filter(opts => {
+        Rx.filter(opts => {
 
             const { abort, rejection, direction, logger: log } = opts;
 
@@ -320,7 +319,7 @@ const runner$ = services$.pipe(
 
         }),
 
-        o.withLatestFrom(dealer$, (opts, dealer) => {
+        Rx.withLatestFrom(dealer$, (opts, dealer) => {
 
             const { abort, logger: log } = opts;
 
@@ -341,7 +340,7 @@ const runner$ = services$.pipe(
 
         }),
 
-        o.mergeMap(async ({ task, log }) => F.pipe(
+        Rx.mergeMap(async ({ task, log }) => F.pipe(
             await task(),
             E.mapLeft(err => ({ err, log })),
         )),
@@ -363,9 +362,9 @@ const runner$ = services$.pipe(
 
         }, F.constVoid)),
 
-        o.ignoreElements(),
+        Rx.ignoreElements(),
 
-        o.retry({ count: 5, resetOnSuccess: true }),
+        Rx.retry({ count: 5, resetOnSuccess: true }),
 
     )),
 
@@ -401,21 +400,21 @@ function construct (setting: string) {
         notFound$,
 
         reload$.pipe(
-            o.mapTo(setting),
-            o.startWith(setting),
-            o.tap(loader$),
+            Rx.mapTo(setting),
+            Rx.startWith(setting),
+            Rx.tap(loader$),
         ),
 
         metrics$.pipe(
-            o.map(({ write }) => {
+            Rx.map(({ write }) => {
                 write({ ...process.memoryUsage() });
             }),
         ),
 
-        flush_DNS$.pipe(o.tap(dnsCache.write(M.empty))),
+        flush_DNS$.pipe(Rx.tap(dnsCache.write(M.empty))),
 
         test_domain$.pipe(
-            o.withLatestFrom(rules$, (
+            Rx.withLatestFrom(rules$, (
                     { domain, write },
                     { direct, reject },
             ) => {
@@ -429,8 +428,8 @@ function construct (setting: string) {
 
     ).pipe(
 
-        o.ignoreElements(),
-        o.takeUntil(exit$),
+        Rx.ignoreElements(),
+        Rx.takeUntil(exit$),
 
     );
 

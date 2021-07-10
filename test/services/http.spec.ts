@@ -13,7 +13,6 @@ import {
 } from 'fp-ts';
 
 import * as Rx from 'rxjs';
-import * as o from 'rxjs/operators';
 
 import * as R from 'ramda';
 
@@ -468,7 +467,7 @@ export const temp = u.run(function () {
 
             source.pipe(
 
-                o.mergeMap(({ host, port, hook, abort }) => {
+                Rx.mergeMap(({ host, port, hook, abort }) => {
 
                     if (flags.e) {
                         abort();
@@ -479,7 +478,7 @@ export const temp = u.run(function () {
 
                 }),
 
-                o.takeUntil(dispose),
+                Rx.takeUntil(dispose),
 
             ).subscribe({ error: close });
 
