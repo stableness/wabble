@@ -14,7 +14,6 @@ import {
 import * as R from 'ramda';
 
 import * as Rx from 'rxjs';
-import * as o from 'rxjs/operators';
 
 import type { Logging } from '../model';
 import type { Service } from '../config';
@@ -92,7 +91,7 @@ export const socks5Proxy =
 
     }).pipe(
 
-        o.mergeMap(async socket => {
+        Rx.mergeMap(async socket => {
 
             const read = u.readToTaskEither(socket);
             const write = u.writeToTaskEither(socket);
@@ -235,9 +234,9 @@ export const socks5Proxy =
 
         }),
 
-        o.filter(Boolean),
+        Rx.filter(Boolean),
 
-        o.map(({ host, port, socket }) => ({
+        Rx.map(({ host, port, socket }) => ({
 
             host,
             port,

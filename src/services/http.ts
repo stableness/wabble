@@ -16,7 +16,6 @@ import {
 import * as R from 'ramda';
 
 import * as Rx from 'rxjs';
-import * as o from 'rxjs/operators';
 
 import type { Logging } from '../model';
 import type { Service } from '../config';
@@ -113,7 +112,7 @@ export const httpProxy =
 
     }).pipe(
 
-        o.filter(({ request: { socket, headers }, url: { hostname } }) => {
+        Rx.filter(({ request: { socket, headers }, url: { hostname } }) => {
 
             // istanbul ignore next
             if (hostname.length < 1) {
@@ -166,7 +165,7 @@ export const httpProxy =
 
         }),
 
-        o.share(),
+        Rx.share(),
 
     );
 
@@ -185,11 +184,11 @@ export const httpProxy =
 
 export const requestOn = Rx.pipe(
 
-    o.filter<Knock, Request>(
+    Rx.filter<Knock, Request>(
         (item): item is Request => item.type === 'request',
     ),
 
-    o.map(({ request, response, url }) => ({
+    Rx.map(({ request, response, url }) => ({
 
         host: url.hostname,
         port: u.portNormalize(url),
@@ -255,11 +254,11 @@ export const requestOn = Rx.pipe(
 
 export const connectOn = Rx.pipe(
 
-    o.filter<Knock, Connect>(
+    Rx.filter<Knock, Connect>(
         (item): item is Connect => item.type === 'connect',
     ),
 
-    o.map(({ socket, url, head }) => ({
+    Rx.map(({ socket, url, head }) => ({
 
         host: url.hostname,
         port: u.portNormalize(url),

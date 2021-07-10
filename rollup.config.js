@@ -64,7 +64,6 @@ const config = [
             | js-yaml | pino | command-line-args | @stableness/basic-auth |
 
             | rxjs
-            | rxjs/operators
 
             | fp-ts
             | io-ts
@@ -187,7 +186,6 @@ const config = [
             | js-yaml | pino | command-line-args | @stableness/basic-auth |
 
             | rxjs
-            | rxjs/operators
 
             | fp-ts
             | io-ts
