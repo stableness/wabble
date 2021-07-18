@@ -951,11 +951,12 @@ export const incrementLE2 = F.flow(
 
 
 
+type BE = BufferEncoding;
 type TE_E <T> = TE.TaskEither<Error, T>;
 
 export function readFile (filename: PathLike): TE_E<Buffer>;
-export function readFile (filename: PathLike, encoding: string): TE_E<string>;
-export function readFile (filename: PathLike, encoding?: string) {
+export function readFile (filename: PathLike, encoding: BE): TE_E<string>;
+export function readFile (filename: PathLike, encoding?: BE) {
     return tryCatchToError(() => fs.readFile(filename, encoding));
 }
 
