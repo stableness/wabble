@@ -14,13 +14,13 @@ import {
 
 import { toTransform } from 'buffer-pond';
 
-import { logLevel } from '../model';
-import type { ShadowSocks } from '../config';
-import * as u from '../utils/index';
+import { logLevel } from '../model.js';
+import type { ShadowSocks } from '../config.js';
+import * as u from '../utils/index.js';
 
-import type { AEAD, Stream } from '../settings/utils/shadowsocks';
+import type { AEAD, Stream } from '../settings/utils/shadowsocks.js';
 
-import { netConnectTo, RTE_O_E_V } from './index';
+import { netConnectTo, RTE_O_E_V } from './index.js';
 
 
 

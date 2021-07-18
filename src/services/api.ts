@@ -17,8 +17,8 @@ import * as Rx from 'rxjs';
 
 import { bind } from 'proxy-bind';
 
-import type { Config, API } from '../config';
-import * as u from '../utils/index';
+import type { Config, API } from '../config.js';
+import * as u from '../utils/index.js';
 
 
 

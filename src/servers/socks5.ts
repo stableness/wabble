@@ -6,11 +6,11 @@ import {
     function as F,
 } from 'fp-ts';
 
-import { logLevel } from '../model';
-import type { Socks5, Basic } from '../config';
-import * as u from '../utils/index';
+import { logLevel } from '../model.js';
+import type { Socks5, Basic } from '../config.js';
+import * as u from '../utils/index.js';
 
-import { netConnectTo, RTE_O_E_V } from './index';
+import { netConnectTo, RTE_O_E_V } from './index.js';
 
 
 

@@ -17,11 +17,11 @@ import * as R from 'ramda';
 
 import * as Rx from 'rxjs';
 
-import type { Logging } from '../model';
-import type { Service } from '../config';
-import * as u from '../utils/index';
+import type { Logging } from '../model.js';
+import type { Service } from '../config.js';
+import * as u from '../utils/index.js';
 
-import { do_not_require } from './utils';
+import { do_not_require } from './utils.js';
 
 
 

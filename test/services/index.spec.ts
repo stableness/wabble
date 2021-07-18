@@ -6,15 +6,15 @@ import * as Rx from 'rxjs';
 
 import pino from 'pino';
 
-import type { Service } from '../../src/config';
-import type { Logging } from '../../src/model';
+import type { Service } from '../../src/config.js';
+import type { Logging } from '../../src/model.js';
 
 import {
 
     box,
     combine,
 
-} from '../../src/services/index';
+} from '../../src/services/index.js';
 
 
 

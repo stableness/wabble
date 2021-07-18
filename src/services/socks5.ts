@@ -16,15 +16,15 @@ import * as R from 'ramda';
 
 import * as Rx from 'rxjs';
 
-import type { Logging } from '../model';
-import type { Service } from '../config';
+import type { Logging } from '../model.js';
+import type { Service } from '../config.js';
 
-import * as u from '../utils/index';
+import * as u from '../utils/index.js';
 
 import {
     readFrame,
     do_not_have_authentication,
-} from './utils';
+} from './utils.js';
 
 
 

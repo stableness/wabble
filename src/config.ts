@@ -5,9 +5,9 @@ import type {
     readonlyNonEmptyArray as RNEA,
 } from 'fp-ts';
 
-import * as SS from './settings/utils/shadowsocks';
+import * as SS from './settings/utils/shadowsocks.js';
 
-import { Fn } from './utils';
+import { Fn } from './utils/index.js';
 
 
 

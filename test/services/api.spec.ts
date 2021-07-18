@@ -12,10 +12,10 @@ import fetch from 'node-fetch';
 
 import {
     establish,
-} from '../../src/services/api';
+} from '../../src/services/api.js';
 
-import type { API } from '../../src/config';
-import * as u from '../../src/utils';
+import type { API } from '../../src/config.js';
+import * as u from '../../src/utils/index.js';
 
 
 

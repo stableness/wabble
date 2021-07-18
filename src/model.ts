@@ -19,16 +19,16 @@ import * as Rx from 'rxjs';
 
 import { bind } from 'proxy-bind';
 
-import type { Options } from './bin';
+import type { Options } from './bin.js';
 
-import { connect } from './servers/index';
-import { combine, establish } from './services/index';
-import { convert } from './settings/index';
+import { connect } from './servers/index.js';
+import { combine, establish } from './services/index.js';
+import { convert } from './settings/index.js';
 
-import type { NSResolver } from './config';
+import type { NSResolver } from './config.js';
 
-import * as u from './utils/index';
-import { genDNS, genDoH, genDoT } from './utils/resolver';
+import * as u from './utils/index.js';
+import { genDNS, genDoH, genDoT } from './utils/resolver.js';
 
 
 

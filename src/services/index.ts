@@ -5,12 +5,12 @@ import {
 
 import * as Rx from 'rxjs';
 
-import type { Service } from '../config';
+import type { Service } from '../config.js';
 
-import { httpProxy } from './http';
-import { socks5Proxy } from './socks5';
+import { httpProxy } from './http.js';
+import { socks5Proxy } from './socks5.js';
 
-export { establish } from './api';
+export { establish } from './api.js';
 
 
 

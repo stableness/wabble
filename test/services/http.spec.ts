@@ -20,18 +20,18 @@ import Defer from 'p-defer';
 
 import {
     box,
-} from '../../src/services/index';
+} from '../../src/services/index.js';
 
 import {
     httpProxy,
-} from '../../src/services/http';
+} from '../../src/services/http.js';
 
-import * as u from '../../src/utils';
+import * as u from '../../src/utils/index.js';
 
-import type { Logging } from '../../src/model';
-import type { Service, Basic } from '../../src/config';
+import type { Logging } from '../../src/model.js';
+import type { Service, Basic } from '../../src/config.js';
 
-import { genLogging } from './index.spec';
+import { genLogging } from './index.spec.js';
 
 
 

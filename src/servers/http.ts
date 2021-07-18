@@ -11,12 +11,12 @@ import {
     function as F,
 } from 'fp-ts';
 
-import { logLevel } from '../model';
-import type { Http } from '../config';
+import { logLevel } from '../model.js';
+import type { Http } from '../config.js';
 
-import * as u from '../utils/index';
+import * as u from '../utils/index.js';
 
-import type { RTE_O_E_V } from './index';
+import type { RTE_O_E_V } from './index.js';
 
 
 
