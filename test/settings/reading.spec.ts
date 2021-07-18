@@ -13,9 +13,9 @@ import {
     decodeResolver,
     decodeAPI,
 
-} from '../../src/settings/reading';
+} from '../../src/settings/reading.js';
 
-import * as u from '../../src/utils';
+import * as u from '../../src/utils/index.js';
 
 
 

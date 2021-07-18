@@ -1,2 +1,2 @@
-export { convert } from './reading';
+export { convert } from './reading.js';
 

@@ -7,7 +7,7 @@ import {
     readonlyNonEmptyArray as RNEA,
 } from 'fp-ts';
 
-import { run, tryCatchToError } from './index';
+import { run, tryCatchToError } from './index.js';
 
 
 

@@ -11,9 +11,9 @@ import * as R from 'ramda';
 
 import {
     tunnel,
-} from '../../src/servers/socks5';
+} from '../../src/servers/socks5.js';
 
-import * as u from '../../src/utils';
+import * as u from '../../src/utils/index.js';
 
 import {
     genAuth,

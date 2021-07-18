@@ -57,7 +57,7 @@ import {
     groupBy,
     ErrorWithCode,
 
-} from '../../src/utils';
+} from '../../src/utils/index.js';
 
 import {
     paths,

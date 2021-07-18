@@ -13,12 +13,12 @@ import {
     function as F,
 } from 'fp-ts';
 
-import * as u from '../../src/utils/index';
+import * as u from '../../src/utils/index.js';
 
 import {
     resolve,
     updateCache,
-} from '../../src/servers/index';
+} from '../../src/servers/index.js';
 
 
 

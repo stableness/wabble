@@ -10,7 +10,7 @@ import * as R from 'ramda';
 import {
     run as force,
     readToTaskEither,
-} from '../../src/utils';
+} from '../../src/utils/index.js';
 
 import {
 
@@ -18,7 +18,7 @@ import {
     do_not_require,
     do_not_have_authentication,
 
-} from '../../src/services/utils';
+} from '../../src/services/utils.js';
 
 
 

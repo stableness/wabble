@@ -28,7 +28,7 @@ import {
     readonlyNonEmptyArray as NEA,
 } from 'fp-ts';
 
-import * as Dc from 'io-ts/Decoder';
+import * as Dc from 'io-ts/lib/Decoder.js';
 
 import { parse as parseBasicAuth } from '@stableness/basic-auth';
 
@@ -38,7 +38,7 @@ import * as R from 'ramda';
 
 import * as Rx from 'rxjs';
 
-import type { Basic } from '../config';
+import type { Basic } from '../config.js';
 
 
 

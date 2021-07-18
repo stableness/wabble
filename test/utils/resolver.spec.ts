@@ -16,13 +16,13 @@ import {
     genDoH,
     genDoT,
 
-} from '../../src/utils/resolver';
+} from '../../src/utils/resolver.js';
 
 import {
     paths,
 } from '../__helpers__';
 
-import * as u from '../../src/utils/index';
+import * as u from '../../src/utils/index.js';
 
 
 

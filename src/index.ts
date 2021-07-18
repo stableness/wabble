@@ -1,2 +1,2 @@
-export { load, VERSION } from './model';
+export { load, VERSION } from './model.js';
 

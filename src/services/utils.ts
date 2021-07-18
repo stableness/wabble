@@ -5,7 +5,7 @@ import {
     function as F,
 } from 'fp-ts';
 
-import { option2B, Fn } from '../utils/index';
+import { option2B, Fn } from '../utils/index.js';
 
 
 

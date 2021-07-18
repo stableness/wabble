@@ -19,16 +19,16 @@ import {
     readonlyNonEmptyArray as NA,
 } from 'fp-ts';
 
-import type { Remote } from '../config';
-import * as u from '../utils/index';
-import type { DoH_query, DNS_query, DoT_query } from '../utils/resolver';
-import { logLevel, Resolver, HashMap } from '../model';
-import type { Hook } from '../services/index';
+import type { Remote } from '../config.js';
+import * as u from '../utils/index.js';
+import type { DoH_query, DNS_query, DoT_query } from '../utils/resolver.js';
+import { logLevel, Resolver, HashMap } from '../model.js';
+import type { Hook } from '../services/index.js';
 
-import { chain as chainHttp } from './http';
-import { chain as chainSocks5 } from './socks5';
-import { chain as chainTrojan } from './trojan';
-import { chain as chainSS } from './shadowsocks';
+import { chain as chainHttp } from './http.js';
+import { chain as chainSocks5 } from './socks5.js';
+import { chain as chainTrojan } from './trojan.js';
+import { chain as chainSS } from './shadowsocks.js';
 
 
 

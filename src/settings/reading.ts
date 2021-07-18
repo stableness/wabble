@@ -6,14 +6,14 @@ import {
     function as F,
 } from 'fp-ts';
 
-import * as Dc from 'io-ts/Decoder';
+import * as Dc from 'io-ts/lib/Decoder.js';
 
-import type { Config, Remote } from '../config';
+import type { Config, Remote } from '../config.js';
 
-import * as u from '../utils/index';
+import * as u from '../utils/index.js';
 
-import * as Trojan from './utils/trojan';
-import * as ShadowSocks from './utils/shadowsocks';
+import * as Trojan from './utils/trojan.js';
+import * as ShadowSocks from './utils/shadowsocks.js';
 
 
 
