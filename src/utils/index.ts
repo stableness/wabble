@@ -712,10 +712,11 @@ export function incrementLE (buffer: Uint8Array) {
 
 
 type Obs <T> = Rx.Observable<T>;
+type BE = BufferEncoding;
 
 export function readFile (filename: PathLike): Obs<Buffer>;
-export function readFile (filename: PathLike, encoding: string): Obs<string>;
-export function readFile (filename: PathLike, encoding?: string) {
+export function readFile (filename: PathLike, encoding: BE): Obs<string>;
+export function readFile (filename: PathLike, encoding?: BE) {
     return Rx.defer(() => fs.readFile(filename, encoding));
 }
 
