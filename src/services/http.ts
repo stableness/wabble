@@ -196,7 +196,7 @@ export const requestOn = Rx.pipe(
 
         async hook (...duplex: NodeJS.ReadWriteStream[]) {
 
-            const { connection: socket = null } = response;
+            const { socket } = response;
 
             // istanbul ignore next
             if (socket == null) {
@@ -240,8 +240,7 @@ export const requestOn = Rx.pipe(
         },
 
         abort: R.once(() => {
-            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-            response.connection?.resume();
+            response.socket?.resume();
             response.writeHead(503).end();
         }),
 
