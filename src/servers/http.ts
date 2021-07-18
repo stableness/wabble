@@ -100,6 +100,10 @@ export const tunnel = (opts: Http) => async (path: string) => {
         throw err;
     }
 
+    if (req.socket == null) {
+        throw new Error('no socket on req');
+    }
+
     return req.socket;
 
 };

@@ -394,6 +394,10 @@ export const temp = u.run(function () {
 
                 await once(req, 'connect');
 
+                if (req.socket == null) {
+                    throw new Error('no socket on req');
+                }
+
                 return F.pipe(
                     await u.collectAsyncIterable(req.socket),
                     Buffer.concat,
