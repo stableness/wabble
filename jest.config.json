@@ -12,6 +12,10 @@
     }
   },
 
+  "moduleNameMapper": {
+    "^(\\.{1,2}/.*)\\.js$": "$1"
+  },
+
   "testPathIgnorePatterns": [
     "<rootDir>/dist/",
     "<rootDir>/node_modules/"
