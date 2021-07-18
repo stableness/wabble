@@ -13,7 +13,8 @@ import { asyncReadable } from 'async-readable';
 
 import memo from 'memoizerific';
 
-import { isPrivate, cidrSubnet, isEqual as eqIP } from 'ip';
+import PKG_ip from 'ip';
+const { isPrivate, cidrSubnet, isEqual: eqIP } = PKG_ip;
 
 import {
     eq as Eq,

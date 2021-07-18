@@ -2,7 +2,8 @@ import net from 'net';
 
 import { bind } from 'proxy-bind';
 
-import { fromLong as ipFromLong, toString as ipToString } from 'ip';
+import PKG_ip from 'ip';
+const { fromLong: ipFromLong, toString: ipToString } = PKG_ip;
 
 import {
     option as O,
