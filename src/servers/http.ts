@@ -96,7 +96,7 @@ export const tunnel = (opts: Http) => async (path: string) => {
         ]);
 
     } catch (err) {
-        req.abort();
+        req.destroy();
         throw err;
     }
 
