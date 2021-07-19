@@ -1,3 +1,9 @@
+import {
+    option as O,
+} from 'fp-ts';
+
+import * as Rx from 'rxjs';
+
 import pino from 'pino';
 
 import type { Service } from '../../src/config';
@@ -6,6 +12,7 @@ import type { Logging } from '../../src/model';
 import {
 
     box,
+    combine,
 
 } from '../../src/services/index';
 
@@ -22,6 +29,40 @@ describe('box', () => {
         const service = { protocol: 'waaaaaat' } as Service;
 
         expect(() => box(service)).toThrowError();
+
+    });
+
+});
+
+
+
+
+
+describe('combine', () => {
+
+    test('smoking', () => {
+
+        const proxy = combine([
+
+            {
+                protocol: 'http',
+                auth: O.none,
+                host: 'localhost',
+                port: 0,
+            },
+
+            {
+                protocol: 'socks5',
+                auth: O.none,
+                host: 'localhost',
+                port: 0,
+            },
+
+        ]);
+
+        const obs = proxy(genLogging());
+
+        expect(Rx.isObservable(obs)).toBe(true);
 
     });
 
