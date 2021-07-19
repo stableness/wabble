@@ -18,8 +18,6 @@ import * as R from 'ramda';
 
 import Defer from 'p-defer';
 
-import pino from 'pino';
-
 import {
     box,
 } from '../../src/services/index';
@@ -32,6 +30,8 @@ import * as u from '../../src/utils';
 
 import type { Logging } from '../../src/model';
 import type { Service, Basic } from '../../src/config';
+
+import { genLogging } from './index.spec';
 
 
 
@@ -295,29 +295,6 @@ export function genFlags (search: SearchParams) {
     const c = search.get('c');
 
     return { a, e, d, c, p };
-
-}
-
-export function genLogging ({ debug = false, warn = false } = {}): Logging {
-
-    return {
-
-        logger: pino({
-            base: null,
-            prettyPrint: false,
-            enabled: false,
-        }),
-
-        logLevel: {
-            on: {
-                warn, debug,
-                trace: false, info: false,
-                error: false, fatal: false,
-                silent: false,
-            } as const,
-        },
-
-    };
 
 }
 

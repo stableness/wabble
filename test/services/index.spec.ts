@@ -1,4 +1,7 @@
+import pino from 'pino';
+
 import type { Service } from '../../src/config';
+import type { Logging } from '../../src/model';
 
 import {
 
@@ -23,4 +26,31 @@ describe('box', () => {
     });
 
 });
+
+
+
+
+
+export function genLogging ({ debug = false, warn = false } = {}): Logging {
+
+    return {
+
+        logger: pino({
+            base: null,
+            prettyPrint: false,
+            enabled: false,
+        }),
+
+        logLevel: {
+            on: {
+                warn, debug,
+                trace: false, info: false,
+                error: false, fatal: false,
+                silent: false,
+            } as const,
+        },
+
+    };
+
+}
 
