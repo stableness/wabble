@@ -21,7 +21,7 @@ import {
 
 import type { Remote } from '../config';
 import * as u from '../utils/index';
-import type { DoH_query, DNS_query, DoT_query } from 'src/utils/resolver';
+import type { DoH_query, DNS_query, DoT_query } from '../utils/resolver';
 import { logLevel, Resolver, HashMap } from '../model';
 import type { Hook } from '../services/index';
 
