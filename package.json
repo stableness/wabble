@@ -23,6 +23,7 @@
   "engines": {
     "node": ">= 12"
   },
+  "type": "module",
   "repository": "github:stableness/wabble",
   "homepage": "https://github.com/stableness/wabble",
   "bugs": {
