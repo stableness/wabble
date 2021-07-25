@@ -4,11 +4,11 @@
   "description": "http/socks5 proxy client with rules filtering and DoH support in Node.js",
   "main": "dist/index.js",
   "scripts": {
-    "build": "tsc --build && rollup -c",
-    "start": "DEV_PORT_MINUS=1000 node dist/bin.js | pino-pretty -t SYS:HH:MM:ss",
-    "non.tsc.start": "NODE_ENV=dev rollup -c && npm start",
-    "dev": "TSC_NONPOLLING_WATCHER=true tsc-watch --build --onSuccess 'npm run -s non.tsc.start'",
-    "bundle": "NODE_ENV=production npm run build -- --environment BUILD:prod",
+    "build": "tsc --build",
+    "build-commonjs": "tsc --module CommonJS",
+    "start": "DEV_PORT_MINUS=1000 NODE_ENV=dev node dist/bin.js | pino-pretty -t SYS:HH:MM:ss",
+    "dev": "TSC_NONPOLLING_WATCHER=true tsc-watch --build --onSuccess 'npm run -s start'",
+    "bundle": "npm run build && NODE_ENV=production rollup -c",
     "lint": "eslint ./ --cache --cache-location ./dist/ --ext .ts -c .eslintrc.yml",
     "test": "jest --ci -c jest.config.json"
   },
