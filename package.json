@@ -2,7 +2,7 @@
   "name": "@stableness/wabble",
   "version": "0.11.1",
   "description": "http/socks5 proxy client with rules filtering and DoH support in Node.js",
-  "main": "dist/index.cjs",
+  "main": "dist/index.js",
   "scripts": {
     "build": "tsc --build && rollup -c",
     "start": "DEV_PORT_MINUS=1000 node dist/bin.js | pino-pretty -t SYS:HH:MM:ss",
@@ -17,9 +17,8 @@
   },
   "files": [
     "tsconfig.json",
-    "dist/extra.cjs",
-    "dist/bin.cjs",
-    "dist/index.cjs"
+    "dist/**/*.js",
+    "dist/bin.cjs"
   ],
   "engines": {
     "node": ">= 12"
