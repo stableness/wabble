@@ -31,6 +31,7 @@ release()
 
     npm shrinkwrap && mv npm-shrinkwrap.json dist/shrinkwrap.json
 
+    jq '.files=[.files[-1]]'           ${PKG} > ${TMP} && mv ${TMP} ${PKG}
     jq '{ name, version, bin, files }' ${PKG} > ${TMP} && mv ${TMP} ${PKG}
 
     npm pack && mv *.tgz dist/wabble-${VER}.tgz && cd dist/
