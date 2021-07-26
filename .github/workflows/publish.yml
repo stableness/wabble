@@ -42,9 +42,11 @@ jobs:
 
 
 
-      - name: Build
+      - name: Pre publish
         id: build
-        run: sh ci.sh ./ build
+        run: |-
+          sh ci.sh ./ prerelease
+          npm run build-commonjs
 
 
 
@@ -56,7 +58,9 @@ jobs:
 
       - name: Release
         id: release
-        run: sh ci.sh ./ release
+        run: |-
+          rm -rf dist/
+          sh ci.sh ./ release
 
 
 
