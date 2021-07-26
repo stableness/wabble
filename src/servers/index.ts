@@ -13,6 +13,7 @@ import {
     io as IO,
     either as E,
     option as O,
+    predicate as P,
     function as F,
     string as Str,
     readonlyArray as A,
@@ -221,7 +222,7 @@ export const updateCache: u.CurryT<[
     return F.pipe(
         TE.rightIO(read),
         TE.chain(TE.fromPredicate(
-            F.not(M.member (Str.Eq) (host)),
+            P.not(M.member (Str.Eq) (host)),
             F.constVoid,
         )),
         TE.chainFirstIOK(() => modify(M.upsertAt (Str.Eq) (host, ip))),
@@ -287,7 +288,7 @@ const isIP = O.fromPredicate(u.isIP);
 
 
 const checkBlockingHost = TE.filterOrElse(
-    F.not(u.isBlockedIP),
+    P.not(u.isBlockedIP),
     F.constant(new u.ErrorWithCode('BLOCKED_HOST', 'Blocked via DoH or DNS')),
 );
 
