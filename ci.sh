@@ -4,13 +4,11 @@ set -eu
 
 
 
-build()
+prerelease()
 {
 
     VER=$(jq -r '.version' package.json)
-    PKG=package.json TMP=lite.json MODEL=dist/model.js
-
-    npm run -s build-commonjs
+    PKG=package.json TMP=lite.json MODEL=src/model.ts
 
     sed -i "s#<%=VERSION=>#${VER}#g" ${MODEL}
     sed -i "s#<%=NODE_ENV=>#${NODE_ENV:-production}#g" ${MODEL}
