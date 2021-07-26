@@ -3,6 +3,7 @@ import * as R from 'ramda';
 import {
     taskEither as TE,
     function as F,
+    predicate as P,
 } from 'fp-ts';
 
 import { option2B, Fn } from '../utils/index.js';
@@ -12,14 +13,14 @@ import { option2B, Fn } from '../utils/index.js';
 
 
 // :: number[] -> boolean
-export const do_not_have_authentication = F.not(R.includes(0x02));
+export const do_not_have_authentication = P.not(R.includes(0x02));
 
 
 
 
 
 // :: Option -> boolean
-export const do_not_require = F.not(option2B);
+export const do_not_require = P.not(option2B);
 
 
 

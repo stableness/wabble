@@ -9,6 +9,7 @@ import {
     option as O,
     taskEither as TE,
     ioRef as Ref,
+    predicate as P,
     function as F,
     readonlyMap as M,
     readonlyArray as A,
@@ -160,12 +161,12 @@ const rules$ = config$.pipe(
         reject: R.either(
             rules.reject.yes,
             R.both(
-                F.not(rules.reject.not),
+                P.not(rules.reject.not),
                 reject,
             ),
         ),
         direct: R.both(
-            F.not(rules.proxy.all),
+            P.not(rules.proxy.all),
             R.anyPass([ rules.direct.all, direct, u.isPrivateIP ]),
         ),
     })),

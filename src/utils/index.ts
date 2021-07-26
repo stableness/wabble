@@ -22,6 +22,8 @@ import {
     taskEither as TE,
     option as O,
     string as Str,
+    predicate as P,
+    refinement as Rf,
     function as F,
     chainRec as CR,
     readonlyArray as A,
@@ -96,7 +98,7 @@ export const mem = {
 
 
 export const isIP = R.o(
-    F.not(R.equals(0)),
+    P.not(R.equals(0)),
     net.isIP,
 );
 
@@ -552,7 +554,7 @@ export const readTrimmedNonEmptyString = F.pipe(
     Dc.string,
     Dc.map(R.trim),
     Dc.refine(
-        F.not(R.equals('')) as F.Refinement<string, NonEmptyString>,
+        P.not(R.equals('')) as Rf.Refinement<string, NonEmptyString>,
         'NonEmptyString',
     ),
 );
