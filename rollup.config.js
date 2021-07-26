@@ -1,224 +1,93 @@
 // @ts-check
 
+import { defineConfig } from 'rollup';
 import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
 import json from '@rollup/plugin-json';
-import replace from '@rollup/plugin-replace';
 import { terser } from 'rollup-plugin-terser';
 import visualizer from 'rollup-plugin-visualizer';
 
 import * as R from 'ramda';
 
-// @ts-ignore
-import pkg from './package.json';
 
 
 
 
-
-const { OUT = './dist', BUILD = 'dev', NODE_ENV, EXTRA } = process.env;
+const { OUT = './dist' } = process.env;
 
 export const logs = R.tap(console.log);
 export const path = R.compose(R.replace(/\/\/+/g, '/'), R.join('/'));
 export const dist = R.compose(path, R.prepend(OUT), R.of, R.trim);
 export const list = R.compose(R.filter(Boolean), R.split(/[,|;]|\s+/g), R.trim);
 
-export const suffix = R.useWith(R.replace('.js'), [ R.concat('.'), R.identity ]);
-
-export const extendsBuiltin = R.compose(list, R.concat(`
+export const builtin = list(`
     | http | https | tls | net | crypto | stream | buffer | querystring |
     | util | os | events | url | fs | assert | vm | v8 | dns |
-`));
-
-const devOrProd = R.partialRight(R.ifElse, [ R.identity, R.empty ]);
-/** @type { <T> (v: T) => T } */
-// @ts-ignore
-const dev = devOrProd(R.always(BUILD !== 'prod'));
-/** @type { <T> (v: T) => T } */
-// @ts-ignore
-const prod = devOrProd(R.always(BUILD === 'prod'));
-/** @type { <T> (v: T) => T } */
-// @ts-ignore
-const extra = devOrProd(R.always(Boolean(EXTRA)));
-
-const common = {
-    format: 'cjs',
-    exports: 'named',
-    preferConst: true,
-    interop: false,
-};
+`);
 
 
 
-/**
- * @type { import('rollup').RollupOptions[] }
- */
-const config = [
-    {
+export default defineConfig({
 
-        input: dist('index.js'),
+    // @ts-ignore
+    input: dist('bin.js'),
 
-        external: extendsBuiltin(dev(`
-            | proxy-bind | buffer-pond | async-readable |
-            | ramda | ip | futoin-hkdf | memoizerific | node-fetch
-            | js-yaml | pino | command-line-args | @stableness/basic-auth |
+    external: builtin,
 
-            | rxjs
+    output: {
+        format: 'cjs',
+        exports: 'named',
+        preferConst: true,
+        interop: false,
+        file: dist('bin.cjs'),
+        banner: '#!/usr/bin/env node',
+    },
 
-            | fp-ts
-            | io-ts
-            | io-ts/Decoder
-        `)),
+    treeshake: {
+        moduleSideEffects: false,
+        propertyReadSideEffects: false,
+    },
 
-        output: [
-            // @ts-ignore
-            {
-                ...common,
-                file: pkg.main,
-            },
-            {
-                file: pkg.esm,
-                format: 'esm',
-            },
-        ],
+    onwarn (warning, warn) {
 
-        treeshake: {
-            moduleSideEffects: false,
-            propertyReadSideEffects: false,
-        },
+        const ignores = R.flip(R.includes)(list(`
+            THIS_IS_UNDEFINED
+            CIRCULAR_DEPENDENCY
+        `));
 
-        onwarn (warning, warn) {
-
-            const ignores = R.flip(R.includes)(list(`
-                THIS_IS_UNDEFINED
-                CIRCULAR_DEPENDENCY
-            `));
-
-            R.ifElse(
-                R.o(ignores, R.prop('code')),
-                R.F,
-                warn,
-            )(warning);
-
-        },
-
-        // @ts-ignore
-        plugins: prod([
-            resolve(),
-            commonjs({
-                include: [
-                    'node_modules/**'
-                ],
-                ignore: ['pino-pretty'],
-                sourceMap: false,
-            }),
-            json(),
-            visualizer({
-                filename: dist('stats.html'),
-            }),
-        ]).concat([
-            replace({
-                delimiters: [ '<%=', '=>' ],
-                preventAssignment : true,
-                VERSION: pkg.version,
-                NODE_ENV: NODE_ENV || 'production',
-            }),
-        ]),
+        R.ifElse(
+            R.o(ignores, R.prop('code')),
+            R.F,
+            warn,
+        )(warning);
 
     },
 
-    // @ts-ignore
-    dev({
+    plugins: [
+        resolve(),
+        commonjs({
+            include: [
+                'node_modules/**'
+            ],
+            ignore: ['pino-pretty'],
+            sourceMap: false,
+        }),
+        json(),
+        visualizer({
+            filename: dist('stats.html'),
+        }),
+        terser({
+            ecma: 2019,
+            toplevel: true,
+            compress: {
+                inline: false,
+                unsafe_arrows: false,
+                unsafe_methods: false,
+                keep_fnames: true,
+                keep_classnames: true,
+            },
+        }),
+    ],
 
-        input: dist('bin.js'),
-
-        output: {
-            ...common,
-            file: dist('bin.js'),
-        },
-
-    }),
-
-    // @ts-ignore
-    prod({
-
-        input: dist('bin.js'),
-
-        external: extendsBuiltin(''),
-
-        output: {
-            ...common,
-            file: dist('bin.cjs'),
-            banner: '#!/usr/bin/env node',
-        },
-
-        plugins: [
-            replace({
-                preventAssignment : true,
-                include: /bin\.js/,
-                'index.cjs': 'index.mjs',
-            }),
-            resolve(),
-            commonjs(),
-            terser({
-                ecma: 2019,
-                toplevel: true,
-                compress: {
-                    inline: false,
-                    unsafe_arrows: false,
-                    unsafe_methods: false,
-                    keep_fnames: true,
-                    keep_classnames: true,
-                },
-            }),
-        ],
-
-    }),
-
-    // @ts-ignore
-    extra({
-
-        input: dist('extra.js'),
-
-        external: extendsBuiltin(`
-            | proxy-bind | buffer-pond | async-readable |
-            | ramda | ip | futoin-hkdf | memoizerific | node-fetch
-            | js-yaml | pino | command-line-args | @stableness/basic-auth |
-
-            | rxjs
-
-            | fp-ts
-            | io-ts
-            | io-ts/Decoder
-        `),
-
-        // @ts-ignore
-        output: {
-            ...common,
-            file: dist('extra.cjs'),
-        },
-
-        onwarn (warning, warn) {
-            R.ifElse(
-                R.propSatisfies(R.flip(R.includes)(list(`
-                    CIRCULAR_DEPENDENCY
-                    UNUSED_EXTERNAL_IMPORT
-                `)), 'code'),
-                R.F,
-                warn,
-            )(warning);
-        },
-
-        treeshake: {
-            moduleSideEffects: false,
-            propertyReadSideEffects: false,
-        },
-
-    }),
-
-];
-
-
-
-export default R.reject(R.isEmpty, config);
+});
 
