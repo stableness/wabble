@@ -47,6 +47,7 @@ jobs:
         run: |-
           sh ci.sh ./ prerelease
           npm run build-commonjs
+          mv dist/bin.js dist/bin.cjs
 
 
 
