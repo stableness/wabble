@@ -6,9 +6,17 @@ set -eu
 
 build()
 {
-    npm run -s build -- --environment EXTRA
-    echo '#!/usr/bin/env node' > dist/bin.cjs
-    cat dist/bin.js >> dist/bin.cjs
+
+    VER=$(jq -r '.version' package.json)
+    PKG=package.json TMP=lite.json MODEL=dist/model.js
+
+    npm run -s build-commonjs
+
+    sed -i "s#<%=VERSION=>#${VER}#g" ${MODEL}
+    sed -i "s#<%=NODE_ENV=>#${NODE_ENV:-production}#g" ${MODEL}
+
+    jq 'del(.type)' ${PKG} > ${TMP} && mv ${TMP} ${PKG}
+
 }
 
 
@@ -21,7 +29,7 @@ release()
 
     echo ::set-output name=ver::${VER}
 
-    npm run -s bundle && rm dist/index.cjs dist/extra.cjs
+    npm run -s bundle
 
     npm shrinkwrap && mv npm-shrinkwrap.json dist/shrinkwrap.json
 
