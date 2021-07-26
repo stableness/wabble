@@ -16,9 +16,9 @@ export { establish } from './api.js';
 
 
 
-type Proxy = ReturnType<typeof httpProxy | typeof socks5Proxy>;
+type Proxies = ReturnType<typeof httpProxy | typeof socks5Proxy>;
 
-export type Hook = Rx.ObservedValueOf<ReturnType<Proxy>>['hook'];
+export type Hook = Rx.ObservedValueOf<ReturnType<Proxies>>['hook'];
 
 
 
