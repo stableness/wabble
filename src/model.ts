@@ -12,6 +12,7 @@ import {
     ioRef as Ref,
     predicate as P,
     function as F,
+    readonlyRecord as Rc,
     readonlyMap as M,
     readonlyArray as A,
     readonlyNonEmptyArray as RNEA,
@@ -37,6 +38,7 @@ import { genDNS, genDoH, genDoT } from './utils/resolver.js';
 
 
 
+const SILENT = 'silent';
 
 export const VERSION = '<%=VERSION=>' as string;
 
@@ -52,25 +54,10 @@ export const NODE_ENV = F.pipe(
 
 
 
-export const readLevel = R.converge(
-    R.defaultTo, [
-        R.ifElse(
-            R.propEq('NODE_ENV', 'production'),
-            R.always('error'),
-            R.always('debug'),
-        ),
-        R.o(
-            R.ifElse(
-                R.flip(R.includes)(R.append(
-                    'silent', Object.keys(pino.levels.values),
-                )),
-                R.identity,
-                R.always(undefined),
-            ),
-            R.prop('LOG_LEVEL'),
-        ),
-    ],
-) as u.Fn<Record<string, unknown>, string>;
+export const readLevel = u.genLevel(F.pipe(
+    Rc.keys(pino.levels.values),
+    A.append(SILENT),
+));
 
 
 
@@ -240,7 +227,7 @@ function _load (
     }
 
     if (quiet === true) {
-        logger.level = 'silent';
+        logger.level = SILENT;
     }
 
     construct(setting).subscribe({
