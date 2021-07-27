@@ -7,6 +7,7 @@ import * as R from 'ramda';
 import {
     either as E,
     option as O,
+    string as Str,
     taskEither as TE,
     ioRef as Ref,
     predicate as P,
@@ -39,12 +40,13 @@ import { genDNS, genDoH, genDoT } from './utils/resolver.js';
 
 export const VERSION = '<%=VERSION=>' as string;
 
-// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-process.env.NODE_ENV = R.ifElse(
-    R.startsWith('<%='),
-    R.always('dev'),
-    R.identity,
-)(process.env.NODE_ENV ?? '<%=NODE_ENV=>');
+process.env.NODE_ENV = F.pipe(
+    process.env.NODE_ENV ?? '<%=NODE_ENV=>',
+    R.when(
+        Str.startsWith('<%='),
+        F.constant('dev'),
+    ),
+);
 
 
 
