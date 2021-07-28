@@ -40,7 +40,7 @@ import { genDNS, genDoH, genDoT } from './utils/resolver.js';
 
 export const VERSION = '<%=VERSION=>' as string;
 
-process.env.NODE_ENV = F.pipe(
+export const NODE_ENV = F.pipe(
     process.env.NODE_ENV ?? '<%=NODE_ENV=>',
     R.when(
         Str.startsWith('<%='),
@@ -79,7 +79,7 @@ export const readLevel = R.converge(
 export const logger = pino({
     base: null,
     prettyPrint: false,
-    level: readLevel(process.env),
+    level: readLevel({ ...process.env, NODE_ENV }),
 });
 
 export const logLevel = {
@@ -228,15 +228,15 @@ const dnsCache: HashMapRef = u.run(Ref.newIORef(M.empty));
 export const load = R.once(_load);
 
 function _load (
-        { version, setting, logging: level = '', quiet = false }: Options,
+        { version, setting, logging: LOG_LEVEL = '', quiet = false }: Options,
 ) {
 
     if (version === true) {
         return console.info(VERSION);
     }
 
-    if (level.length > 0) {
-        logger.level = readLevel({ ...process.env, LOG_LEVEL: level });
+    if (LOG_LEVEL.length > 0) {
+        logger.level = readLevel({ ...process.env, LOG_LEVEL, NODE_ENV });
     }
 
     if (quiet === true) {
