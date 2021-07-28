@@ -675,6 +675,28 @@ export const headerJoin = R.o(
 
 
 
+export const genLevel: CurryT<[
+
+    ReadonlyArray<string>,
+    Record<string, string | undefined>,
+    string,
+
+]> = levels => ({ NODE_ENV, LOG_LEVEL }) => {
+
+    const defaulted = NODE_ENV === 'production' ? 'error' : 'debug';
+
+    if (LOG_LEVEL == null) {
+        return defaulted;
+    }
+
+    return levels.includes(LOG_LEVEL) ? LOG_LEVEL : defaulted;
+
+};
+
+
+
+
+
 export function incrementLE (buffer: Uint8Array) {
 
     for (let i = 0; i < buffer.length; i++) {

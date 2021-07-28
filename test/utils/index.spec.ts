@@ -56,6 +56,7 @@ import {
     basicInfo,
     groupBy,
     ErrorWithCode,
+    genLevel,
 
 } from '../../src/utils/index.js';
 
@@ -384,6 +385,47 @@ describe('incrementLE', () => {
     });
 
     const add = R.tap(incrementLE);
+
+});
+
+
+
+
+
+describe('genLevel', () => {
+
+    const  __ = void 0;
+    const ___ = void 0;
+
+    const PRO = 'production';
+    const DEV = 'dev';
+
+    const De = 'debug';
+    const Er = 'error';
+    const In = 'info';
+    const Wa = 'waaaaaaaat';
+
+    const read = genLevel([ De, Er, In ]);
+
+    test.each([
+
+        [ PRO, De, De ],
+        [ PRO, Er, Er ],
+
+        [ DEV, In, In ],
+
+        [ PRO, Wa, Er ],
+        [ DEV, Wa, De ],
+
+        [ ___, __, De ],
+        [ ___, In, In ],
+        [ DEV, __, De ],
+
+    ])('%s | %s = %s', (NODE_ENV, LOG_LEVEL, result) => {
+
+        expect(read({ NODE_ENV, LOG_LEVEL })).toBe(result);
+
+    });
 
 });
 
