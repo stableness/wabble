@@ -229,15 +229,6 @@ export class ErrorWithCode extends Error {
 
 
 
-/**
- * @deprecated use chunksOf
- */
-export function chop (max: number, chunk: Uint8Array) {
-
-    return chunksOf (max) (chunk);
-
-}
-
 export const chunksOf = (at: number) => (chunk: Uint8Array) => {
 
     return A.unfold(chunk, F.flow(

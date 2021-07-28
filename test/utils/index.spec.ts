@@ -22,7 +22,7 @@ import {
 
     mem,
     noop,
-    chop,
+    chunksOf,
     numberToUInt16BE,
     EVP_BytesToKey,
     portNormalize,
@@ -391,7 +391,7 @@ describe('incrementLE', () => {
 
 
 
-describe('chop', () => {
+describe('chunksOf', () => {
 
     test.each([
 
@@ -406,8 +406,7 @@ describe('chop', () => {
 
         expect(
 
-            // eslint-disable-next-line deprecation/deprecation
-            chop(max, new Uint8Array(chunk).fill(0)),
+            chunksOf (max) (new Uint8Array(chunk).fill(0)),
 
         ).toEqual(
 
