@@ -37,17 +37,22 @@ jobs:
       - run: NO_SKIP=on npm run test -- --coverage --verbose
         timeout-minutes: 2
 
-      - run: npm run build
+      - name: Smoking build
+        run: |-
+          sh ci.sh ./ prerelease
+          npm run build
+          npm pack --dry-run
 
-      - run: ls -lh dist/{index,bin}*
-
-      - run: npm run bundle
+      - name: Smoking bundle
+        run: |-
+          sh ci.sh ./ prerelease
+          npm run bundle
 
       - name: Check executable
         run: |-
           [[ "$(node dist/bin.cjs -v)" == "$(jq -r '.version' package.json)" ]] && echo y
 
-      - run: ls -lh dist/{index,bin}*
+      - run: ls -lh dist/bin.cjs
 
       - uses: codecov/codecov-action@v1
         timeout-minutes: 1
