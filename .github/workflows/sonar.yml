@@ -29,13 +29,13 @@ jobs:
         with:
           node-version: 14.x
 
-      - run: npm install --no-save
+      - run: npm install && npm install --no-save jest-sonar
         env:
           ADBLOCK: true
           DISABLE_OPENCOLLECTIVE: true
           HUSKY_SKIP_INSTALL: true
 
-      - run: npm run test -- --coverage
+      - run: npm run test -- --coverage --reporters=jest-sonar
 
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@master
