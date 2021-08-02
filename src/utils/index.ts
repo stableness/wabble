@@ -27,7 +27,7 @@ import {
     function as F,
     chainRec as CR,
     readonlyArray as A,
-    readonlyNonEmptyArray as NEA,
+    readonlyNonEmptyArray as NA,
 } from 'fp-ts';
 
 import * as Dc from 'io-ts/lib/Decoder.js';
@@ -428,7 +428,7 @@ export const hash = run(function () {
 export function EVP_BytesToKey (password: string, keySize: number) {
 
     const sample = F.flow(
-        NEA.of as Fn<Buffer, [ Buffer ]>,
+        NA.of as Fn<Buffer, [ Buffer ]>,
         A.append(Buffer.from(password)),
         Buffer.concat,
         hash.md5,
@@ -438,7 +438,7 @@ export function EVP_BytesToKey (password: string, keySize: number) {
 
     const init = {
         len: head.length,
-        acc: NEA.of(head),
+        acc: NA.of(head),
     };
 
     return CR.tailRec(init, ({ len, acc }) => {
@@ -447,7 +447,7 @@ export function EVP_BytesToKey (password: string, keySize: number) {
             return E.right(Buffer.concat(acc, keySize));
         }
 
-        const chunk = sample(NEA.last(acc));
+        const chunk = sample(NA.last(acc));
 
         return E.left({
             len: len + chunk.length,
@@ -620,7 +620,7 @@ export const basicInfo = run(function () {
 
 export const decoderNonEmptyArrayOf = F.flow(
     Dc.array,
-    Dc.map(NEA.fromArray),
+    Dc.map(NA.fromArray),
     Dc.refine(O.isSome, 'NonEmptyArray'),
     Dc.map(R.prop('value')),
 );

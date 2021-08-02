@@ -2,7 +2,7 @@ import { URL } from 'url';
 
 import type {
     option as O,
-    readonlyNonEmptyArray as RNEA,
+    readonlyNonEmptyArray as NA,
 } from 'fp-ts';
 
 import * as SS from './settings/utils/shadowsocks.js';
@@ -152,7 +152,7 @@ export interface NSResolver {
 
 export interface Config {
 
-    services: RNEA.ReadonlyNonEmptyArray<Service>;
+    services: NA.ReadonlyNonEmptyArray<Service>;
 
     resolver: {
         ttl: O.Option<{
@@ -160,7 +160,7 @@ export interface Config {
             max: number;
             calc: Fn<number>;
         }>;
-        upstream: O.Option<RNEA.ReadonlyNonEmptyArray<NSResolver>>;
+        upstream: O.Option<NA.ReadonlyNonEmptyArray<NSResolver>>;
         timeout: number;
     };
 

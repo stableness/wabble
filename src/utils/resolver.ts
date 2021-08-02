@@ -4,7 +4,7 @@ import {
     either as E,
     taskEither as TE,
     function as F,
-    readonlyNonEmptyArray as RNEA,
+    readonlyNonEmptyArray as NA,
 } from 'fp-ts';
 
 import { run, tryCatchToError } from './index.js';
@@ -51,7 +51,7 @@ export function genDoH (endpoint: string, path = '@stableness/dohdec') {
         }),
 
         TE.chain(({ answers }) => F.pipe(
-            RNEA.fromArray(answers),
+            NA.fromArray(answers),
             TE.fromOption(() => new Error('empty result')),
         )),
 
@@ -103,7 +103,7 @@ export function genDoT (conn: Conn, path = '@stableness/dohdec') {
         }),
 
         TE.chain(({ answers }) => F.pipe(
-            RNEA.fromArray(answers),
+            NA.fromArray(answers),
             TE.fromOption(() => new Error('empty result')),
         )),
 
@@ -123,7 +123,7 @@ export function genDNS (servers: string | readonly string[]) {
 
     const setServers = F.pipe(
 
-        RNEA.fromReadonlyArray(arr),
+        NA.fromReadonlyArray(arr),
         E.fromOption(() => new Error('empty resolver')),
         E.chain(list => E.tryCatch(() => {
 
@@ -152,7 +152,7 @@ export const resolve4 = (name: string) => (resolver: pDNS.Resolver) => F.pipe(
     }),
 
     TE.chain(F.flow(
-        RNEA.fromArray,
+        NA.fromArray,
         TE.fromOption(() => new Error('empty result')),
     )),
 

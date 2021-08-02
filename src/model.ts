@@ -15,7 +15,7 @@ import {
     readonlyRecord as Rc,
     readonlyMap as M,
     readonlyArray as A,
-    readonlyNonEmptyArray as RNEA,
+    readonlyNonEmptyArray as NA,
 } from 'fp-ts';
 
 import * as Rx from 'rxjs';
@@ -192,7 +192,7 @@ const resolver$ = config$.pipe(
     Rx.map(({ ttl, upstream, timeout }) => {
 
         const trim = O.chain(
-            <T> (arr: readonly T[] = []) => RNEA.fromReadonlyArray(arr),
+            <T> (arr: readonly T[] = []) => NA.fromReadonlyArray(arr),
         );
 
         const doh = trim(O.map (R.prop('https')) (upstream));
@@ -259,7 +259,7 @@ const runner$ = services$.pipe(
         console.info('LOG_LEVEL in [%s]', logger.level);
     }),
 
-    u.rxTap(RNEA.map(({ host, port, protocol }) => {
+    u.rxTap(NA.map(({ host, port, protocol }) => {
         console.info('listening on [%s:%d] by [%s]', host, port, protocol);
     })),
 
