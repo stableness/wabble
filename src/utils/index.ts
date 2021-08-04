@@ -268,7 +268,7 @@ export function* genLooping <T> (array: ArrayLike<T>) {
         yield* Array.from(array);
     }
 
-    return undefined;
+    return Undefined;
 
 }
 
