@@ -49,6 +49,7 @@ import {
     writeToTaskEither,
     timeout,
     str2arr,
+    toByteArray,
     readFile,
     readFileInStringOf,
     collectAsyncIterable,
@@ -613,6 +614,33 @@ describe('str2arr', () => {
         `);
 
         expect(list).toStrictEqual([ 'foo', 'bar' ]);
+
+    });
+
+});
+
+
+
+
+
+describe('toByteArray', () => {
+
+    const raw = R.range(0, 3);
+    const arr = Uint8Array.from(raw);
+
+    test('from array', () => {
+
+        expect(toByteArray(raw)).toStrictEqual(arr);
+
+    });
+
+    test('from generator', () => {
+
+        const gen = function* () {
+            yield* raw;
+        };
+
+        expect(toByteArray(gen())).toStrictEqual(arr);
 
     });
 
