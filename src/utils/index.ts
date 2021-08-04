@@ -24,6 +24,7 @@ import {
     taskEither as TE,
     option as O,
     string as Str,
+    state as S,
     predicate as P,
     refinement as Rf,
     function as F,
@@ -714,6 +715,21 @@ export function incrementLE (buffer: Uint8Array) {
     }
 
 }
+
+export const incrementLE2 = F.flow(
+    R.unary(Array.from) as Fn<Uint8Array, ReadonlyArray<number>>,
+    S.traverseArray<number, boolean, number>(n => carry => {
+
+        const next = carry ? F.increment(n) : n;
+        const _carry = next > 0xFF;
+        const _next = _carry ? 0x00 : next;
+
+        return [ _next, _carry ];
+
+    }),
+    S.evaluate(true),
+    toByteArray,
+);
 
 
 
