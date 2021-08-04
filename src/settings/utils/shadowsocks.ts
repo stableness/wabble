@@ -1,6 +1,6 @@
 import * as R from 'ramda';
 
-import { EVP_BytesToKey, Fn } from '../../utils/index.js';
+import { EVP_BytesToKey, Fn, Undefined } from '../../utils/index.js';
 
 
 
@@ -131,7 +131,7 @@ export function parse (obj: Record<string, unknown>) {
 
     }
 
-    return undefined;
+    return Undefined;
 
 }
 
