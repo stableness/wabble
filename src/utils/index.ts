@@ -11,6 +11,8 @@ import fetch from 'node-fetch';
 
 import { asyncReadable } from 'async-readable';
 
+import { bind } from 'proxy-bind';
+
 import memo from 'memoizerific';
 
 import PKG_ip from 'ip';
@@ -532,6 +534,12 @@ export const isBlockedIP: Fn<string, boolean> = R.either(
 
 
 export const str2arr = R.o(R.split(/\s+/), R.trim);
+
+
+
+
+
+export const toByteArray = R.unary(bind(Uint8Array).from);
 
 
 
