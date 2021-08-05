@@ -9,6 +9,7 @@ import {
     state as S,
     readonlyArray as A,
     taskEither as TE,
+    io as IO,
     ioEither as IoE,
     function as F,
 } from 'fp-ts';
@@ -139,22 +140,28 @@ export function EncryptAEAD (
             A.size as never as u.Fn<Uint8Array, number>,
             u.numberToUInt16BE,
         )),
-        A.chain(genAEADEncrypt(algorithm, subKey, nonceSize, tagSize)),
+        A.map(genAEADEncrypt(algorithm, subKey, nonceSize, tagSize)),
     );
 
     const init = R.tap((readable: Transform) => {
-        readable.push(salt);
-        readable.push(Buffer.concat(pack(head)));
+
+        readable.push(F.pipe(
+            pack(head),
+            A.prepend(salt),
+            Buffer.concat,
+        ));
+
     });
 
     return init(new Transform({
 
         transform (chunk: Uint8Array, _enc: string, cb: TransformCallback) {
 
-            cb(u.Undefined, F.pipe(
+            u.run(F.pipe(
                 chop(chunk),
                 A.chain(pack),
-                Buffer.concat,
+                IO.traverseArray(data => () => this.push(data)),
+                IO.apSecond(cb),
             ));
 
         },
@@ -185,11 +192,11 @@ function genAEADEncrypt (
 
         u.incrementLE(nonce);
 
-        return [
+        return Buffer.concat([
             cipher.update(chunk),
             cipher.final(),
             cipher.getAuthTag(),
-        ] as const;
+        ]);
 
     };
 
