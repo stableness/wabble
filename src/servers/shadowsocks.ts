@@ -9,6 +9,7 @@ import {
     state as S,
     readonlyArray as A,
     taskEither as TE,
+    ioEither as IoE,
     function as F,
 } from 'fp-ts';
 
@@ -307,64 +308,45 @@ export function DecryptStream (
         ivLength: number,
 ) {
 
-    type State = ReturnType<typeof read>;
+    type State = IoE.IOEither<Uint8Array, crypto.Decipher>;
 
-    const { read, write } = u.run(Ref.newIORef({
-        remain: Uint8Array.of(),
-        decipher: u.Undefined as crypto.Decipher | undefined,
-    }));
-
-    const mixin = (chunk: Uint8Array) => (state: State) => {
-
-        const { decipher, remain: prev } = state;
-
-        const remain = prev.length > 0
-            ? Buffer.concat([ prev, chunk ])
-            : chunk
-        ;
-
-        if (decipher || remain.length < ivLength) {
-            return { decipher, remain };
-        }
-
-        return {
-
-            reset: remain.length > ivLength,
-
-            remain: remain.subarray(ivLength),
-
-            decipher: crypto.createDecipheriv(
-                algorithm, key, remain.subarray(0, ivLength),
-            ),
-
-        };
-
-    };
+    const ref = u.run(Ref.newIORef<State>(IoE.left(Uint8Array.of())));
 
     return new Transform({
 
         transform (chunk: Uint8Array, _enc: string, cb: TransformCallback) {
 
-            const { decipher, remain, reset } = mixin (chunk) (read());
+            u.run(F.pipe(
+                ref.read(),
+                IoE.mapLeft(data => Buffer.concat([ data, chunk ])),
+                IoE.swap,
+                IoE.chainFirst(data => {
 
-            if (decipher == null) {
+                    if (data.length < ivLength) {
+                        return IoE.rightIO(ref.write(IoE.left(data)));
+                    }
 
-                u.run(write({ decipher, remain }));
+                    const decipher = crypto.createDecipheriv(
+                        algorithm, key, data.subarray(0, ivLength),
+                    );
 
-            } else {
+                    const remain = data.subarray(ivLength);
 
-                this.push(decipher.update(remain));
+                    return F.pipe(
+                        IoE.rightIO(ref.write(IoE.right(decipher))),
+                        IoE.apFirst(
+                            IoE.rightIO(() => {
+                                cb(u.Undefined, decipher.update(remain));
+                            }),
+                        ),
+                    );
 
-                if (reset === true) {
-                    u.run(write({
-                        decipher,
-                        remain: Uint8Array.of(),
-                    }));
-                }
-
-            }
-
-            cb();
+                }),
+                IoE.swap,
+                IoE.chainFirst(decipher => IoE.rightIO(() => {
+                    cb(u.Undefined, decipher.update(chunk));
+                })),
+            ));
 
         },
 
