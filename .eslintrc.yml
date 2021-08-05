@@ -93,6 +93,10 @@ rules:
 
   deprecation/deprecation: error
 
+  import/extensions:
+    - error
+    - always
+
   space-before-function-paren: 'off'
   '@typescript-eslint/space-before-function-paren':
     - error
