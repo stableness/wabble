@@ -25,7 +25,7 @@ import {
     Result,
     temp,
     TE_ES,
-} from './http.spec';
+} from './http.spec.js';
 
 
 
