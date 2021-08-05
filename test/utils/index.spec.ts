@@ -62,7 +62,7 @@ import {
 
 import {
     paths,
-} from '../__helpers__';
+} from '../__helpers__/index.js';
 
 
 

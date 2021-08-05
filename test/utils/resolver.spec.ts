@@ -20,7 +20,7 @@ import {
 
 import {
     paths,
-} from '../__helpers__';
+} from '../__helpers__/index.js';
 
 import * as u from '../../src/utils/index.js';
 
