@@ -179,9 +179,11 @@ function genAEADEncrypt (
         authTagLength: number,
 ) {
 
-    const nonce = new Uint8Array(nonceSize);
+    const ref = u.run(Ref.newIORef(new Uint8Array(nonceSize)));
 
     return function (chunk: Uint8Array) {
+
+        const nonce = ref.read();
 
         const cipher = crypto.createCipheriv(
             algorithm as crypto.CipherGCMTypes,
@@ -190,7 +192,7 @@ function genAEADEncrypt (
             { authTagLength },
         );
 
-        u.incrementLE(nonce);
+        u.run(ref.write(u.incrementLE2(nonce)));
 
         return Buffer.concat([
             cipher.update(chunk),
@@ -255,9 +257,12 @@ function genAEADDecrypt (
 ) {
 
     const subKey = u.HKDF_SHA1(key, salt, keySize);
-    const nonce = new Uint8Array(nonceSize);
+
+    const ref = u.run(Ref.newIORef(new Uint8Array(nonceSize)));
 
     return function ([ data, tag ]: [ Uint8Array, Uint8Array ]) {
+
+        const nonce = ref.read();
 
         const decipher = crypto.createDecipheriv(
             algorithm as crypto.CipherCCMTypes,
@@ -268,7 +273,7 @@ function genAEADDecrypt (
 
         decipher.setAuthTag(tag);
 
-        u.incrementLE(nonce);
+        u.run(ref.write(u.incrementLE2(nonce)));
 
         return Buffer.concat([ decipher.update(data), decipher.final() ]);
 
