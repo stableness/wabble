@@ -31,6 +31,7 @@ import {
     headerJoin,
     socks5Handshake,
     incrementLE,
+    incrementLE2,
     rules,
     HKDF_SHA1,
     Fn,
@@ -386,6 +387,23 @@ describe('incrementLE', () => {
     });
 
     const add = R.tap(incrementLE);
+
+});
+
+describe('incrementLE2', () => {
+
+    test.each([
+
+        [ [ 0x01 ], [ 0x02 ] ],
+        [ [ 0xFF ], [ 0x00 ] ],
+        [ [ 0x01, 0x00 ], [ 0x02, 0x00 ] ],
+        [ [ 0xFF, 0x00 ], [ 0x00, 0x01 ] ],
+        [ [ 0xFF, 0xFF ], [ 0x00, 0x00 ] ],
+        [ [ 0xFF, 0xFF, 0x01, 0xFF ], [ 0x00, 0x00, 0x02, 0xFF ] ],
+
+    ])('%p', (before, after) => {
+        expect(incrementLE2(toByteArray(before))).toEqual(toByteArray(after));
+    });
 
 });
 
