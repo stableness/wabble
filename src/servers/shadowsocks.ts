@@ -177,16 +177,14 @@ function genAEADEncrypt (
 
     return function (chunk: Uint8Array) {
 
-        const nonce = ref.read();
-
         const cipher = crypto.createCipheriv(
             algorithm as crypto.CipherGCMTypes,
             subKey,
-            nonce,
+            ref.read(),
             { authTagLength },
         );
 
-        u.run(ref.write(u.incrementLE2(nonce)));
+        u.run(ref.modify(u.incrementLE2));
 
         return Buffer.concat([
             cipher.update(chunk),
@@ -256,18 +254,16 @@ function genAEADDecrypt (
 
     return function ([ data, tag ]: [ Uint8Array, Uint8Array ]) {
 
-        const nonce = ref.read();
-
         const decipher = crypto.createDecipheriv(
             algorithm as crypto.CipherCCMTypes,
             subKey,
-            nonce,
+            ref.read(),
             { authTagLength },
         );
 
         decipher.setAuthTag(tag);
 
-        u.run(ref.write(u.incrementLE2(nonce)));
+        u.run(ref.modify(u.incrementLE2));
 
         return Buffer.concat([ decipher.update(data), decipher.final() ]);
 
