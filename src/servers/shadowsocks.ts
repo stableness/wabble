@@ -96,7 +96,7 @@ export function cryptoPairs (server: ShadowSocks, head: Uint8Array) {
 
     }
 
-    if (cipher.type === 'AEAD' as string) {
+    if (cipher.type === 'AEAD') {
 
         const { algorithm, keySize, nonceSize, tagSize, saltSize } = cipher;
 

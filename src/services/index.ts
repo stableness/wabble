@@ -41,7 +41,7 @@ export function box (service: Service) {
         return httpProxy(service);
     }
 
-    if (protocol === 'socks5' as string) {
+    if (protocol === 'socks5') {
         return socks5Proxy(service);
     }
 
