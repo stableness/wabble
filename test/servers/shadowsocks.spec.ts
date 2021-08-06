@@ -1,4 +1,4 @@
-import { PassThrough, Readable } from 'stream';
+import { PassThrough, Readable, Transform } from 'stream';
 
 import {
     either as E,
@@ -103,10 +103,25 @@ const through = (head: Uint8Array) => (tail: Uint8Array) => F.flow(
 
         });
 
+        const chopper = new Transform({
+
+            transform (chunk, _enc, cb) {
+
+                const [ one, two ] = u.splitAt2(chunk);
+
+                this.push(one);
+                this.push(two);
+
+                cb();
+
+            },
+
+        });
+
         try {
 
             await Promise.race([
-                u.pump(source, enc, dec, sink),
+                u.pump(source, enc, chopper, dec, sink),
                 u.timeout(400),
             ]);
 
