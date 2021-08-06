@@ -166,10 +166,6 @@ rules:
   '@typescript-eslint/strict-boolean-expressions':
     - error
 
-  '@typescript-eslint/no-unnecessary-condition':
-    - error
-    - allowConstantLoopConditions: true
-
   no-await-in-loop:
     - error
 
