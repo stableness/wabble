@@ -315,22 +315,28 @@ export function DecryptStream (
         ivLength: number,
 ) {
 
-    type State = IoE.IOEither<Uint8Array, crypto.Decipher>;
+    type State = E.Either<Uint8Array, crypto.Decipher>;
 
-    const ref = u.run(Ref.newIORef<State>(IoE.left(Uint8Array.of())));
+    const ref = u.run(Ref.newIORef<State>(E.left(Uint8Array.of())));
 
     return new Transform({
 
         transform (chunk: Uint8Array, _enc: string, cb: TransformCallback) {
 
+            const push = IoE.tryCatchK(R.unary(F.flip(cb)), E.toError);
+
             u.run(F.pipe(
-                ref.read(),
+                ref.read,
+                IoE.chainFirstIOK(decipher => push(decipher.update(chunk))),
                 IoE.mapLeft(data => Buffer.concat([ data, chunk ])),
                 IoE.swap,
-                IoE.chainFirst(data => {
+                IoE.chainFirstIOK(data => {
 
                     if (data.length < ivLength) {
-                        return IoE.rightIO(ref.write(IoE.left(data)));
+                        return F.pipe(
+                            ref.write(E.left(data)),
+                            IO.apFirst(cb),
+                        );
                     }
 
                     const decipher = crypto.createDecipheriv(
@@ -340,19 +346,11 @@ export function DecryptStream (
                     const remain = data.subarray(ivLength);
 
                     return F.pipe(
-                        IoE.rightIO(ref.write(IoE.right(decipher))),
-                        IoE.apFirst(
-                            IoE.rightIO(() => {
-                                cb(u.Undefined, decipher.update(remain));
-                            }),
-                        ),
+                        ref.write(E.right(decipher)),
+                        IO.apFirst(push(decipher.update(remain))),
                     );
 
                 }),
-                IoE.swap,
-                IoE.chainFirst(decipher => IoE.rightIO(() => {
-                    cb(u.Undefined, decipher.update(chunk));
-                })),
             ));
 
         },
