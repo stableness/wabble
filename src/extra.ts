@@ -6,7 +6,6 @@ export { netConnectTo } from './servers/index.js';
 
 export {
     cryptoPairs,
-    cryptoPairsC,
     cryptoPairsCE,
 } from './servers/shadowsocks.js';
 

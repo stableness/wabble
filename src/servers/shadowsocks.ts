@@ -68,16 +68,10 @@ export const chain: u.Fn<ShadowSocks, RTE_O_E_V> = remote => opts => {
 
 
 
-export const cryptoPairsC =
+export const cryptoPairsCE =
     (server: ShadowSocks) =>
         (head: Uint8Array) =>
-            cryptoPairs(server, head)
-;
-
-export const cryptoPairsCE = F.flow(
-    cryptoPairsC,
-    E.fromNullableK(new Error('Has no crypto to perform')),
-);
+            E.tryCatchK (cryptoPairs, E.toError) (server, head);
 
 export function cryptoPairs (server: ShadowSocks, head: Uint8Array) {
 
@@ -114,7 +108,7 @@ export function cryptoPairs (server: ShadowSocks, head: Uint8Array) {
 
     }
 
-    return u.Undefined;
+    throw new Error(`Non supported cipher [${ cipher }]`);
 
 }
 
