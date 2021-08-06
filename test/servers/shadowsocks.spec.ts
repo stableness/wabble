@@ -3,6 +3,7 @@ import { PassThrough, Readable, Transform } from 'stream';
 import {
     either as E,
     taskEither as TE,
+    io as IO,
     function as F,
 } from 'fp-ts';
 
@@ -62,13 +63,11 @@ describe('encrypt & decrypt', () => {
         'aes-256-gcm',
         'chacha20-poly1305',
 
-    ])('alg: %s', async (alg) => {
+    ])('alg: %s', alg => {
 
-        const info = { alg, key: 'foobar' };
+        const task = through (head, tail) ({ alg, key: 'foobar' });
 
-        const sink = await u.run(through (head) (tail) (info));
-
-        expect(sink).toStrictEqual(E.right(data));
+        return expect(task()).resolves.toStrictEqual(E.right(data));
 
     }, 500);
 
@@ -78,50 +77,33 @@ describe('encrypt & decrypt', () => {
 
 
 
-const through = (head: Uint8Array) => (tail: Uint8Array) => F.flow(
+const through = (head: Uint8Array, tail: Uint8Array) => F.flow(
+
     E.fromNullableK (new Error('parsing wrong')) (parse),
+
     E.map(R.mergeLeft({
         protocol: 'ss' as const,
         host: 'localhost',
         port: 0,
         tags: new Set<string>(),
     })),
+
     E.map(cryptoPairsCE),
+
     E.ap(E.of(head)),
+
     E.flatten,
+
     TE.fromEither,
+
     TE.chain(({ enc, dec }) => u.tryCatchToError(async () => {
 
         const sink = new PassThrough();
 
-        const source = new Readable({
-
-            read () {
-                this.push(tail);
-                this.push(null);
-            },
-
-        });
-
-        const chopper = new Transform({
-
-            transform (chunk, _enc, cb) {
-
-                const [ one, two ] = u.splitAt2(chunk);
-
-                this.push(one);
-                this.push(two);
-
-                cb();
-
-            },
-
-        });
-
         try {
 
             await Promise.race([
-                u.pump(source, enc, chopper, dec, sink),
+                u.pump(genSource(tail), enc, genChopper(2), dec, sink),
                 u.timeout(400),
             ]);
 
@@ -130,6 +112,35 @@ const through = (head: Uint8Array) => (tail: Uint8Array) => F.flow(
         return u.collectAsyncIterable<Uint8Array>(sink);
 
     })),
+
     TE.map(Buffer.concat),
+
 );
+
+
+
+const genSource = (data: Uint8Array) => new Readable({
+
+    read () {
+        this.push(data);
+        this.push(null);
+    },
+
+});
+
+
+
+const genChopper = (n: number) => new Transform({
+
+    transform (chunk, _enc, cb) {
+
+        u.run(F.pipe(
+            u.chunksOf (n) (chunk),
+            IO.traverseArray(data => () => this.push(data)),
+            IO.apSecond(cb),
+        ));
+
+    },
+
+});
 
