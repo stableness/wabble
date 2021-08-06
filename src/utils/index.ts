@@ -706,16 +706,6 @@ export const genLevel: CurryT<[
 
 
 
-export function incrementLE (buffer: Uint8Array) {
-
-    for (let i = 0; i < buffer.length; i++) {
-        if (buffer[i]++ < 255) {
-            break;
-        }
-    }
-
-}
-
 export const incrementLE2 = F.flow(
     R.unary(Array.from) as Fn<Uint8Array, ReadonlyArray<number>>,
     S.traverseArray<number, boolean, number>(n => carry => {

@@ -30,7 +30,6 @@ import {
     isBlockedIP,
     headerJoin,
     socks5Handshake,
-    incrementLE,
     incrementLE2,
     rules,
     HKDF_SHA1,
@@ -372,23 +371,6 @@ describe('basicInfo', () => {
 
 
 
-
-describe('incrementLE', () => {
-
-    test.each([
-
-        [ [ 0x01 ], [ 0x02 ] ],
-        [ [ 0xFF ], [ 0x00 ] ],
-        [ [ 0xFF, 0x00 ], [ 0x00, 0x01 ] ],
-        [ [ 0xFF, 0xFF ], [ 0x00, 0x00 ] ],
-
-    ])('%p', (before, after) => {
-        expect(add(Uint8Array.from(before))).toEqual(Uint8Array.from(after));
-    });
-
-    const add = R.tap(incrementLE);
-
-});
 
 describe('incrementLE2', () => {
 
