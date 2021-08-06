@@ -123,7 +123,7 @@ export function EncryptAEAD (
         nonceSize: number,
         tagSize: number,
         saltSize: number,
-        head = Uint8Array.of(),
+        head: Uint8Array,
 ) {
 
     const salt = crypto.randomBytes(saltSize);
@@ -283,7 +283,7 @@ export function EncryptStream (
         algorithm: Stream,
         key: Uint8Array,
         ivLength: number,
-        initBuffer = Uint8Array.of(),
+        initBuffer: Uint8Array,
 ) {
 
     const iv = crypto.randomBytes(ivLength);
