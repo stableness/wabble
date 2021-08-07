@@ -52,7 +52,14 @@ jobs:
         run: |-
           [[ "$(node dist/bin.cjs -v)" == "$(jq -r '.version' package.json)" ]] && echo y
 
-      - run: ls -lh dist/bin.cjs
+      - name: Misc
+        run: |-
+          ls -lh dist/bin.cjs
+          cat <<-EOF > codecov.yml
+          codecov:
+            notify:
+              after_n_builds: 3
+          EOF
 
       - uses: codecov/codecov-action@v2
         timeout-minutes: 1
