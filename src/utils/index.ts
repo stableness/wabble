@@ -177,25 +177,6 @@ export const rules = run(function () {
         ])),
     );
 
-    const DOH = (list: readonly string[]) => {
-
-        const map = R.pipe(
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-ignore
-            R.applySpec({
-                doh: R.filter(R.startsWith('DOH,')),
-                all: R.identity,
-            }),
-            R.map(R.map(R.replace('DOH,', ''))),
-            R.map(through),
-        );
-
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        return map(list) as Record<'doh' | 'all', Test>;
-
-    };
-
     const NOT = R.pipe(
         R.partition(R.startsWith('NOT,')),
         R.adjust(0, R.map(R.replace('NOT,', ''))) as typeof R.identity,
@@ -206,7 +187,7 @@ export const rules = run(function () {
         }),
     );
 
-    return { through, DOH, NOT };
+    return { through, NOT };
 
 });
 

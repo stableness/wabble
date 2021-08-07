@@ -290,22 +290,6 @@ describe('rules', () => {
 
     });
 
-    describe('DOH', () => {
-
-        const tests = rules.DOH([
-            'DOH,foo.com',
-            'bar.com',
-        ]);
-
-
-        expect(tests.all('foo.com')).toBe(true);
-        expect(tests.all('bar.com')).toBe(true);
-
-        expect(tests.doh('foo.com')).toBe(true);
-        expect(tests.doh('bar.com')).toBe(false);
-
-    });
-
     describe('NOT', () => {
 
         const tests = rules.NOT([
