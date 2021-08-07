@@ -141,8 +141,8 @@ const rejectList$ = config$.pipe(
 const rules$ = config$.pipe(
     Rx.pluck('rules'),
     Rx.map(R.evolve({
-        proxy: u.rules.DOH,
-        direct: u.rules.DOH,
+        proxy: u.rules.through,
+        direct: u.rules.through,
         reject: u.rules.NOT,
     })),
     Rx.delayWhen(R.always(Rx.combineLatest([ directList$, rejectList$ ]))),
@@ -155,8 +155,8 @@ const rules$ = config$.pipe(
             ),
         ),
         direct: R.both(
-            P.not(rules.proxy.all),
-            R.anyPass([ rules.direct.all, direct, u.isPrivateIP ]),
+            P.not(rules.proxy),
+            R.anyPass([ rules.direct, direct, u.isPrivateIP ]),
         ),
     })),
 );
