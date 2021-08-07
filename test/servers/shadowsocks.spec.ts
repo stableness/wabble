@@ -7,8 +7,6 @@ import {
     function as F,
 } from 'fp-ts';
 
-import * as R from 'ramda';
-
 import * as u from '../../src/utils/index.js';
 
 import type { ShadowSocks } from '../../src/config.js';
@@ -80,13 +78,6 @@ describe('encrypt & decrypt', () => {
 const through = (head: Uint8Array, tail: Uint8Array) => F.flow(
 
     E.fromNullableK (new Error('parsing wrong')) (parse),
-
-    E.map(R.mergeLeft({
-        protocol: 'ss' as const,
-        host: 'localhost',
-        port: 0,
-        tags: new Set<string>(),
-    })),
 
     E.map(cryptoPairsCE),
 
