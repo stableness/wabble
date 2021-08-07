@@ -305,7 +305,7 @@ export function EncryptStream (
 
 
 export function DecryptStream (
-        algorithm: Stream,
+        alg: Stream,
         key: Uint8Array,
         ivLength: number,
 ) {
@@ -334,11 +334,9 @@ export function DecryptStream (
                         );
                     }
 
-                    const decipher = crypto.createDecipheriv(
-                        algorithm, key, data.subarray(0, ivLength),
-                    );
+                    const [ iv, remain ] = u.split ({ at: ivLength }) (data);
 
-                    const remain = data.subarray(ivLength);
+                    const decipher = crypto.createDecipheriv(alg, key, iv);
 
                     return F.pipe(
                         ref.write(E.right(decipher)),
