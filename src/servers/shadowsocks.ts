@@ -14,6 +14,8 @@ import {
     function as F,
 } from 'fp-ts';
 
+import { curry2 } from 'fp-ts-std/Function.js';
+
 import { toTransform } from 'buffer-pond';
 
 import { logLevel } from '../model.js';
@@ -68,16 +70,18 @@ export const chain: u.Fn<ShadowSocks, RTE_O_E_V> = remote => opts => {
 
 
 
-export const cryptoPairsCE =
-    (server: ShadowSocks) =>
-        (head: Uint8Array) =>
-            E.tryCatchK (cryptoPairs, E.toError) (server, head);
+export const cryptoPairsE = E.tryCatchK(cryptoPairs, E.toError);
 
-export function cryptoPairs (server: ShadowSocks, head: Uint8Array) {
+export const cryptoPairsCE = curry2(cryptoPairsE);
+
+export function cryptoPairs (
+        info: Pick<ShadowSocks, 'key' | 'cipher'>,
+        head: Uint8Array,
+) {
 
     type RWS = NodeJS.ReadWriteStream;
 
-    const { key, cipher } = server;
+    const { key, cipher } = info;
 
     if (cipher.type === 'Stream') {
 
