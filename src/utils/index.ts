@@ -21,6 +21,7 @@ const { isPrivate, cidrSubnet, isEqual: eqIP } = PKG_ip;
 import {
     eq as Eq,
     either as E,
+    task as T,
     taskEither as TE,
     option as O,
     string as Str,
@@ -35,6 +36,7 @@ import {
 
 import * as stdStr from 'fp-ts-std/String.js';
 import * as stdA from 'fp-ts-std/ReadonlyArray.js';
+import * as stdE from 'fp-ts-std/Either.js';
 
 import * as Dc from 'io-ts/lib/Decoder.js';
 
@@ -333,17 +335,11 @@ export function catchKToError <A extends ReadonlyArray<unknown>, B>
 
 
 // :: TaskEither e a -> Promise a
-export async function unwrapTaskEither <E, A> (task: TE.TaskEither<E, A>) {
-
-    const result = await task();
-
-    if (E.isRight(result)) {
-        return result.right;
-    }
-
-    throw E.toError(result.left);
-
-}
+export const unwrapTaskEither = F.flow(
+    TE.mapLeft(E.toError),
+    T.map(stdE.unsafeUnwrap),
+    run,
+);
 
 
 
