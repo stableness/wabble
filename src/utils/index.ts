@@ -33,6 +33,9 @@ import {
     readonlyNonEmptyArray as NA,
 } from 'fp-ts';
 
+import * as stdStr from 'fp-ts-std/String.js';
+import * as stdA from 'fp-ts-std/ReadonlyArray.js';
+
 import * as Dc from 'io-ts/lib/Decoder.js';
 
 import { parse as parseBasicAuth } from '@stableness/basic-auth';
@@ -656,9 +659,9 @@ export const toBasicCredentials = R.memoizeWith(
 
 
 
-export const headerJoin = R.o(
-    R.flip(R.concat)('\r\n\r\n'),
-    R.join('\r\n'),
+export const headerJoin = F.flow(
+    stdA.join('\r\n'),
+    stdStr.append('\r\n\r\n'),
 );
 
 
