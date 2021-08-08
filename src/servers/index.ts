@@ -150,13 +150,13 @@ const from_DoH_DoT = (type: string) => (opts: Opts) => (query: Query) => {
             return updateCache (data) (ttl) (opts);
         }),
 
-        TE.chainFirst(({ data: ip }) => TE.fromIO(() => {
+        TE.chainFirstIOK(({ data: ip }) => () => {
 
             if (logLevel.on.trace) {
                 logger.child({ ip }).trace(type);
             }
 
-        })),
+        }),
 
         TE.map(R.prop('data')),
 
@@ -190,13 +190,13 @@ const fromDNS = (opts: Opts) => (query: DNS_query) => {
             return updateCache (address) (ttl) (opts);
         }),
 
-        TE.chainFirst(({ address: ip }) => TE.fromIO(() => {
+        TE.chainFirstIOK(({ address: ip }) => () => {
 
             if (logLevel.on.trace) {
                 logger.child({ ip }).trace('DNS');
             }
 
-        })),
+        }),
 
         TE.map(R.prop('address')),
 
