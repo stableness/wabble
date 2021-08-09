@@ -37,6 +37,8 @@ import {
 import * as stdStr from 'fp-ts-std/String.js';
 import * as stdA from 'fp-ts-std/ReadonlyArray.js';
 import * as stdE from 'fp-ts-std/Either.js';
+import * as stdB from 'fp-ts-std/Boolean.js';
+import * as stdF from 'fp-ts-std/Function.js';
 
 import * as Dc from 'io-ts/lib/Decoder.js';
 
@@ -499,16 +501,24 @@ export const isPrivateIP = R.both(
 
 
 
-export const isBlockedIP: Fn<string, boolean> = R.either(
-    R.equals('0.0.0.0'),
-    R.both(
-        isIP,
-        R.anyPass([
-            (ip: string) => eqIP(ip, '0.0.0.0'),
-            (ip: string) => eqIP(ip, '0:0:0:0:0:0:0:0'),
+
+export const isBlockedIP = run(function () {
+
+    const eqIPc = stdF.curry2(eqIP);
+    const eqStr = stdF.curry2(Str.Eq.equals);
+
+    return stdB.anyPass([
+        eqStr('0.0.0.0'),
+        stdB.allPass([
+            isIP,
+            stdB.anyPass([
+                eqIPc('0.0.0.0'),
+                eqIPc('0:0:0:0:0:0:0:0'),
+            ]),
         ]),
-    ),
-);
+    ]);
+
+});
 
 
 
