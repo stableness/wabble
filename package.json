@@ -44,6 +44,8 @@
     "ip": "^1.1.5",
     "js-yaml": "^4.0.0",
     "memoizerific": "^1.11.3",
+    "monocle-ts": "^2.3.10",
+    "newtype-ts": "^0.3.4",
     "node-fetch": "^2.6.1",
     "pino": "^6.4.1",
     "proxy-bind": "^1.2.1",
