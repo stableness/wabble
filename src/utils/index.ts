@@ -148,46 +148,46 @@ export const rules = run(function () {
 
     type Test = (name: string) => boolean;
 
-    const through = R.o(
-        testWith,
-        R.map(R.cond([
+    const through = F.flow(
+        A.map(R.cond([
             [
-                R.startsWith('CIDR,'), R.pipe(
-                    R.replace('CIDR,', ''),
+                Str.startsWith('CIDR,'), F.flow(
+                    Str.replace('CIDR,', ''),
                     cidrSubnet,
-                    R.prop('contains'),
-                    R.both(isIP),
+                    ({ contains }) => stdB.both (isIP) (contains),
                 ),
             ],
             [
-                R.startsWith('REG,'), R.pipe(
-                    R.replace('REG,', ''),
-                    R.constructN(1, RegExp),
-                    R.test,
+                Str.startsWith('REG,'), F.flow(
+                    Str.replace('REG,', ''),
+                    F.tuple,
+                    stdF.construct(RegExp),
+                    stdStr.test,
                 ),
             ],
             [
-                R.startsWith('FULL,'), R.pipe(
-                    R.replace('FULL,', ''),
-                    R.equals,
+                Str.startsWith('FULL,'), F.flow(
+                    Str.replace('FULL,', ''),
+                    stdF.curry2(Str.Eq.equals),
                 ),
             ],
             [
-                R.startsWith('END,'), R.pipe(
-                    R.replace('END,', ''),
-                    R.endsWith,
+                Str.startsWith('END,'), F.flow(
+                    Str.replace('END,', ''),
+                    Str.endsWith,
                 ),
             ],
             [
-                R.startsWith('BEGIN,'), R.pipe(
-                    R.replace('BEGIN,', ''),
-                    R.startsWith,
+                Str.startsWith('BEGIN,'), F.flow(
+                    Str.replace('BEGIN,', ''),
+                    Str.startsWith,
                 ),
             ],
             [
-                R.T, R.includes,
+                F.constTrue, R.unary(Str.includes),
             ],
         ])),
+        testWith,
     );
 
     const NOT = F.flow(
