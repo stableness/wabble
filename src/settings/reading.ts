@@ -3,6 +3,7 @@ import * as R from 'ramda';
 import {
     either as E,
     option as O,
+    predicate as P,
     function as F,
 } from 'fp-ts';
 
@@ -82,10 +83,10 @@ const decodeServers = F.pipe(
         const port = u.portNormalize(uri);
         const proto = R.init(protocol);
 
-        const hasAuth = F.constant(R.not(u.eqBasic(
-            { username, password },
-            { username: '', password: '' },
-        )));
+        const auth = F.pipe(
+            O.of({ username, password }),
+            O.filter(P.not(u.eqBasic({ username: '', password: '' }))),
+        );
 
         const baseWith = R.mergeLeft({
             host: hostname,
@@ -133,11 +134,6 @@ const decodeServers = F.pipe(
 
         if (proto === 'socks5') {
 
-            const auth = F.pipe(
-                O.some({ username, password }),
-                O.filter(hasAuth),
-            );
-
             result = baseWith({ protocol: proto, auth } as const);
 
         }
@@ -146,15 +142,15 @@ const decodeServers = F.pipe(
 
             const verify = R.pathOr(true, [ 'ssl', 'verify' ], server);
 
-            const auth = F.pipe(
-                O.some(R.join(':', [ username, password ])),
-                O.filter(hasAuth),
-            );
-
             result = baseWith({
                 protocol: proto,
                 ssl: { verify },
-                auth,
+                auth: F.pipe(
+                    auth,
+                    O.map(({ username: user, password: pass }) => {
+                        return `${ user }:${ pass }`;
+                    }),
+                ),
             } as const);
 
         }
