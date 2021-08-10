@@ -635,16 +635,12 @@ export const option2B = O.fold(F.constFalse, F.constTrue);
 
 
 
-export const eqBasic = F.pipe(
+export const eqBasic = stdF.curry2(
 
     Eq.struct<Basic>({
         password: Str.Eq,
         username: Str.Eq,
-    }),
-
-    R.prop('equals'),
-
-    R.curry,
+    }).equals,
 
 );
 
