@@ -52,6 +52,8 @@ import * as Rx from 'rxjs';
 
 import type { Basic } from '../config.js';
 
+export * from './curries.js';
+
 
 
 
