@@ -72,7 +72,7 @@ export const chain: u.Fn<ShadowSocks, RTE_O_E_V> = remote => opts => {
 
 export const cryptoPairsE = E.tryCatchK(cryptoPairs, E.toError);
 
-export const cryptoPairsCE = curry2(cryptoPairsE);
+export const cryptoPairsCE = u.curry2(cryptoPairsE);
 
 export function cryptoPairs (
         info: Pick<ShadowSocks, 'key' | 'cipher'>,
