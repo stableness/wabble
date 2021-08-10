@@ -27,7 +27,9 @@ import {
     string as Str,
     state as S,
     predicate as P,
+    separated as Sp,
     refinement as Rf,
+    reader as Rd,
     function as F,
     chainRec as CR,
     readonlyArray as A,
@@ -188,14 +190,15 @@ export const rules = run(function () {
         ])),
     );
 
-    const NOT = R.pipe(
-        R.partition(R.startsWith('NOT,')),
-        R.adjust(0, R.map(R.replace('NOT,', ''))) as typeof R.identity,
-        R.map(through),
-        R.applySpec({
-            not: R.head as Fn<unknown, Test>,
-            yes: R.last as Fn<unknown, Test>,
-        }),
+    const NOT = F.flow(
+        A.partition(Str.startsWith('NOT,')),
+        Sp.map(A.map(Str.replace('NOT,', ''))),
+        Sp.bimap(through, through),
+        F.pipe(
+            Rd.Do,
+            Rd.apS('yes', Rd.asks<Sp.Separated<Test, Test>, Test>(Sp.left)),
+            Rd.apS('not', Rd.asks<Sp.Separated<Test, Test>, Test>(Sp.right)),
+        ),
     );
 
     return { through, NOT };
