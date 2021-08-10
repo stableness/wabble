@@ -28,6 +28,7 @@ import {
     portNormalize,
     isPrivateIP,
     isBlockedIP,
+    eqBasic,
     headerJoin,
     socks5Handshake,
     incrementLE2,
@@ -206,6 +207,44 @@ describe('headerJoin', () => {
 
     ])('%p', fields => {
         expect(headerJoin(fields)).toMatch(/\r\n\r\n$/);
+    });
+
+});
+
+
+
+
+
+describe('eqBasic', () => {
+
+    test.each([
+
+        [ [ 'a', 'b' ], [ 'a', 'b' ] ],
+        [ [ 'a',  '' ], [ 'a',  '' ] ],
+        [ [  '', 'b' ], [  '', 'b' ] ],
+
+    ] as const)('%p %p', (foo, bar) => {
+
+        const x = { username: foo[0], password: foo[1] };
+        const y = { username: bar[0], password: bar[1] };
+
+        expect(eqBasic(x)(y)).toBe(true);
+
+    });
+
+    test.each([
+
+        [ [ 'a', 'b' ], [ 'a', 'c' ] ],
+        [ [ 'a',  '' ], [  '', 'a' ] ],
+        [ [  '', 'b' ], [ 'b',  '' ] ],
+
+    ] as const)('%p %p', (foo, bar) => {
+
+        const x = { username: foo[0], password: foo[1] };
+        const y = { username: bar[0], password: bar[1] };
+
+        expect(eqBasic(x)(y)).toBe(false);
+
     });
 
 });
