@@ -34,11 +34,13 @@ import {
     readonlyNonEmptyArray as NA,
 } from 'fp-ts';
 
-import * as stdStr from 'fp-ts-std/String.js';
-import * as stdA from 'fp-ts-std/ReadonlyArray.js';
-import * as stdE from 'fp-ts-std/Either.js';
-import * as stdB from 'fp-ts-std/Boolean.js';
-import * as stdF from 'fp-ts-std/Function.js';
+import {
+    string as stdStr,
+    readonlyArray as stdA,
+    either as stdE,
+    boolean as stdB,
+    function as stdF,
+} from 'fp-ts-std';
 
 import * as Dc from 'io-ts/lib/Decoder.js';
 

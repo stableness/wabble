@@ -14,8 +14,6 @@ import {
     function as F,
 } from 'fp-ts';
 
-import { curry2 } from 'fp-ts-std/Function.js';
-
 import { toTransform } from 'buffer-pond';
 
 import { logLevel } from '../model.js';
