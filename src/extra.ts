@@ -8,6 +8,7 @@ export {
     cryptoPairs,
     cryptoPairsE,
     cryptoPairsCE,
+    chain as chainSS,
 } from './servers/shadowsocks.js';
 
 export { socks5Proxy } from './services/socks5.js';
