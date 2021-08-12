@@ -210,7 +210,7 @@ export const socks5Proxy =
                     TE.map(buf => buf.readUInt16BE(0)),
                 )),
 
-                TE.bind('socket', () => TE.right(socket)),
+                TE.apS('socket', TE.right(socket)),
 
             ));
 
@@ -231,7 +231,7 @@ export const socks5Proxy =
                 socket.destroy();
             });
 
-            return F.constUndefined();
+            return u.Undefined;
 
         }),
 
