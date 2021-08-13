@@ -1,5 +1,6 @@
 import https from 'https';
 import http from 'http';
+import type { Socket } from 'net';
 
 import { once } from 'events';
 
@@ -45,7 +46,7 @@ export const chain: u.Fn<Http, RTE_O_E_V> = remote => opts => {
 
         })),
 
-        TE.chain(u.catchKToError(tunnel(remote))),
+        TE.chain(tunnel(remote)),
 
         TE.mapLeft(R.tap(abort)),
 
@@ -59,50 +60,56 @@ export const chain: u.Fn<Http, RTE_O_E_V> = remote => opts => {
 
 
 
-const TIMEOUT = 1000 * 5;
+const race = u.raceTaskByTimeout<Socket>(1000 * 5, 'http server timeout');
 
-export const tunnel = (opts: Http) => async (path: string) => {
+export const tunnel = (opts: Http) => (path: string) => TE.bracket(
 
-    const { protocol, host, port, ssl, auth } = opts;
+    TE.rightIO(() => {
 
-    const hasAuth = u.option2B(auth);
+        const { protocol, host, port, ssl, auth } = opts;
 
-    const connect = protocol === 'http' ? http.request : https.request;
+        const hasAuth = u.option2B(auth);
 
-    const req = connect({
-
-        host,
-        port,
-        path,
-        rejectUnauthorized: ssl.verify,
-        method: 'CONNECT',
-        headers: {
+        const headers = {
             'Proxy-Connection': 'Keep-Alive',
-            ...(hasAuth && { 'Proxy-Authorization': authToCredentials(auth) } ),
-        },
-    });
+            ...(hasAuth && { 'Proxy-Authorization': authToCredentials(auth) }),
+        };
 
-    req.setNoDelay(true);
-    req.setTimeout(TIMEOUT);
-    req.setSocketKeepAlive(true, 1000 * 60);
+        const connect = protocol === 'http' ? http.request : https.request;
 
-    req.flushHeaders();
+        const req = connect({
 
-    try {
+            host,
+            port,
+            path,
+            headers,
+            method: 'CONNECT',
+            rejectUnauthorized: ssl.verify,
 
-        await Promise.race([
-            once(req, 'connect'),
-            u.timeout(TIMEOUT),
-        ]);
+        });
 
-    } catch (err) {
-        req.abort();
-        throw err;
-    }
+        req.setNoDelay(true);
+        req.flushHeaders();
 
-    return req.socket;
+        return req;
 
-};
+    }),
+
+    req => race(u.tryCatchToError(async () => {
+
+        await once(req, 'connect');
+
+        return req.socket;
+
+    })),
+
+    (req, e) => F.pipe(
+        TE.fromEither(e),
+        TE.mapLeft(R.tap(err => req.destroy(err))),
+        TE.apSecond(TE.rightIO(F.constVoid)),
+    ),
+
+);
 
 
 
