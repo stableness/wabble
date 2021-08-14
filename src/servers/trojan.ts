@@ -14,7 +14,7 @@ import type { Trojan } from '../config.js';
 
 import * as u from '../utils/index.js';
 
-import type { RTE_O_E_V } from './index.js';
+import { RTE_O_E_V, destroyBy } from './index.js';
 
 
 
@@ -43,7 +43,7 @@ export const chain: u.Fn<Trojan, RTE_O_E_V> = remote => opts => {
 
         })),
 
-        TE.chain(u.catchKToError(tunnel(remote))),
+        TE.chain(tunnel(remote)),
 
         TE.mapLeft(R.tap(abort)),
 
@@ -57,61 +57,65 @@ export const chain: u.Fn<Trojan, RTE_O_E_V> = remote => opts => {
 
 
 
-const TIMEOUT = 1000 * 5;
+const timeoutError = new u.ErrorWithCode(
+    'SERVER_SOCKET_TIMEOUT',
+    'trojan server timeout',
+);
 
-export const tunnel = (opts: Trojan) => async (head: Uint8Array) => {
+const race = u.raceTaskByTimeout(1000 * 5, timeoutError);
 
-    const { host, port, ssl } = opts;
+export const tunnel = (opts: Trojan) => (head: Uint8Array) => u.bracket(
 
-    /* eslint-disable indent */
-    const {
-                ciphers,
-        sni:    servername = host,
-        alpn:   ALPNProtocols,
-        verify: rejectUnauthorized,
-                verify_hostname,
-    } = ssl;
-    /* eslint-enable indent */
+    TE.rightIO(() => {
 
-    const socket = connect({
+        const { host, port, ssl } = opts;
 
-        host,
-        port,
+        /* eslint-disable indent */
+        const {
+                    ciphers,
+            sni:    servername = host,
+            alpn:   ALPNProtocols,
+            verify: rejectUnauthorized,
+                    verify_hostname,
+        } = ssl;
+        /* eslint-enable indent */
 
-        ciphers,
-        servername,
-        ALPNProtocols,
-        rejectUnauthorized,
+        const socket = connect({
 
-        ...(
-            R.not(verify_hostname) && { checkServerIdentity: F.constUndefined }
-        ),
+            host,
+            port,
 
-    });
+            ciphers,
+            servername,
+            ALPNProtocols,
+            rejectUnauthorized,
 
-    socket.setNoDelay(true);
-    socket.setTimeout(TIMEOUT);
-    socket.setKeepAlive(true, 1000 * 60);
+            ...(
+                R.not(verify_hostname)
+                && { checkServerIdentity: F.constUndefined }
+            ),
 
-    try {
+        });
 
-        await Promise.race([
-            once(socket, 'secureConnect'),
-            u.timeout(TIMEOUT),
-        ]);
+        return socket.setNoDelay(true);
+
+    }),
+
+    socket => race(u.tryCatchToError(async () => {
+
+        await once(socket, 'secureConnect');
 
         if (socket.write(head) !== true) {
             await once(socket, 'drain');
         }
 
-    } catch (err) {
-        socket.destroy();
-        throw err;
-    }
+        return socket;
 
-    return socket;
+    })),
 
-};
+    destroyBy(timeoutError),
+
+);
 
 
 
