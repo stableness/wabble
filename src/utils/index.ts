@@ -390,6 +390,26 @@ export function readToTaskEither (stream: NodeJS.ReadableStream) {
 
 
 
+const raceTuple = stdF.curry2(T.getRaceMonoid().concat);
+
+export const raceTaskByTimeout = <M> (ms: number, e: string | Error) => F.pipe(
+
+    TE.left(E.toError(e)),
+
+    T.delay(ms),
+
+    raceTuple as unknown as CurryT<[
+        TE.TaskEither<Error, M>,
+        TE.TaskEither<Error, M>,
+        TE.TaskEither<Error, M>,
+    ]>,
+
+);
+
+
+
+
+
 export const hash = run(function () {
 
     type Alg = 'md4' | 'md5' | 'sha1' | 'sha224' | 'sha256' | 'sha512';
