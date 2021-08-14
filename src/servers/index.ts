@@ -10,6 +10,7 @@ import {
     taskEither as TE,
     readerTaskEither as RTE,
     readonlyMap as M,
+    reader as Rd,
     io as IO,
     either as E,
     option as O,
@@ -244,18 +245,12 @@ export const updateCache: u.CurryT<[
 
 
 
-export const netConnectTo: u.Fn<net.TcpNetConnectOpts, net.Socket> = R.compose(
+export const netConnectTo = F.pipe(
 
-    R.tap(socket => socket
-        .setNoDelay(true)
-        .setTimeout(1000 * 5)
-        .setKeepAlive(true, 1000 * 60),
-    ),
+    Rd.asks(net.connect as u.Fn<net.TcpNetConnectOpts, net.Socket>),
 
-    net.connect as u.Fn<net.NetConnectOpts, net.Socket>,
-
-    R.mergeRight({
-        allowHalfOpen: true,
+    Rd.chainFirst(socket => () => {
+        socket.setNoDelay(true);
     }),
 
 );
