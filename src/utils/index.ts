@@ -390,6 +390,16 @@ export function readToTaskEither (stream: NodeJS.ReadableStream) {
 
 
 
+export const bracket: <EE, AA, BB> (
+    acquire: TE.TaskEither<EE, AA>,
+    use: (a: AA) => TE.TaskEither<EE, BB>,
+    release: (a: AA, e: E.Either<EE, BB>) => TE.TaskEither<EE, unknown>,
+) => TE.TaskEither<EE, BB> = TE.bracket as never;
+
+
+
+
+
 export const hash = run(function () {
 
     type Alg = 'md4' | 'md5' | 'sha1' | 'sha224' | 'sha256' | 'sha512';
