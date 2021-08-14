@@ -1,4 +1,6 @@
 import crypto from 'crypto';
+import { once } from 'events';
+import type { Socket } from 'net';
 import { Transform, TransformCallback } from 'stream';
 
 import * as R from 'ramda';
@@ -37,8 +39,6 @@ export const chain: u.Fn<ShadowSocks, RTE_O_E_V> = remote => opts => {
         TE.rightIO(() => u.socks5Handshake(host, port).subarray(3)),
         TE.chainEitherK(cryptoPairsCE(remote)),
 
-        TE.mapLeft(R.tap(abort)),
-
         TE.apFirst(TE.fromIO(() => {
 
             if (R.not(logLevel.on.trace)) {
@@ -58,11 +58,46 @@ export const chain: u.Fn<ShadowSocks, RTE_O_E_V> = remote => opts => {
 
         })),
 
-        TE.chain(({ enc, dec }) => hook(enc, netConnectTo(remote), dec)),
+        TE.chain(({ enc, dec }) => F.pipe(
+            tunnel(remote),
+            TE.chain(socket => hook(enc, socket, dec)),
+        )),
+
+        TE.mapLeft(R.tap(abort)),
 
     );
 
 };
+
+
+
+
+
+const race = u.raceTaskByTimeout<Socket>(
+    1000 * 5,
+    'shadowsocks server timeout',
+);
+
+type ConnOpts = Pick<ShadowSocks, 'host' | 'port'>;
+
+export const tunnel = (remote: ConnOpts) => u.bracket(
+
+    TE.rightIO(() => netConnectTo(remote)),
+
+    socket => race(u.tryCatchToError(async () => {
+
+        await once(socket, 'connect');
+
+        return socket;
+
+    })),
+
+    (socket, e) => F.pipe(
+        TE.fromEither(e),
+        TE.mapLeft(R.tap(err => socket.destroy(err))),
+    ),
+
+);
 
 
 
