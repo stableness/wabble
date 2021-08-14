@@ -49,6 +49,7 @@ import {
     tryCatchToError,
     writeToTaskEither,
     timeout,
+    raceTaskByTimeout,
     str2arr,
     toByteArray,
     readFile,
@@ -730,6 +731,53 @@ describe('timeout', () => {
         await expect(future).rejects.toThrow();
 
     }, 10);
+
+});
+
+
+
+
+
+describe('raceTaskByTimeout', () => {
+
+    beforeEach(() => {
+        jest.useRealTimers();
+    });
+
+    const data = 'foobar';
+
+    test('on time', () => {
+
+        const race500ms = raceTaskByTimeout(40, 'times out');
+
+        const task = F.pipe(
+            race500ms(
+                T.delay(10) (TE.of(data)),
+                T.delay(25) (TE.of('wat')),
+            ),
+            TE.toUnion,
+        );
+
+        return expect(task()).resolves.toStrictEqual(data);
+
+    }, 50);
+
+    test('over time', () => {
+
+        const error = new Error('times out');
+
+        const race500ms = raceTaskByTimeout(10, error);
+
+        const task = F.pipe(
+            TE.of(data),
+            T.delay(40),
+            race500ms,
+            TE.toUnion,
+        );
+
+        return expect(task()).resolves.toBe(error);
+
+    }, 50);
 
 });
 

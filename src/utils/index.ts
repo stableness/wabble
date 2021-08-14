@@ -400,6 +400,36 @@ export const bracket: <EE, AA, BB> (
 
 
 
+export const raceTaskByTimeout =
+
+    (ms: number, e: string | Error) =>
+
+        <M> (...tasks: ReadonlyArray<TE.TaskEither<Error, M>>) => () => {
+
+            let ref: NodeJS.Timeout;
+
+            return Promise.race([
+
+                ...tasks.map(run),
+
+                new Promise<E.Either<Error, never>>(resolve => {
+
+                    ref = setTimeout(F.flow(
+                        E.toError,
+                        E.left,
+                        resolve,
+                    ), ms, e);
+
+                }),
+
+            ]).finally(() => clearTimeout(ref));
+
+        };
+
+
+
+
+
 export const hash = run(function () {
 
     type Alg = 'md4' | 'md5' | 'sha1' | 'sha224' | 'sha256' | 'sha512';
