@@ -294,7 +294,7 @@ const checkBlockingHost = TE.filterOrElse(
 
 
 
-const timeoutTE = TE.left(new Error('timeout'));
+const timeoutTE = TE.left(new Error('DNS resolving timeout'));
 
 
 
