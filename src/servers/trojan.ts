@@ -1,4 +1,5 @@
 import { connect } from 'tls';
+import type { Socket } from 'net';
 
 import { once } from 'events';
 
@@ -43,7 +44,7 @@ export const chain: u.Fn<Trojan, RTE_O_E_V> = remote => opts => {
 
         })),
 
-        TE.chain(u.catchKToError(tunnel(remote))),
+        TE.chain(tunnel(remote)),
 
         TE.mapLeft(R.tap(abort)),
 
@@ -57,61 +58,64 @@ export const chain: u.Fn<Trojan, RTE_O_E_V> = remote => opts => {
 
 
 
-const TIMEOUT = 1000 * 5;
+const race = u.raceTaskByTimeout<Socket>(1000 * 5, 'trojan server timeout');
 
-export const tunnel = (opts: Trojan) => async (head: Uint8Array) => {
+export const tunnel = (opts: Trojan) => (head: Uint8Array) => TE.bracket(
 
-    const { host, port, ssl } = opts;
+    TE.rightIO(() => {
 
-    /* eslint-disable indent */
-    const {
-                ciphers,
-        sni:    servername = host,
-        alpn:   ALPNProtocols,
-        verify: rejectUnauthorized,
-                verify_hostname,
-    } = ssl;
-    /* eslint-enable indent */
+        const { host, port, ssl } = opts;
 
-    const socket = connect({
+        /* eslint-disable indent */
+        const {
+                    ciphers,
+            sni:    servername = host,
+            alpn:   ALPNProtocols,
+            verify: rejectUnauthorized,
+                    verify_hostname,
+        } = ssl;
+        /* eslint-enable indent */
 
-        host,
-        port,
+        const socket = connect({
 
-        ciphers,
-        servername,
-        ALPNProtocols,
-        rejectUnauthorized,
+            host,
+            port,
 
-        ...(
-            R.not(verify_hostname) && { checkServerIdentity: F.constUndefined }
-        ),
+            ciphers,
+            servername,
+            ALPNProtocols,
+            rejectUnauthorized,
 
-    });
+            ...(
+                R.not(verify_hostname)
+                && { checkServerIdentity: F.constUndefined }
+            ),
 
-    socket.setNoDelay(true);
-    socket.setTimeout(TIMEOUT);
-    socket.setKeepAlive(true, 1000 * 60);
+        });
 
-    try {
+        return socket.setNoDelay(true);
 
-        await Promise.race([
-            once(socket, 'secureConnect'),
-            u.timeout(TIMEOUT),
-        ]);
+    }),
+
+    socket => race(u.tryCatchToError(async () => {
+
+        await once(socket, 'secureConnect');
 
         if (socket.write(head) !== true) {
             await once(socket, 'drain');
         }
 
-    } catch (err) {
-        socket.destroy();
-        throw err;
-    }
+        return socket;
 
-    return socket;
+    })),
 
-};
+    (socket, e) => F.pipe(
+        TE.fromEither(e),
+        TE.mapLeft(R.tap(err => socket.destroy(err))),
+        TE.apSecond(TE.rightIO(F.constVoid)),
+    ),
+
+);
 
 
 
