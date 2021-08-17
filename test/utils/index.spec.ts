@@ -59,6 +59,7 @@ import {
     basicInfo,
     groupBy,
     ErrorWithCode,
+    eqErrorWithCode,
     genLevel,
 
 } from '../../src/utils/index.js';
@@ -682,6 +683,53 @@ describe('ErrorWithCode', () => {
 
     test('has code', () => {
         expect(new ErrorWithCode('foo')).toHaveProperty('code', 'foo');
+    });
+
+});
+
+
+
+
+
+describe('eqErrorWithCode', () => {
+
+    test('', () => {
+
+        {
+            const error = new ErrorWithCode();
+            expect(eqErrorWithCode.equals(error, error)).toBe(true);
+        }
+
+        expect(eqErrorWithCode.equals(
+            new ErrorWithCode('err', 'foo'),
+            new ErrorWithCode('err', 'bar'),
+        )).toBe(true);
+
+        expect(eqErrorWithCode.equals(
+            new ErrorWithCode(''),
+            new ErrorWithCode(''),
+        )).toBe(true);
+
+        expect(eqErrorWithCode.equals(
+            new ErrorWithCode(),
+            new ErrorWithCode(),
+        )).toBe(false);
+
+        expect(eqErrorWithCode.equals(
+            new ErrorWithCode('foo', 'wat'),
+            new ErrorWithCode('bar', 'wat'),
+        )).toBe(false);
+
+        expect(eqErrorWithCode.equals(
+            new Error(),
+            new ErrorWithCode(),
+        )).toBe(false);
+
+        expect(eqErrorWithCode.equals(
+            new Error(        'foo'),
+            new ErrorWithCode('foo', 'wat'),
+        )).toBe(false);
+
     });
 
 });
