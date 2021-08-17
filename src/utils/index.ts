@@ -98,6 +98,18 @@ export const Undefined = F.constUndefined();
 
 
 
+export const eqErrorWithCode = Eq.fromEquals<ErrorWithCode>((a, b) =>
+    a === b
+    || a instanceof ErrorWithCode
+    && b instanceof ErrorWithCode
+    && a.code === b.code
+    && a.code != null,
+);
+
+
+
+
+
 export const mem = {
 
     in10: memo(10),
