@@ -1,4 +1,5 @@
 import crypto from 'crypto';
+import { once } from 'events';
 import { Transform, TransformCallback } from 'stream';
 
 import * as R from 'ramda';
@@ -16,13 +17,12 @@ import {
 
 import { toTransform } from 'buffer-pond';
 
-import { logLevel } from '../model.js';
 import type { ShadowSocks } from '../config.js';
 import * as u from '../utils/index.js';
 
 import type { AEAD, Stream } from '../settings/utils/shadowsocks.js';
 
-import { netConnectTo, RTE_O_E_V } from './index.js';
+import { netConnectTo, RTE_O_E_V, destroyBy } from './index.js';
 
 
 
@@ -35,34 +35,66 @@ export const chain: u.Fn<ShadowSocks, RTE_O_E_V> = remote => opts => {
     return F.pipe(
 
         TE.rightIO(() => u.socks5Handshake(host, port).subarray(3)),
+
         TE.chainEitherK(cryptoPairsCE(remote)),
+
+        TE.apS('socket', F.pipe(
+
+            tunnel(remote),
+
+            u.elapsed(ping => () => {
+
+                const proxy = F.pipe(
+                    remote,
+                    R.converge(R.mergeLeft, [
+                        R.pick([ 'host', 'port', 'protocol' ]),
+                        R.o(R.pick([ 'type', 'algorithm' ]), R.prop('cipher')),
+                    ]),
+                    R.mergeLeft({ ping }),
+                );
+
+                logger.child({ proxy }).trace('Elapsed');
+
+            }),
+
+        )),
 
         TE.mapLeft(R.tap(abort)),
 
-        TE.apFirst(TE.fromIO(() => {
-
-            if (R.not(logLevel.on.trace)) {
-                return;
-            }
-
-            const merge = R.converge(R.mergeLeft, [
-                R.pick([ 'host', 'port', 'protocol' ]),
-                R.o(R.pick([ 'type', 'algorithm' ]), R.prop('cipher')),
-            ]);
-
-            logger
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-                .child({ proxy: merge(remote) })
-                .trace('proxy through ss')
-            ;
-
-        })),
-
-        TE.chain(({ enc, dec }) => hook(enc, netConnectTo(remote), dec)),
+        TE.chain(({ enc, socket, dec }) => hook(enc, socket, dec)),
 
     );
 
 };
+
+
+
+
+
+const timeoutError = new u.ErrorWithCode(
+    'SERVER_SOCKET_TIMEOUT',
+    'shadowsocks server timeout',
+);
+
+const race = u.raceTaskByTimeout(1000 * 5, timeoutError);
+
+type ConnOpts = Pick<ShadowSocks, 'host' | 'port'>;
+
+export const tunnel = (remote: ConnOpts) => u.bracket(
+
+    TE.rightIO(() => netConnectTo(remote)),
+
+    socket => race(u.tryCatchToError(async () => {
+
+        await once(socket, 'connect');
+
+        return socket;
+
+    })),
+
+    destroyBy(timeoutError),
+
+);
 
 
 
