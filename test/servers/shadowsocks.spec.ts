@@ -1,3 +1,4 @@
+import { Socket } from 'net';
 import { PassThrough, Readable, Transform } from 'stream';
 
 import {
@@ -7,15 +8,80 @@ import {
     function as F,
 } from 'fp-ts';
 
+import {
+    function as stdF,
+} from 'fp-ts-std';
+
+import * as R from 'ramda';
+
+import pino from 'pino';
+
 import * as u from '../../src/utils/index.js';
 
 import type { ShadowSocks } from '../../src/config.js';
 
 import { parse } from '../../src/settings/utils/shadowsocks.js';
 
+jest.retryTimes(0);
+
+jest.mock('../../src/servers/index.js', () => {
+
+    const origin: Record<string, unknown> = jest.requireActual(
+        '../../src/servers/index.js',
+    );
+
+    return {
+        ...origin,
+        netConnectTo: jest.fn(),
+    };
+
+});
+
 import {
+    chain,
+    tunnel,
     cryptoPairsCE,
 } from '../../src/servers/shadowsocks.js';
+
+import {
+    netConnectTo,
+} from '../../src/servers/index.js';
+
+
+
+
+
+describe('tunnel', () => {
+
+    afterAll(() => {
+        jest.useRealTimers();
+    });
+
+    test('timeout', () => {
+
+        jest.useFakeTimers('legacy');
+
+        (netConnectTo as jest.Mock).mockImplementationOnce(() => {
+            return new Socket();
+        });
+
+        const timeoutError = new u.ErrorWithCode('SERVER_SOCKET_TIMEOUT');
+
+        const task = u.run(F.pipe(
+            tunnel({ host: 'localhost', port: 8080 }),
+            TE.mapLeft(err => u.eqErrorWithCode.equals(err, timeoutError)),
+            TE.toUnion,
+        ));
+
+        setImmediate(() => {
+            jest.runAllTimers();
+        });
+
+        return expect(task).resolves.toBe(true);
+
+    }, 50);
+
+});
 
 
 
@@ -43,9 +109,16 @@ describe('cryptoPairsCE', () => {
 
 describe('encrypt & decrypt', () => {
 
-    const head = Buffer.allocUnsafe(10);
-    const tail = Buffer.allocUnsafe(42);
-    const data = Buffer.concat([ head, tail ]);
+    beforeAll(() => {
+        jest.useRealTimers();
+    });
+
+    const host = 'localhost';
+    const port = 8080;
+
+    const head = u.socks5Handshake(host, port).subarray(3);
+    const body = Buffer.allocUnsafe(42);
+    const data = Buffer.concat([ head, body ]);
 
     test.each([
 
@@ -63,11 +136,42 @@ describe('encrypt & decrypt', () => {
 
     ])('alg: %s', alg => {
 
-        const task = through (head, tail) ({ alg, key: 'foobar' });
+        const sink = new PassThrough({
+            allowHalfOpen: false,
+        });
 
-        return expect(task()).resolves.toStrictEqual(E.right(data));
+        (netConnectTo as jest.Mock).mockImplementationOnce(() => {
 
-    }, 500);
+            const source = genChopper(2);
+            setTimeout(() => source.emit('connect'), 10);
+            return source;
+
+        });
+
+        expect.assertions(1);
+
+        return u.run(F.pipe(
+
+            stdF.uncurry5 (through) ([
+                host, port, body, sink, { alg, key: 'foobar' },
+            ]),
+
+            TE.chain(() => u.tryCatchToError(() => {
+                return u.collectAsyncIterable<Uint8Array>(sink);
+            })),
+
+            TE.map(Buffer.concat),
+
+            TE.bimap(expect, expect),
+
+            TE.matchW(
+                e => e.toBeUndefined(),
+                a => a.toStrictEqual(data),
+            ),
+
+        ));
+
+    }, 100);
 
 });
 
@@ -75,36 +179,54 @@ describe('encrypt & decrypt', () => {
 
 
 
-const through = (head: Uint8Array, tail: Uint8Array) => F.flow(
+const through: u.CurryT<[
+
+    string,
+    number,
+    Uint8Array,
+    NodeJS.ReadWriteStream,
+    Record<string, unknown>,
+    TE.TaskEither<Error, void>,
+
+]> = host => port => data => sink => F.flow(
 
     E.fromNullableK (new Error('parsing wrong')) (parse),
 
-    E.map(cryptoPairsCE),
+    E.map(R.mergeLeft({
+        host,
+        port,
+        protocol: 'ss' as const,
+        tags: new Set<string>([]),
+    })),
 
-    E.ap(E.of(head)),
+    E.map(chain),
 
-    E.flatten,
+    E.flap({
+        host,
+        port,
+        abort: F.constVoid,
+        logger: pino({
+            base: null,
+            prettyPrint: false,
+            enabled: false,
+        }),
+        hook: u.catchKToError(async (...rest: NodeJS.ReadWriteStream[]) => {
+
+            try {
+
+                await Promise.race([
+                    u.pump(genSource(data), ...rest, sink),
+                    u.timeout(50),
+                ]);
+
+            } catch { }
+
+        }),
+    }),
 
     TE.fromEither,
 
-    TE.chain(({ enc, dec }) => u.tryCatchToError(async () => {
-
-        const sink = new PassThrough();
-
-        try {
-
-            await Promise.race([
-                u.pump(genSource(tail), enc, genChopper(2), dec, sink),
-                u.timeout(400),
-            ]);
-
-        } catch { }
-
-        return u.collectAsyncIterable<Uint8Array>(sink);
-
-    })),
-
-    TE.map(Buffer.concat),
+    TE.flatten,
 
 );
 

@@ -1,4 +1,5 @@
 import crypto from 'crypto';
+import { once } from 'events';
 import { Transform, TransformCallback } from 'stream';
 
 import * as R from 'ramda';
@@ -22,7 +23,7 @@ import * as u from '../utils/index.js';
 
 import type { AEAD, Stream } from '../settings/utils/shadowsocks.js';
 
-import { netConnectTo, RTE_O_E_V } from './index.js';
+import { netConnectTo, RTE_O_E_V, destroyBy } from './index.js';
 
 
 
@@ -35,9 +36,8 @@ export const chain: u.Fn<ShadowSocks, RTE_O_E_V> = remote => opts => {
     return F.pipe(
 
         TE.rightIO(() => u.socks5Handshake(host, port).subarray(3)),
-        TE.chainEitherK(cryptoPairsCE(remote)),
 
-        TE.mapLeft(R.tap(abort)),
+        TE.chainEitherK(cryptoPairsCE(remote)),
 
         TE.apFirst(TE.fromIO(() => {
 
@@ -58,11 +58,44 @@ export const chain: u.Fn<ShadowSocks, RTE_O_E_V> = remote => opts => {
 
         })),
 
-        TE.chain(({ enc, dec }) => hook(enc, netConnectTo(remote), dec)),
+        TE.apS('socket', tunnel(remote)),
+
+        TE.chain(({ enc, socket, dec }) => hook(enc, socket, dec)),
+
+        TE.mapLeft(R.tap(abort)),
 
     );
 
 };
+
+
+
+
+
+const timeoutError = new u.ErrorWithCode(
+    'SERVER_SOCKET_TIMEOUT',
+    'shadowsocks server timeout',
+);
+
+const race = u.raceTaskByTimeout(1000 * 5, timeoutError);
+
+type ConnOpts = Pick<ShadowSocks, 'host' | 'port'>;
+
+export const tunnel = (remote: ConnOpts) => u.bracket(
+
+    TE.rightIO(() => netConnectTo(remote)),
+
+    socket => race(u.tryCatchToError(async () => {
+
+        await once(socket, 'connect');
+
+        return socket;
+
+    })),
+
+    destroyBy(timeoutError),
+
+);
 
 
 
