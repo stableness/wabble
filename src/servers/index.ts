@@ -1,4 +1,5 @@
 import net from 'net';
+import type { Writable } from 'stream';
 
 import type { Logger } from 'pino';
 
@@ -257,6 +258,35 @@ export const netConnectTo: u.Fn<net.TcpNetConnectOpts, net.Socket> = R.compose(
     R.mergeRight({
         allowHalfOpen: true,
     }),
+
+);
+
+
+
+
+
+export const destroyBy: Rd.Reader<
+
+    u.ErrorWithCode,
+
+    F.FunctionN<
+        [
+            Pick<Writable, 'destroy'>,
+            E.Either<Error, unknown>,
+        ],
+        TE.TaskEither<never, unknown>
+    >
+
+> = error => (req, e) => F.pipe(
+
+    E.swap(e),
+    O.fromEither,
+    O.filter(u.curry2 (u.eqErrorWithCode.equals) (error)),
+    O.map(err => () => {
+        req.destroy(err);
+    }),
+    O.getOrElse(F.constant(F.constVoid)),
+    TE.rightIO,
 
 );
 
