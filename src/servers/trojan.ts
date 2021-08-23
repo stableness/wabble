@@ -9,12 +9,11 @@ import {
     function as F,
 } from 'fp-ts';
 
-import { logLevel } from '../model.js';
 import type { Trojan } from '../config.js';
 
 import * as u from '../utils/index.js';
 
-import type { RTE_O_E_V } from './index.js';
+import { RTE_O_E_V, destroyBy, elapsed } from './index.js';
 
 
 
@@ -22,28 +21,15 @@ import type { RTE_O_E_V } from './index.js';
 
 export const chain: u.Fn<Trojan, RTE_O_E_V> = remote => opts => {
 
-    const { host, port, logger, hook, abort } = opts;
+    const { host, port, hook, abort } = opts;
 
     return F.pipe(
 
         TE.rightIO(() => makeHead(remote.password, host, port)),
 
-        TE.apFirst(TE.fromIO(() => {
+        TE.chain(tunnel(remote)),
 
-            if (R.not(logLevel.on.trace)) {
-                return;
-            }
-
-            const merge = R.pick([ 'host', 'port', 'protocol' ]);
-
-            logger
-                .child({ proxy: merge(remote) })
-                .trace('proxy through trojan')
-            ;
-
-        })),
-
-        TE.chain(u.catchKToError(tunnel(remote))),
+        elapsed(remote, opts),
 
         TE.mapLeft(R.tap(abort)),
 
@@ -57,70 +43,72 @@ export const chain: u.Fn<Trojan, RTE_O_E_V> = remote => opts => {
 
 
 
-const TIMEOUT = 1000 * 5;
+const timeoutError = new u.ErrorWithCode(
+    'SERVER_SOCKET_TIMEOUT',
+    'trojan server timeout',
+);
 
-export const tunnel = (opts: Trojan) => async (head: Uint8Array) => {
+const race = u.raceTaskByTimeout(1000 * 5, timeoutError);
 
-    const { host, port, ssl } = opts;
+export const tunnel = (opts: Trojan) => (head: Uint8Array) => u.bracket(
 
-    /* eslint-disable indent */
-    const {
-                ciphers,
-        sni:    servername = host,
-        alpn:   ALPNProtocols,
-        verify: rejectUnauthorized,
-                verify_hostname,
-    } = ssl;
-    /* eslint-enable indent */
+    TE.rightIO(() => {
 
-    const socket = connect({
+        const { host, port, ssl } = opts;
 
-        host,
-        port,
+        /* eslint-disable indent */
+        const {
+                    ciphers,
+            sni:    servername = host,
+            alpn:   ALPNProtocols,
+            verify: rejectUnauthorized,
+                    verify_hostname,
+        } = ssl;
+        /* eslint-enable indent */
 
-        ciphers,
-        servername,
-        ALPNProtocols,
-        rejectUnauthorized,
+        return connect({
 
-        ...(
-            R.not(verify_hostname) && { checkServerIdentity: F.constUndefined }
-        ),
+            host,
+            port,
 
-    });
+            ciphers,
+            servername,
+            ALPNProtocols,
+            rejectUnauthorized,
 
-    socket.setNoDelay(true);
-    socket.setTimeout(TIMEOUT);
-    socket.setKeepAlive(true, 1000 * 60);
+            ...(
+                R.not(verify_hostname)
+                && { checkServerIdentity: F.constUndefined }
+            ),
 
-    try {
+        });
 
-        await Promise.race([
-            once(socket, 'secureConnect'),
-            u.timeout(TIMEOUT),
-        ]);
+    }),
 
-        if (socket.write(head) !== true) {
-            await once(socket, 'drain');
-        }
+    socket => race(u.tryCatchToError(async () => {
 
-    } catch (err) {
-        socket.destroy();
-        throw err;
-    }
+        socket.setNoDelay(true);
 
-    return socket;
+        await once(socket, 'secureConnect');
 
-};
+        socket.write(head);
 
+        return socket;
+
+    })),
+
+    destroyBy(timeoutError),
+
+);
 
 
 
 
-export const memHash: u.Fn<string, Buffer> = R.compose(
-    Buffer.from,
-    R.invoker(1, 'toString')('hex'),
+
+export const memHash = F.flow(
     u.hash.sha224,
+    buf => buf.toString('hex'),
+    Buffer.from as u.Fn<string, Uint8Array>,
 );
 
 
@@ -131,19 +119,15 @@ export const makeHead = u.mem.in10((
         password: string,
         host: string,
         port: number,
-) => {
+): Uint8Array => Buffer.concat([
 
-    return Uint8Array.from([
+    memHash(password),
 
-        ...memHash(password),
+    Uint8Array.from([ 0x0D, 0x0A, 0x01 ]),
 
-        0x0D, 0x0A,
+    u.socks5Handshake(host, port).subarray(3),
 
-        0x01, ...u.socks5Handshake(host, port).subarray(3),
+    Uint8Array.from([ 0x0D, 0x0A ]),
 
-        0x0D, 0x0A,
-
-    ]);
-
-});
+]));
 
