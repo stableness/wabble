@@ -1,3 +1,4 @@
+import net from 'net';
 import http from 'http';
 
 import {
@@ -9,8 +10,10 @@ import {
 
 import * as R from 'ramda';
 
+import pino from 'pino';
+
 import {
-    tunnel,
+    chain,
 } from '../../src/servers/socks5.js';
 
 import * as u from '../../src/utils/index.js';
@@ -111,9 +114,39 @@ const socks5: Result<TE_ES> = ports => ({ url }) => {
 
     return TE.fromIO(() => F.tuple(F.pipe(
 
-        u.socks5Handshake(url.hostname, ports.server),
+        u.tryCatchToError<net.Socket>(() => new Promise((res, rej) => {
 
-        tunnel({ auth, host: url.hostname, port: ports.proxy }),
+            const opts = {
+                host: url.hostname,
+                port: ports.server,
+                logger: pino({
+                    base: null,
+                    prettyPrint: false,
+                    enabled: true,
+                }),
+                abort: F.constVoid,
+                hook: (socket: NodeJS.ReadWriteStream) => TE.rightIO(() => {
+                    res(socket as never);
+                }),
+            };
+
+            void u.run(F.pipe(
+
+                opts,
+
+                chain({
+                    auth,
+                    host: url.hostname,
+                    port: ports.proxy,
+                    protocol: 'socks5' as const,
+                    tags: new Set<string>([]),
+                }),
+
+                TE.mapLeft(rej),
+
+            ));
+
+        })),
 
         TE.chain(conn => fetchToString(
             flushHeaders(
