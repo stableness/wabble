@@ -20,9 +20,11 @@ const { isPrivate, cidrSubnet, isEqual: eqIP } = PKG_ip;
 
 import {
     eq as Eq,
+    date as D,
     either as E,
     task as T,
     taskEither as TE,
+    io as IO,
     option as O,
     string as Str,
     state as S,
@@ -41,6 +43,7 @@ import {
     readonlyArray as stdA,
     either as stdE,
     boolean as stdB,
+    number as stdNum,
     function as stdF,
 } from 'fp-ts-std';
 
@@ -293,6 +296,21 @@ export function loopNext <T> (list: ArrayLike<T>) {
     return () => gen.next().value;
 
 }
+
+
+
+
+
+export const elapsed = (cb: Fn<number, IO.IO<unknown>>) => F.flow(
+    T.bindTo('result'),
+    T.apS('start', T.fromIO(D.now)),
+    T.bind('end', ({ start }) => F.pipe(
+        T.fromIO(D.now),
+        T.map(stdNum.subtract(start)),
+    )),
+    T.chainFirstIOK(({ end }) => cb(end)),
+    T.map(({ result }) => result),
+);
 
 
 

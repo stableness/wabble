@@ -45,6 +45,7 @@ import {
     loopNext,
     genLooping,
     sieve,
+    elapsed,
     rxTap,
     unwrapTaskEither,
     tryCatchToError,
@@ -780,6 +781,35 @@ describe('timeout', () => {
         await expect(future).rejects.toThrow();
 
     }, 10);
+
+});
+
+
+
+
+
+describe('elapsed', () => {
+
+    test('', () => {
+
+        jest.useRealTimers();
+
+        const delay = 50;
+        const data = 'foobar';
+
+        return run(F.pipe(
+            T.delay (delay) (TE.of(data)),
+            elapsed(time => () => {
+                expect(time).toBeGreaterThan(delay * 0.8);
+                expect(time).toBeLessThan(delay * 1.2);
+            }),
+            TE.match(
+                e => expect(e).toBeUndefined(),
+                a => expect(a).toBe(data),
+            ),
+        ));
+
+    }, 100);
 
 });
 
