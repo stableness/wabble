@@ -20,6 +20,7 @@ import {
 
 import {
 
+    run,
     mem,
     noop,
     chunksOf,
@@ -105,7 +106,7 @@ describe('numberToUInt16BE', () => {
         8080,
     ])('%s', item => {
 
-        run(
+        check(
             typeof item === 'string'
                 ? item
                 : item.toString(16).padStart(4, '0'),
@@ -125,7 +126,7 @@ describe('numberToUInt16BE', () => {
 
     const h = R.curryN(2, Buffer.from)(R.__, 'hex');
 
-    const run = R.converge(
+    const check = R.converge(
         (a: Buffer, b: Buffer) => expect(a).toEqual(b), [
             R.o(numberToUInt16BE, R.curry(parseInt)(R.__, 16)),
             h,
@@ -175,7 +176,7 @@ describe('EVP_BytesToKey', () => {
 
 describe('portNormalize', () => {
 
-    const run = R.o(portNormalize, R.constructN(1, URL));
+    const read = R.o(portNormalize, R.constructN(1, URL));
 
     test.each([
 
@@ -189,7 +190,7 @@ describe('portNormalize', () => {
         [ 'https://example.com:80', 80 ],
 
     ])('%s - %i', (url, port) => {
-        expect(run(url)).toBe(port);
+        expect(read(url)).toBe(port);
     });
 
 });
