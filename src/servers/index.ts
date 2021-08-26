@@ -309,6 +309,26 @@ export const destroyBy: Rd.Reader<
 
 
 
+export function elapsed (remote: Remote, { logger }: ChainOpts) {
+
+    return u.elapsed(ping => () => {
+
+        const proxy = F.pipe(
+            remote,
+            R.pick([ 'host', 'port', 'protocol' ]),
+            R.mergeLeft({ ping }),
+        );
+
+        logger.child({ proxy }).trace('Elapsed');
+
+    });
+
+}
+
+
+
+
+
 const unknownRemote = ({ protocol }: Remote) => {
     return new Error(`Non supported protocol [${ protocol }]`);
 };
