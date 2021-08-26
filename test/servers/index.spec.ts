@@ -16,9 +16,84 @@ import {
 import * as u from '../../src/utils/index.js';
 
 import {
+    race,
     resolve,
     updateCache,
 } from '../../src/servers/index.js';
+
+
+
+
+
+describe('race', () => {
+
+    const fst = 'fst';
+    const snd = 'snd';
+
+    const error = new Error('timeout');
+    const race80ms = race (error) (80);
+
+    test('empty', () => {
+
+        expect(race80ms([        ])).toBe(O.none);
+        expect(race80ms([ O.none ])).toBe(O.none);
+
+    });
+
+    test('on time', () => {
+
+        expect.assertions(1);
+
+        return u.run(F.pipe(
+
+            race80ms([
+                O.some([ T.delay (10) (TE.of(fst)) ] ),
+                O.some([ T.delay (60) (TE.of(snd)) ] ),
+            ]),
+
+            TE.fromOption(() => new Error('empty')),
+
+            TE.flatten,
+
+            TE.bimap(expect, expect),
+
+            TE.matchW(
+                e => e.toBeUndefined(),
+                a => a.toBe(fst),
+            ),
+
+        ));
+
+    }, 100);
+
+    test('over time', () => {
+
+        expect.assertions(1);
+
+        return u.run(F.pipe(
+
+            race80ms([
+                O.some([ T.delay (85) (TE.of(fst)) ] ),
+                O.none,
+                O.some([ T.delay (95) (TE.of(snd)) ] ),
+            ]),
+
+            TE.fromOption(() => new Error('empty')),
+
+            TE.flatten,
+
+            TE.bimap(expect, expect),
+
+            TE.matchW(
+                e => e.toBe(error),
+                a => a.toBeUndefined(),
+            ),
+
+        ));
+
+    }, 100);
+
+});
 
 
 
