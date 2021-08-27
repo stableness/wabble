@@ -57,6 +57,7 @@ jobs:
           ls -lh dist/bin.cjs
           cat <<-EOF > codecov.yml
           codecov:
+            allow_coverage_offsets: True
             notify:
               after_n_builds: 3
           EOF
