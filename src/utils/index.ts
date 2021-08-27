@@ -20,9 +20,11 @@ const { isPrivate, cidrSubnet, isEqual: eqIP } = PKG_ip;
 
 import {
     eq as Eq,
+    date as D,
     either as E,
     task as T,
     taskEither as TE,
+    io as IO,
     option as O,
     string as Str,
     state as S,
@@ -41,6 +43,7 @@ import {
     readonlyArray as stdA,
     either as stdE,
     boolean as stdB,
+    number as stdNum,
     function as stdF,
 } from 'fp-ts-std';
 
@@ -93,6 +96,18 @@ export function rxTap <T> (fn: (arg: T) => void) {
 
 
 export const Undefined = F.constUndefined();
+
+
+
+
+
+export const eqErrorWithCode = Eq.fromEquals<ErrorWithCode>((a, b) =>
+    a === b
+    || a instanceof ErrorWithCode
+    && b instanceof ErrorWithCode
+    && a.code === b.code
+    && a.code != null,
+);
 
 
 
@@ -286,6 +301,21 @@ export function loopNext <T> (list: ArrayLike<T>) {
 
 
 
+export const elapsed = (cb: Fn<number, IO.IO<unknown>>) => F.flow(
+    T.bindTo('result'),
+    T.apS('start', T.fromIO(D.now)),
+    T.bind('end', ({ start }) => F.pipe(
+        T.fromIO(D.now),
+        T.map(stdNum.subtract(start)),
+    )),
+    T.chainFirstIOK(({ end }) => cb(end)),
+    T.map(({ result }) => result),
+);
+
+
+
+
+
 export async function collectAsyncIterable <T> (source: AsyncIterable<T>) {
 
     const list: T[] = [];
@@ -383,6 +413,46 @@ export function writeToTaskEither (stream: NodeJS.WritableStream) {
 export function readToTaskEither (stream: NodeJS.ReadableStream) {
 
     return catchKToError(asyncReadable(stream).read);
+
+}
+
+
+
+
+
+export const bracket: <EE, AA, BB> (
+    acquire: TE.TaskEither<EE, AA>,
+    use: (a: AA) => TE.TaskEither<EE, BB>,
+    release: (a: AA, e: E.Either<EE, BB>) => TE.TaskEither<EE, unknown>,
+) => TE.TaskEither<EE, BB> = TE.bracket as never;
+
+
+
+
+
+export function raceTaskByTimeout (ms: number, e: string | Error) {
+
+    return <M> (...tasks: ReadonlyArray<TE.TaskEither<Error, M>>) => () => {
+
+        let ref: NodeJS.Timeout;
+
+        return Promise.race([
+
+            ...tasks.map(run),
+
+            new Promise<E.Either<Error, never>>(resolve => {
+
+                ref = setTimeout(F.flow(
+                    E.toError,
+                    E.left,
+                    resolve,
+                ), ms, e);
+
+            }),
+
+        ]).finally(() => clearTimeout(ref));
+
+    };
 
 }
 

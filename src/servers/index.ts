@@ -1,4 +1,5 @@
 import net from 'net';
+import type { Writable } from 'stream';
 
 import type { Logger } from 'pino';
 
@@ -10,6 +11,8 @@ import {
     taskEither as TE,
     readerTaskEither as RTE,
     readonlyMap as M,
+    reader as Rd,
+    number as Num,
     io as IO,
     either as E,
     option as O,
@@ -19,6 +22,10 @@ import {
     readonlyArray as A,
     readonlyNonEmptyArray as NA,
 } from 'fp-ts';
+
+import {
+    function as stdF,
+} from 'fp-ts-std';
 
 import type { Remote } from '../config.js';
 import * as u from '../utils/index.js';
@@ -81,13 +88,29 @@ export function connect (opts: Opts, server: Remote | 'origin') {
 
 
 
-const race = F.flow(
-    A.compact,
-    <T> (queue: readonly T[]) =>
-        // bailout if only have the timeout task in queue
-        queue.length < 2 ? O.none : O.some(queue.flat() as never),
-    O.map(monoid.concatAll(T.getRaceMonoid<E.Either<Error, string>>())),
-);
+const raceTill = race(new Error('DNS resolving timeout'));
+
+export function race (err: Error) {
+
+    return stdF.memoize (Num.Eq) (ms => F.flow(
+
+        monoid.concatAll(
+            O.getMonoid(
+                A.getMonoid<TE.TaskEither<Error, string>>(),
+            ),
+        ),
+
+        O.chain(NA.fromReadonlyArray),
+
+        O.map(
+            F.tupled(
+                u.raceTaskByTimeout(ms, err),
+            ),
+        ),
+
+    ));
+
+}
 
 
 
@@ -108,8 +131,7 @@ export function resolve (opts: Opts) {
 
         O.map(TE.right),
 
-        O.alt(() => race([
-            O.some(NA.of(T.delay (timeout) (timeoutTE))),
+        O.alt(() => raceTill (timeout) ([
             O.map (NA.map(fromDoH(opts))) (doh),
             O.map (NA.map(fromDoT(opts))) (dot),
             O.map (NA.map(fromDNS(opts))) (dns),
@@ -146,7 +168,7 @@ const from_DoH_DoT = (type: string) => (opts: Opts) => (query: Query) => {
 
         TE.chain(TE.fromOption(no_valid_entries)),
 
-        TE.chainFirstW(({ data, ttl }) => {
+        TE.chainFirst(({ data, ttl }) => {
             return updateCache (data) (ttl) (opts);
         }),
 
@@ -186,7 +208,7 @@ const fromDNS = (opts: Opts) => (query: DNS_query) => {
 
         TE.chain(TE.fromOption(no_valid_entries)),
 
-        TE.chainFirstW(({ address, ttl }) => {
+        TE.chainFirst(({ address, ttl }) => {
             return updateCache (address) (ttl) (opts);
         }),
 
@@ -213,7 +235,7 @@ export const updateCache: u.CurryT<[
     string,
     number,
     Pick<Opts, 'host' | 'resolver'>,
-    TE.TaskEither<void, HashMap>,
+    TE.TaskEither<Error, HashMap>,
 
 ]> = ip => seconds => opts => {
 
@@ -223,7 +245,7 @@ export const updateCache: u.CurryT<[
         TE.rightIO(read),
         TE.chain(TE.fromPredicate(
             P.not(M.member (Str.Eq) (host)),
-            F.constVoid,
+            no_valid_entries,
         )),
         TE.chainFirstIOK(() => modify(M.upsertAt (Str.Eq) (host, ip))),
         TE.chainFirstIOK(() => () => {
@@ -244,21 +266,64 @@ export const updateCache: u.CurryT<[
 
 
 
-export const netConnectTo: u.Fn<net.TcpNetConnectOpts, net.Socket> = R.compose(
+export const netConnectTo = F.pipe(
 
-    R.tap(socket => socket
-        .setNoDelay(true)
-        .setTimeout(1000 * 5)
-        .setKeepAlive(true, 1000 * 60),
-    ),
+    Rd.asks(net.connect as u.Fn<net.TcpNetConnectOpts, net.Socket>),
 
-    net.connect as u.Fn<net.NetConnectOpts, net.Socket>,
-
-    R.mergeRight({
-        allowHalfOpen: true,
+    Rd.chainFirst(socket => () => {
+        socket.setNoDelay(true);
     }),
 
 );
+
+
+
+
+
+export const destroyBy: Rd.Reader<
+
+    u.ErrorWithCode,
+
+    F.FunctionN<
+        [
+            Pick<Writable, 'destroy'>,
+            E.Either<Error, unknown>,
+        ],
+        TE.TaskEither<never, unknown>
+    >
+
+> = error => (req, e) => F.pipe(
+
+    E.swap(e),
+    O.fromEither,
+    O.filter(u.curry2 (u.eqErrorWithCode.equals) (error)),
+    O.map(err => () => {
+        req.destroy(err);
+    }),
+    O.getOrElse(F.constant(F.constVoid)),
+    TE.rightIO,
+
+);
+
+
+
+
+
+export function elapsed (remote: Remote, { logger }: ChainOpts) {
+
+    return u.elapsed(ping => () => {
+
+        const proxy = F.pipe(
+            remote,
+            R.pick([ 'host', 'port', 'protocol' ]),
+            R.mergeLeft({ ping }),
+        );
+
+        logger.child({ proxy }).trace('Elapsed');
+
+    });
+
+}
 
 
 
@@ -291,10 +356,6 @@ const checkBlockingHost = TE.filterOrElse(
     P.not(u.isBlockedIP),
     F.constant(new u.ErrorWithCode('BLOCKED_HOST', 'Blocked via DoH or DNS')),
 );
-
-
-
-const timeoutTE = TE.left(new Error('timeout'));
 
 
 

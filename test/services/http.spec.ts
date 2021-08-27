@@ -16,6 +16,8 @@ import * as Rx from 'rxjs';
 
 import * as R from 'ramda';
 
+import pino from 'pino';
+
 import Defer from 'p-defer';
 
 import {
@@ -25,6 +27,10 @@ import {
 import {
     httpProxy,
 } from '../../src/services/http.js';
+
+import {
+    chain as chainHttp,
+} from '../../src/servers/http.js';
 
 import * as u from '../../src/utils/index.js';
 
@@ -334,27 +340,43 @@ export const temp = u.run(function () {
 
     const CONNECT: Result<TE_ES> = ports => ({ url }) => {
 
-        const { headers } = genAuth(url);
+        const { basic } = genAuth(url);
 
         return TE.of(F.tuple(F.pipe(
 
-            u.tryCatchToError(() => {
+            u.tryCatchToError<net.Socket>(() => new Promise((res, rej) => {
 
-                const req = flushHeaders(
-                    http.request({
-                        headers,
+                void u.run(F.pipe(
+
+                    TE.of(chainHttp({
                         host: url.hostname,
                         port: ports.proxy,
-                        method: 'CONNECT',
-                        path: R.join(':', [ url.hostname, ports.server ]),
+                        protocol: 'http' as const,
+                        auth: F.pipe(
+                            basic,
+                            O.map(({ username,     password }) =>
+                                `${  username }:${ password }`,
+                            ),
+                        ),
+                        ssl: { verify: false },
+                        tags: new Set<string>([]),
+                    })),
+
+                    TE.flap({
+                        host: url.hostname,
+                        port: ports.server,
+                        logger: pino(),
+                        abort: F.constVoid,
+                        hook: TE.fromIOK(socket => () => res(socket as never)),
                     }),
-                );
 
-                return once(req, 'connect');
+                    TE.flatten,
 
-            }),
+                    TE.mapLeft(rej),
 
-            TE.map(R.nth(1)),
+                ));
+
+            })),
 
             TE.chain((conn: net.Socket) => fetchToString(
                 flushHeaders(

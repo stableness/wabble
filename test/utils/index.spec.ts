@@ -20,6 +20,7 @@ import {
 
 import {
 
+    run,
     mem,
     noop,
     chunksOf,
@@ -44,11 +45,13 @@ import {
     loopNext,
     genLooping,
     sieve,
+    elapsed,
     rxTap,
     unwrapTaskEither,
     tryCatchToError,
     writeToTaskEither,
     timeout,
+    raceTaskByTimeout,
     str2arr,
     toByteArray,
     readFile,
@@ -58,6 +61,7 @@ import {
     basicInfo,
     groupBy,
     ErrorWithCode,
+    eqErrorWithCode,
     genLevel,
 
 } from '../../src/utils/index.js';
@@ -105,7 +109,7 @@ describe('numberToUInt16BE', () => {
         8080,
     ])('%s', item => {
 
-        run(
+        check(
             typeof item === 'string'
                 ? item
                 : item.toString(16).padStart(4, '0'),
@@ -125,7 +129,7 @@ describe('numberToUInt16BE', () => {
 
     const h = R.curryN(2, Buffer.from)(R.__, 'hex');
 
-    const run = R.converge(
+    const check = R.converge(
         (a: Buffer, b: Buffer) => expect(a).toEqual(b), [
             R.o(numberToUInt16BE, R.curry(parseInt)(R.__, 16)),
             h,
@@ -175,7 +179,7 @@ describe('EVP_BytesToKey', () => {
 
 describe('portNormalize', () => {
 
-    const run = R.o(portNormalize, R.constructN(1, URL));
+    const read = R.o(portNormalize, R.constructN(1, URL));
 
     test.each([
 
@@ -189,7 +193,7 @@ describe('portNormalize', () => {
         [ 'https://example.com:80', 80 ],
 
     ])('%s - %i', (url, port) => {
-        expect(run(url)).toBe(port);
+        expect(read(url)).toBe(port);
     });
 
 });
@@ -689,6 +693,53 @@ describe('ErrorWithCode', () => {
 
 
 
+describe('eqErrorWithCode', () => {
+
+    test('', () => {
+
+        {
+            const error = new ErrorWithCode();
+            expect(eqErrorWithCode.equals(error, error)).toBe(true);
+        }
+
+        expect(eqErrorWithCode.equals(
+            new ErrorWithCode('err', 'foo'),
+            new ErrorWithCode('err', 'bar'),
+        )).toBe(true);
+
+        expect(eqErrorWithCode.equals(
+            new ErrorWithCode(''),
+            new ErrorWithCode(''),
+        )).toBe(true);
+
+        expect(eqErrorWithCode.equals(
+            new ErrorWithCode(),
+            new ErrorWithCode(),
+        )).toBe(false);
+
+        expect(eqErrorWithCode.equals(
+            new ErrorWithCode('foo', 'wat'),
+            new ErrorWithCode('bar', 'wat'),
+        )).toBe(false);
+
+        expect(eqErrorWithCode.equals(
+            new Error(),
+            new ErrorWithCode(),
+        )).toBe(false);
+
+        expect(eqErrorWithCode.equals(
+            new Error(        'foo'),
+            new ErrorWithCode('foo', 'wat'),
+        )).toBe(false);
+
+    });
+
+});
+
+
+
+
+
 describe('mem', () => {
 
     test('', () => {
@@ -730,6 +781,82 @@ describe('timeout', () => {
         await expect(future).rejects.toThrow();
 
     }, 10);
+
+});
+
+
+
+
+
+describe('elapsed', () => {
+
+    test('', () => {
+
+        jest.useRealTimers();
+
+        const delay = 50;
+        const data = 'foobar';
+
+        return run(F.pipe(
+            T.delay (delay) (TE.of(data)),
+            elapsed(time => () => {
+                expect(time).toBeGreaterThan(delay * 0.8);
+                expect(time).toBeLessThan(delay * 1.2);
+            }),
+            TE.match(
+                e => expect(e).toBeUndefined(),
+                a => expect(a).toBe(data),
+            ),
+        ));
+
+    }, 100);
+
+});
+
+
+
+
+
+describe('raceTaskByTimeout', () => {
+
+    beforeEach(() => {
+        jest.useRealTimers();
+    });
+
+    const data = 'foobar';
+
+    test('on time', () => {
+
+        const race500ms = raceTaskByTimeout(40, 'times out');
+
+        const task = F.pipe(
+            race500ms(
+                T.delay(10) (TE.of(data)),
+                T.delay(25) (TE.of('wat')),
+            ),
+            TE.toUnion,
+        );
+
+        return expect(task()).resolves.toStrictEqual(data);
+
+    }, 50);
+
+    test('over time', () => {
+
+        const error = new Error('times out');
+
+        const race500ms = raceTaskByTimeout(10, error);
+
+        const task = F.pipe(
+            TE.of(data),
+            T.delay(40),
+            race500ms,
+            TE.toUnion,
+        );
+
+        return expect(task()).resolves.toBe(error);
+
+    }, 50);
 
 });
 
