@@ -118,19 +118,22 @@ describe('numberToUInt16BE', () => {
     });
 
     test('overflow', () => {
-        expect(numberToUInt16BE(0xFFFF + 1)).toEqual(h('FFFF'));
+        expect(numberToUInt16BE(0xFFFF + 1)).toStrictEqual(h('FFFF'));
     });
 
     test('negative', () => {
-        expect(numberToUInt16BE(-1)).toEqual(h('0000'));
+        expect(numberToUInt16BE(-1)).toStrictEqual(h('0000'));
     });
 
 
 
-    const h = R.curryN(2, Buffer.from)(R.__, 'hex');
+    const h = F.flow(
+        R.curryN(2, Buffer.from)(R.__, 'hex'),
+        bind(Uint8Array).from,
+    );
 
     const check = R.converge(
-        (a: Buffer, b: Buffer) => expect(a).toEqual(b), [
+        (a: Buffer, b: Buffer) => expect(a).toStrictEqual(b), [
             R.o(numberToUInt16BE, R.curry(parseInt)(R.__, 16)),
             h,
         ],
