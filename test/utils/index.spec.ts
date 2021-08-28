@@ -603,7 +603,11 @@ describe('socks5Handshake', () => {
         [ 222, 'example.com' ],
 
     ])('[%s] %s', (port, host) => {
-        expect(socks5Handshake(host, port)).toEqual(concat(domain(host, port)));
+        expect(
+            socks5Handshake(host, port),
+        ).toStrictEqual(
+            concat(domain(host, port)),
+        );
     });
 
     const name = R.converge(
