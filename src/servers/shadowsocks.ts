@@ -1,5 +1,4 @@
 import crypto from 'crypto';
-import { once } from 'events';
 import { Transform, TransformCallback } from 'stream';
 
 import * as R from 'ramda';
@@ -84,13 +83,10 @@ export const tunnel = (remote: ConnOpts) => u.bracket(
 
     TE.rightIO(() => netConnectTo(remote)),
 
-    socket => race(u.tryCatchToError(async () => {
-
-        await once(socket, 'connect');
-
-        return socket;
-
-    })),
+    socket => F.pipe(
+        race(u.onceTE('connect', socket)),
+        TE.map(F.constant(socket)),
+    ),
 
     destroyBy(timeoutError),
 

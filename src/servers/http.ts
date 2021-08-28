@@ -1,7 +1,6 @@
 import https from 'https';
 import http from 'http';
-
-import { once } from 'events';
+import type { Socket } from 'net';
 
 import * as R from 'ramda';
 
@@ -67,7 +66,7 @@ export const tunnel = (opts: Http) => (path: string) => u.bracket(
 
         const connect = protocol === 'http' ? http.request : https.request;
 
-        return connect({
+        const req = connect({
 
             host,
             port,
@@ -78,18 +77,14 @@ export const tunnel = (opts: Http) => (path: string) => u.bracket(
 
         });
 
-    }),
-
-    req => race(u.tryCatchToError(async () => {
-
         req.setNoDelay(true);
         req.flushHeaders();
 
-        await once(req, 'connect');
+        return req;
 
-        return req.socket;
+    }),
 
-    })),
+    req => race(u.onceSndTE<Socket>('connect', req)),
 
     destroyBy(timeoutError),
 
