@@ -19,6 +19,7 @@ import PKG_ip from 'ip';
 const { isPrivate, cidrSubnet, isEqual: eqIP } = PKG_ip;
 
 import {
+    monoid as Md,
     eq as Eq,
     date as D,
     either as E,
@@ -258,6 +259,15 @@ export class ErrorWithCode extends Error {
     }
 
 }
+
+
+
+
+
+export const monoidBuffer: Md.Monoid<Uint8Array> = {
+    empty: Uint8Array.of(),
+    concat: (x, y) => Uint8Array.from(Buffer.concat([ x, y ])),
+};
 
 
 
