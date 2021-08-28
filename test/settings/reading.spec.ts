@@ -217,6 +217,7 @@ describe('convert', () => {
                 { uri: 'http://foo:bar@127.0.0.1:8080' },
                 { uri: 'ss://127.0.0.1', key: 'foobar' },
                 { uri: 'ss://127.0.0.1', key: 'foobar', alg: 'aes-128-ctr' },
+                { uri: 'trojan://foobar@127.0.0.1', ssl: { verify: true } },
                 { uri: 'trojan://127.0.0.1', password: 'foobar', ssl: { verify: true } },
                 { uri: 'trojan://127.0.0.1', password: 'foobar', ssl: { sni: 'localhost' } },
             ],
