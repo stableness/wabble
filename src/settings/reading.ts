@@ -113,7 +113,7 @@ const decodeServers = F.pipe(
 
             F.pipe(
 
-                Trojan.parse({ ssl: {}, ...server }),
+                Trojan.parse({ ssl: {}, password: username, ...server }),
 
                 E.mapLeft(Dc.draw),
 
