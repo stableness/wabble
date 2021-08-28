@@ -32,6 +32,7 @@ import {
     separated as Sp,
     refinement as Rf,
     reader as Rd,
+    tuple as Tp,
     function as F,
     chainRec as CR,
     readonlyArray as A,
@@ -225,6 +226,26 @@ export const rules = run(function () {
 
 
 export const noop = F.constVoid;
+
+
+
+
+
+export const onceF = <T extends unknown[]> (
+    event: string,
+    emitter: NodeJS.EventEmitter,
+) => once(emitter, event) as Promise<T>;
+
+export const onceTE = catchKToError(onceF);
+
+export const onceTEC = stdF.curry2(onceTE);
+
+export const onceSndTE = F.flow(
+    onceTE,
+    TE.map(Tp.snd as never),
+) as <T> (...args: Parameters<typeof onceF>) => TE.TaskEither<Error, T>;
+
+export const onceSndTEC = stdF.curry2(onceSndTE);
 
 
 
