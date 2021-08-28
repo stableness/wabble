@@ -1,5 +1,6 @@
 import net from 'net';
 import http from 'http';
+import type { Socket } from 'net';
 import { once } from 'events';
 import { URL, URLSearchParams as SearchParams } from 'url';
 
@@ -398,7 +399,7 @@ export const temp = u.run(function () {
 
         return TE.of(F.tuple(F.pipe(
 
-            u.tryCatchToError(async () => {
+            TE.rightIO(() => {
 
                 const req = http.request({
                     headers,
@@ -414,17 +415,20 @@ export const temp = u.run(function () {
                     'Connection: close',
                 ]));
 
-                await once(req, 'connect');
-
-                return F.pipe(
-                    await u.collectAsyncIterable(req.socket),
-                    Buffer.concat,
-                    R.toString,
-                    R.split('\r\n\r\n'),
-                    R.last,
-                ) as string;
+                return req;
 
             }),
+
+            TE.chain(u.onceSndTEC<Socket>('connect')),
+
+            TE.chain(u.catchKToError(u.collectAsyncIterable)),
+
+            TE.map<Uint8Array[], string>(F.flow(
+                R.unary(Buffer.concat),
+                buf => buf.toString(),
+                R.split('\r\n\r\n'),
+                R.last,
+            ) as never),
 
         ), ports));
 

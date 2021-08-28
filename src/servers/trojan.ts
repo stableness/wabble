@@ -1,7 +1,5 @@
 import { connect } from 'tls';
 
-import { once } from 'events';
-
 import * as R from 'ramda';
 
 import {
@@ -66,7 +64,7 @@ export const tunnel = (opts: Trojan) => (head: Uint8Array) => u.bracket(
         } = ssl;
         /* eslint-enable indent */
 
-        return connect({
+        const socket = connect({
 
             host,
             port,
@@ -83,19 +81,17 @@ export const tunnel = (opts: Trojan) => (head: Uint8Array) => u.bracket(
 
         });
 
-    }),
-
-    socket => race(u.tryCatchToError(async () => {
-
         socket.setNoDelay(true);
-
-        await once(socket, 'secureConnect');
-
         socket.write(head);
 
         return socket;
 
-    })),
+    }),
+
+    socket => F.pipe(
+        race(u.onceTE('secureConnect', socket)),
+        TE.map(F.constant(socket)),
+    ),
 
     destroyBy(timeoutError),
 

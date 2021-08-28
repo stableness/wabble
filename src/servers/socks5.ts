@@ -1,5 +1,3 @@
-import { once } from 'events';
-
 import * as R from 'ramda';
 
 import {
@@ -63,7 +61,7 @@ export const tunnel = (remote: ConnOpts) => (head: Uint8Array) => u.bracket(
 
         return F.pipe(
 
-            race(u.tryCatchToError(() => once(socket, 'connect'))),
+            race(u.onceTE('connect', socket)),
 
             TE.chain(() => write(make(auth))),
 
