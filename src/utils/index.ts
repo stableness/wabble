@@ -19,7 +19,6 @@ import PKG_ip from 'ip';
 const { isPrivate, cidrSubnet, isEqual: eqIP } = PKG_ip;
 
 import {
-    monoid as Md,
     eq as Eq,
     date as D,
     either as E,
@@ -33,6 +32,7 @@ import {
     separated as Sp,
     refinement as Rf,
     reader as Rd,
+    monoid as Md,
     tuple as Tp,
     function as F,
     chainRec as CR,
@@ -294,10 +294,14 @@ export const chunksOf = (at: number) => (chunk: Uint8Array) => {
 
 export const socks5Handshake = mem.in50((host: string, port: number) =>
 
-    Uint8Array.from([
-        0x05, 0x01, 0x00,
-        3, host.length, ...Buffer.from(host),
-        ...numberToUInt16BE(port),
+    Md.concatAll (monoidBuffer) ([
+
+        Uint8Array.of(0x05, 0x01, 0x00, 0x03, host.length),
+
+        Buffer.from(host),
+
+        numberToUInt16BE(port),
+
     ]),
 
 );
