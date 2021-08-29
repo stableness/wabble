@@ -50,6 +50,7 @@
     "pino": "^6.4.1",
     "proxy-bind": "^1.2.1",
     "ramda": "~0.27.1",
+    "rfc4648": "^1.5.0",
     "rxjs": "^7.2.0"
   },
   "devDependencies": {
