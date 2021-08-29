@@ -581,15 +581,7 @@ export const numberToUInt16BE = stdF.guard ([
     [ R.lte(0xFFFF), F.constant(Uint8Array.of(0xFF, 0xFF)) ],
     [      R.gte(0), F.constant(Uint8Array.of(0x00, 0x00)) ],
 
-]) (mem.in100(_numberToUInt16BE));
-
-function _numberToUInt16BE (num: number) {
-
-    const buffer = Buffer.allocUnsafe(2);
-    buffer.writeUInt16BE(num, 0);
-    return Uint8Array.from(buffer);
-
-}
+]) (mem.in100((num: number) => Uint8Array.of(num >>> 8, num)));
 
 
 
