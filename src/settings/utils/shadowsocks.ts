@@ -1,6 +1,28 @@
+import { TextDecoder as TD } from 'util';
+
+import { base64url } from 'rfc4648';
+
+import { bind } from 'proxy-bind';
+
+import {
+    struct,
+    monoid as Md,
+    semigroup as Sg,
+    either as E,
+    readonlyArray as A,
+    reader as Rd,
+    string as Str,
+    option as O,
+    function as F,
+} from 'fp-ts';
+
+import {
+    function as stdF,
+} from 'fp-ts-std';
+
 import * as R from 'ramda';
 
-import { EVP_BytesToKey, Fn, Undefined } from '../../utils/index.js';
+import * as u from '../../utils/index.js';
 
 
 
@@ -12,6 +34,8 @@ export type AEAD = keyof typeof cipher.AEAD;
 
 
 
+
+export const DEFAULT_ALG = 'chacha20-poly1305';
 
 const cipher = {
 
@@ -43,95 +67,150 @@ const cipher = {
 
 
 
-const alias = R.cond([
+const alias = stdF.guard ([
     [ R.equals('chacha20-ietf-poly1305'), R.always('chacha20-poly1305') ],
     [ R.equals('chacha20-ietf'),          R.always('chacha20') ],
-    [ R.T,                                R.identity ],
-]) as Fn<string>;
+]) (F.identity);
 
 
 
 
 
-const trim: Fn<Record<string, unknown>, { key: string, alg: string }> = R.o(
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    R.evolve({
-        alg: alias,
-    }),
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    R.mergeRight({
-        alg: 'chacha20-ietf-poly1305',
-        key: '',
-    }),
+const bytesToKey = u.curry2(u.EVP_BytesToKey);
+
+const firstOf = F.untupled(Md.concatAll(O.getMonoid<string>(Sg.first())));
+
+const at = <T> (i: number) => (as: readonly T[]) => F.pipe(
+    A.lookup(i, as),
+    O.chain(u.readOptionalString),
 );
 
 
 
 
 
-const bytesToKey = R.curry(EVP_BytesToKey);
+export const readBasic = F.pipe(
+    Rd.Do,
+    Rd.apS('user', Rd.asks(at<string>(0))),
+    Rd.apS('pass', Rd.asks(at<string>(1))),
+    Rd.bind('both', ({ user, pass }) => Rd.of(F.pipe(
+        O.Do,
+        O.apS('ur', user),
+        O.apS('ps', pass),
+    ))),
+    Rd.map(({ user, pass, both }) => ({
+        user: F.pipe(
+            both,
+            O.map(({ ur }) => ur),
+        ),
+        pass: F.pipe(
+            both,
+            O.map(({ ps }) => ps),
+            O.alt(() => user),
+            O.alt(() => pass),
+        ),
+    })),
+);
+
+
+
+
+type OptStr = string | undefined;
+type AlgKey = Record<'alg' | 'key', OptStr>;
+type UserPass = Record<'username' | 'password', string>;
+
+type Opts = Partial<AlgKey & UserPass>;
+
+export function readAlgKey (opts: Opts): AlgKey {
+
+    const { alg, key, username = '', password = '' } = opts;
+
+    const userEscaped = decodeURIComponent(username);
+    const passEscaped = decodeURIComponent(password);
+
+    return F.pipe(
+        u.readOptionalString(userEscaped),
+        O.chain(O.tryCatchK(base64url.parse)),
+        O.map(bind(new TD()).decode),
+        O.chain(u.readOptionalString),
+        O.map(Str.split(':')),
+        O.getOrElseW(() => [ userEscaped, passEscaped ]),
+        readBasic,
+        ({ user, pass }) => ({
+            alg: firstOf(
+                u.readOptionalString(alg),
+                user,
+            ),
+            key: firstOf(
+                u.readOptionalString(key),
+                pass,
+                user,
+            ),
+        }),
+        struct.evolve({
+            alg: O.getOrElse<OptStr>(F.constUndefined),
+            key: O.getOrElse<OptStr>(F.constUndefined),
+        }),
+    );
+
+}
 
 
 
 
 
-export function parse (obj: Record<string, unknown>) {
+export const parse = E.tryCatchK((obj: Opts) => {
 
-    const { key, alg } = trim(obj);
+    const { key = '', alg: algOrigin } = readAlgKey(obj);
+    const alg = alias(algOrigin ?? DEFAULT_ALG);
     const divideBy = bytesToKey(key);
 
-    if (key.length > 0) {
+    const { Stream, AEAD } = cipher;
 
-        const { Stream, AEAD } = cipher;
+    if (alg in Stream) {
 
-        if (alg in Stream) {
+        const algorithm = alg as Stream;
 
-            const algorithm = alg as Stream;
+        const [ keySize, ivLength ] = Stream[algorithm];
 
-            const [ keySize, ivLength ] = Stream[algorithm];
+        return {
+            key: divideBy(keySize),
+            cipher: {
+                type: 'Stream',
+                algorithm,
+                keySize,
+                ivLength,
+            },
+        } as const;
 
-            return {
-                key: divideBy(keySize),
-                cipher: {
-                    type: 'Stream',
-                    algorithm,
-                    keySize,
-                    ivLength,
-                },
-            } as const;
+    }
 
-        }
+    if (alg in AEAD) {
 
-        if (alg in AEAD) {
+        const algorithm = alg as AEAD;
 
-            const algorithm = alg as AEAD;
+        const [
+            keySize,
+            saltSize,
+            nonceSize,
+            tagSize,
+        ] = AEAD[algorithm];
 
-            const [
+        return {
+            key: divideBy(keySize),
+            cipher: {
+                type: 'AEAD',
+                algorithm,
                 keySize,
                 saltSize,
                 nonceSize,
                 tagSize,
-            ] = AEAD[algorithm];
-
-            return {
-                key: divideBy(keySize),
-                cipher: {
-                    type: 'AEAD',
-                    algorithm,
-                    keySize,
-                    saltSize,
-                    nonceSize,
-                    tagSize,
-                },
-            } as const;
-
-        }
+            },
+        } as const;
 
     }
 
-    return Undefined;
+    throw new Error(`non supported alg [${ alg }]`);
 
-}
+}, E.toError);
 
