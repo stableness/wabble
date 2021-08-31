@@ -243,10 +243,10 @@ export const updateCache: u.CurryT<[
 
     return F.pipe(
         TE.rightIO(read),
-        TE.chain(TE.fromPredicate(
+        TE.filterOrElse(
             P.not(M.member (Str.Eq) (host)),
             no_valid_entries,
-        )),
+        ),
         TE.chainFirstIOK(() => modify(M.upsertAt (Str.Eq) (host, ip))),
         TE.chainFirstIOK(() => () => {
             void u.run(F.pipe(
