@@ -684,6 +684,7 @@ export const trimBase64URI = (raw: string) => F.pipe(
         O.tryCatch(() => base64.parse(base)),
         O.map(buf => new TD().decode(buf)),
         O.map(after => Str.replace (base, after) (raw)),
+        O.chainFirst(after => O.tryCatch(() => new URL(after))),
     )),
     O.getOrElse(F.constant(raw)),
 );
