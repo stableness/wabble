@@ -190,7 +190,7 @@ const through: u.CurryT<[
 
 ]> = host => port => data => sink => F.flow(
 
-    E.fromNullableK (new Error('parsing wrong')) (parse),
+    parse,
 
     E.map(R.mergeLeft({
         host,

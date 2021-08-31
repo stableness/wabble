@@ -99,13 +99,13 @@ const decodeServers = F.pipe(
 
         if (proto === 'ss') {
 
-            const config = ShadowSocks.parse(server);
-
-            if (config) {
-                result = baseWith({ ...config, protocol: proto } as const);
-            } else {
-                error = 'non supported cipher';
-            }
+            F.pipe(
+                ShadowSocks.parse({ username, password, ...server }),
+                E.matchW(
+                    ({ message }) => error = message,
+                    config => result = baseWith({ ...config, protocol: proto }),
+                ),
+            );
 
         }
 
