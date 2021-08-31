@@ -6,8 +6,11 @@ import crypto from 'crypto';
 import { promisify } from 'util';
 import { PathLike, promises as fs } from 'fs';
 import { pipeline } from 'stream';
+import { TextDecoder as TD } from 'util';
 
 import fetch from 'node-fetch';
+
+import { base64 } from 'rfc4648';
 
 import { asyncReadable } from 'async-readable';
 
@@ -669,9 +672,31 @@ export const readOptionalString = F.flow(
 
 
 
+export const trimBase64URI = (raw: string) => F.pipe(
+    readOptionalString(raw),
+    O.map(Str.split('://')),
+    O.chain(A.lookup(1)),
+    O.chain(readOptionalString),
+    O.map(Str.split('#')),
+    O.map(NA.head),
+    O.chain(readOptionalString),
+    O.chain(base => F.pipe(
+        O.tryCatch(() => base64.parse(base)),
+        O.map(buf => new TD().decode(buf)),
+        O.map(after => Str.replace (base, after) (raw)),
+    )),
+    O.getOrElse(F.constant(raw)),
+);
+
+
+
+
+
 export const readURL = F.pipe(
 
     readTrimmedNonEmptyString,
+
+    Dc.map(trimBase64URI),
 
     Dc.parse(str => {
 

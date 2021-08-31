@@ -19,6 +19,10 @@ import {
 } from 'fp-ts';
 
 import {
+    array as stdA,
+} from 'fp-ts-std';
+
+import {
 
     run,
     mem,
@@ -41,6 +45,7 @@ import {
     toBasicCredentials,
     readOptionalString,
     readURL,
+    trimBase64URI,
     split,
     loopNext,
     genLooping,
@@ -1000,6 +1005,51 @@ describe('readURL', () => {
 
 });
 
+
+
+
+
+describe('trimBase64URI', () => {
+
+    const a = F.identity;
+    const b = (s: string) => Buffer.from(s).toString('base64');
+
+    test.each([
+
+        'http://127.0.1:8080',
+        ' tcp://127.0.1:8080',
+        '  ss://127.0.1:8080',
+        '  ss://YWVzLTEyOC1jdHI6Zm9vYmFy@127.0.0.1',
+        '  ss://waaaaaaaaaaaaaaaat@127.0.0.1',
+        '  ss://waaaaaaaaaaaaaaaat',
+        `  ss:=${ b('wat') }#hello`,
+        `  ss:=${ b('waaaaaaaaat') }`,
+        'waaaaaaaaaaaaaaaat',
+
+    ])('unchanged - %s', raw => {
+
+        expect(trimBase64URI(raw)).toBe(raw);
+
+    });
+
+    test.each([
+
+        [   'ss://', 'a:b@localhost', '#aaa' ],
+        [ 'http://', 'a:b@localhost', '#aaa' ],
+        [ 'http://',     'localhost', '#aaa' ],
+        [ 'http://',   'example.com',     '' ],
+
+    ])('valid - %s%s%s', (p, foo, bar) => {
+
+        expect(
+            trimBase64URI(stdA.join ('') ([ p, a(foo), bar ])),
+        ).toBe(
+            trimBase64URI(stdA.join ('') ([ p, b(foo), bar ])),
+        );
+
+    });
+
+});
 
 
 
