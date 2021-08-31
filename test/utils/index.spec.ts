@@ -1024,6 +1024,7 @@ describe('trimBase64URI', () => {
         '  ss://waaaaaaaaaaaaaaaat',
         `  ss:=${ b('wat') }#hello`,
         `  ss:=${ b('waaaaaaaaat') }`,
+        `vmess://${ b(JSON.stringify({ net: 'ws', v: 2 })) }`,
         'waaaaaaaaaaaaaaaat',
 
     ])('unchanged - %s', raw => {
