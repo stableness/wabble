@@ -2,6 +2,8 @@ export * from './utils/index.js';
 export { logging, errToIgnoresBy, catchException } from './model.js';
 
 export { convert } from './settings/index.js';
+export * from './settings/crawler.js';
+
 export { netConnectTo } from './servers/index.js';
 
 export {
