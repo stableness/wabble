@@ -840,12 +840,12 @@ export const incrementLE2 = F.flow(
 
 
 
-type Obs <T> = Rx.Observable<T>;
+type TE_E <T> = TE.TaskEither<Error, T>;
 
-export function readFile (filename: PathLike): Obs<Buffer>;
-export function readFile (filename: PathLike, encoding: string): Obs<string>;
+export function readFile (filename: PathLike): TE_E<Buffer>;
+export function readFile (filename: PathLike, encoding: string): TE_E<string>;
 export function readFile (filename: PathLike, encoding?: string) {
-    return Rx.defer(() => fs.readFile(filename, encoding));
+    return tryCatchToError(() => fs.readFile(filename, encoding));
 }
 
 export const readFileInStringOf =
@@ -858,31 +858,39 @@ export const readFileInStringOf =
 
 
 
-export function ObsGet (path: string) {
+export const fetchGet = F.flow(
 
-    return Rx.defer(async () => {
+    catchKToError((url: string) => fetch(url)),
 
-        const res = await fetch(path);
+    TE.mapLeft(IO.of),
 
-        if (res.ok !== true) {
+    TE.filterOrElse(
+        res => res.ok,
+        res => () => {
             res.body.resume();
-            throw new Error(`code ${ res.status }`);
-        }
+            return new Error(`code ${ res.status }`);
+        },
+    ),
 
-        return res.text();
+    TE.mapLeft(run),
 
-    });
+    TE.chain(res => tryCatchToError(() => res.text())),
 
-}
-
-
-
+);
 
 
-export const loadPath: Fn<string, Rx.Observable<string>> = R.ifElse(
-    R.test(/^https?:\/\//),
-    ObsGet,
+
+
+export const loadPath = stdF.uncurry3 (stdF.ifElse) ([
+    fetchGet,
     readFileInStringOf('utf8'),
+    stdStr.test(/^https?:\/\//),
+]);
+
+export const loadPathObs = F.flow(
+    loadPath,
+    Rx.defer,
+    Rx.map(stdE.unsafeUnwrap),
 );
 
 
