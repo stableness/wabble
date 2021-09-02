@@ -62,7 +62,7 @@ import {
     readFile,
     readFileInStringOf,
     collectAsyncIterable,
-    loadPath,
+    loadPathObs,
     basicInfo,
     groupBy,
     ErrorWithCode,
@@ -1117,33 +1117,39 @@ describe('readFile', () => {
         hello = fixtures('files/hello');
     });
 
-    test('in String of utf8', async () => {
+    test('in String of utf8', () => {
 
-        await expect(
-
-            Rx.lastValueFrom(readFileInStringOf('utf8')(hello)),
-
-        ).resolves.toBe(world);
-
-    });
-
-    test('in Buffer', async () => {
-
-        await expect(
-
-            Rx.lastValueFrom(readFile(hello)),
-
-        ).resolves.toStrictEqual(Buffer.from(world));
+        return run(F.pipe(
+            readFileInStringOf ('utf8') (hello),
+            TE.match(
+                e => expect(e).toBeUndefined(),
+                a => expect(a).toBe(world),
+            ),
+        ));
 
     });
 
-    test('404', async () => {
+    test('in Buffer', () => {
 
-        await expect(
+        return run(F.pipe(
+            readFile(hello),
+            TE.match(
+                e => expect(e).toBeUndefined(),
+                a => expect(a).toStrictEqual(Buffer.from(world)),
+            ),
+        ));
 
-            Rx.lastValueFrom(readFile('wat')),
+    });
 
-        ).rejects.toThrowError();
+    test('404', () => {
+
+        return run(F.pipe(
+            readFile('wat'),
+            TE.match(
+                e => expect(e).toBeInstanceOf(Error),
+                a => expect(a).toBeUndefined(),
+            ),
+        ));
 
     });
 
@@ -1162,7 +1168,7 @@ describe('loadPath', () => {
 
         await expect(
 
-            Rx.lastValueFrom(loadPath(hello)),
+            Rx.lastValueFrom(loadPathObs(hello)),
 
         ).resolves.toBe(world);
 
@@ -1176,7 +1182,7 @@ describe('loadPath', () => {
 
         await expect(
 
-            Rx.lastValueFrom(loadPath('https://example.com/foo')),
+            Rx.lastValueFrom(loadPathObs('https://example.com/foo')),
 
         ).resolves.toBe('bar');
 
@@ -1190,7 +1196,7 @@ describe('loadPath', () => {
 
         await expect(
 
-            Rx.lastValueFrom(loadPath('http://example.com/error')),
+            Rx.lastValueFrom(loadPathObs('http://example.com/error')),
 
         ).rejects.toThrow();
 

@@ -113,7 +113,7 @@ export function catchException () {
 const loader$ = new Rx.ReplaySubject<string>(1);
 
 const config$ = loader$.pipe(
-    Rx.switchMap(u.loadPath),
+    Rx.switchMap(u.loadPathObs),
     Rx.map(R.unary(loadYAML)),
     Rx.map(convert),
     Rx.catchError(err => {
