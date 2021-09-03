@@ -49,6 +49,7 @@ import {
     either as stdE,
     boolean as stdB,
     number as stdNum,
+    url as stdURL,
     function as stdF,
 } from 'fp-ts-std';
 
@@ -684,7 +685,7 @@ export const trimBase64URI = (raw: string) => F.pipe(
         O.tryCatch(() => base64.parse(base)),
         O.map(buf => new TD().decode(buf)),
         O.map(after => Str.replace (base, after) (raw)),
-        O.chainFirst(after => O.tryCatch(() => new URL(after))),
+        O.chainFirst(stdURL.parseO),
     )),
     O.getOrElse(F.constant(raw)),
 );
