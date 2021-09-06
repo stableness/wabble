@@ -251,10 +251,14 @@ export const socks5Proxy =
             },
 
             abort: R.once(() => {
+
                 socket.resume();
                 socket.write(E_REFUSED, () => {
                     socket.destroy();
                 });
+
+                void u.run(u.onceTE('end', socket));
+
             }),
 
         })),
