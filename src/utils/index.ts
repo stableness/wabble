@@ -679,6 +679,20 @@ export const readOptionalString = F.flow(
 
 
 
+export const bufferToString = run(function () {
+
+    const td = new TD();
+
+    type Param = Parameters<typeof TD.prototype.decode>;
+
+    return (...rest: Param) => td.decode(...rest);
+
+});
+
+
+
+
+
 export const trimBase64URI = (raw: string) => F.pipe(
     readOptionalString(raw),
     O.map(Str.split('://')),
@@ -689,7 +703,7 @@ export const trimBase64URI = (raw: string) => F.pipe(
     O.chain(readOptionalString),
     O.chain(base => F.pipe(
         O.tryCatch(() => base64.parse(base)),
-        O.map(buf => new TD().decode(buf)),
+        O.map(bufferToString),
         O.map(after => Str.replace (base, after) (raw)),
         O.chainFirst(stdURL.parseO),
     )),
