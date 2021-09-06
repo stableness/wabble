@@ -917,6 +917,32 @@ export const loadPathObs = F.flow(
 
 
 
+export const decodeBase = run(function () {
+
+    const decode = (fn: typeof base64.parse) => F.flow(
+        Str.trim,
+        E.tryCatchK(fn, E.toError),
+        E.map(bufferToString),
+    );
+
+    const _64 = decode(base64.parse);
+
+    const _64Recovered = F.pipe(
+        Rd.asks(_64),
+        Rd.chain(e => Rd.asks(r => E.getOrElse (F.constant(r)) (e))),
+    );
+
+    return {
+        _64,
+        _64Recovered,
+    };
+
+});
+
+
+
+
+
 export const groupBy = R.groupBy;
 
 
