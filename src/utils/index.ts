@@ -93,6 +93,12 @@ export function run <F extends (...arg: unknown[]) => unknown> (fn: F) {
 
 
 
+export const rxOf = <T> (v: T) => Rx.of(v);
+
+
+
+
+
 export function rxTap <T> (fn: (arg: T) => void) {
     return Rx.tap({ next: fn });
 }
@@ -909,7 +915,7 @@ export function sieve (list: string) {
 
     return Rx.defer(() => import(list) as Promise<{ has: Has }>).pipe(
         Rx.map(R.prop('has')),
-        Rx.catchError(R.always(Rx.of(R.F as Has))),
+        Rx.catchError(R.always(rxOf(R.F as Has))),
     );
 
 }
