@@ -1,5 +1,5 @@
 import net from 'net';
-import { URL } from 'url';
+import { URL, domainToASCII } from 'url';
 import { once } from 'events';
 import { IncomingHttpHeaders } from 'http';
 import crypto from 'crypto';
@@ -302,19 +302,21 @@ export const chunksOf = (at: number) => (chunk: Uint8Array) => {
 
 
 
-export const socks5Handshake = mem.in50((host: string, port: number) =>
+export const socks5Handshake = mem.in50((host: string, port: number) => {
 
-    Md.concatAll (monoidBuffer) ([
+    const name = domainToASCII(host);
 
-        Uint8Array.of(0x05, 0x01, 0x00, 0x03, host.length),
+    return Md.concatAll (monoidBuffer) ([
 
-        Buffer.from(host),
+        Uint8Array.of(0x05, 0x01, 0x00, 0x03, name.length),
+
+        Buffer.from(name),
 
         numberToUInt16BE(port),
 
-    ]),
+    ]);
 
-);
+});
 
 
 
