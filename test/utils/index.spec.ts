@@ -12,6 +12,7 @@ import * as Rx from 'rxjs';
 import {
     option as O,
     either as E,
+    tuple as Tp,
     task as T,
     taskEither as TE,
     function as F,
@@ -20,6 +21,7 @@ import {
 
 import {
     array as stdA,
+    function as stdF,
 } from 'fp-ts-std';
 
 import {
@@ -68,6 +70,7 @@ import {
     ErrorWithCode,
     eqErrorWithCode,
     genLevel,
+    bufferToString,
 
 } from '../../src/utils/index.js';
 
@@ -617,6 +620,25 @@ describe('socks5Handshake', () => {
             concat(domain(host, port)),
         );
     });
+
+    test.each([
+
+        [ '测试.xyz', 'xn--0zwm56d.xyz' ],
+        [ 'новини.com', 'xn--b1amarcd.com' ],
+        [ '名がドメイン.com', 'xn--v8jxj3d1dzdz08w.com' ],
+
+    ])('[%s] %s', (raw, result) => {
+        expect(pick(raw)).toBe(result);
+    });
+
+    const pick = F.flow(
+        stdF.curry2 (F.flip(socks5Handshake)) (0),
+        split({ at: 5 }),
+        Tp.snd,
+        split({ at: -2 }),
+        Tp.fst,
+        bufferToString,
+    );
 
     const name = R.converge(
         R.prepend, [
