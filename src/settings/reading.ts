@@ -7,6 +7,10 @@ import {
     function as F,
 } from 'fp-ts';
 
+import {
+    either as stdE,
+} from 'fp-ts-std';
+
 import * as Dc from 'io-ts/lib/Decoder.js';
 
 import type { Config, Remote } from '../config.js';
@@ -341,10 +345,7 @@ export const convert: u.Fn<unknown, Config> = F.flow(
 
     })),
 
-    E.fold(
-        e => { throw new Error(e) },
-        F.identity,
-    ),
+    stdE.unsafeUnwrap,
 
 );
 
