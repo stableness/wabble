@@ -36,6 +36,7 @@ import {
     refinement as Rf,
     reader as Rd,
     monoid as Md,
+    semigroup as Sg,
     tuple as Tp,
     function as F,
     chainRec as CR,
@@ -502,6 +503,44 @@ export function raceTaskByTimeout (ms: number, e: string | Error) {
     };
 
 }
+
+
+
+
+
+export const readTimes = run(function () {
+
+    const pair = (unit: string, base: number) => F.flow(
+        O.fromPredicate(Str.endsWith(unit)),
+        O.map(stdStr.unappend(unit)),
+        O.chain(stdNum.floatFromString),
+        O.map(stdNum.multiply(base)),
+    );
+
+    return F.pipe(
+
+        Rd.sequenceArray([
+            pair('ms', 1),
+            pair( 's', 1000),
+            pair( 'm', 1000 * 60),
+            pair( 'h', 1000 * 60 * 60),
+            pair( 'd', 1000 * 60 * 60 * 24),
+            stdNum.floatFromString,
+        ]),
+
+        Rd.map(
+            Md.concatAll(
+                O.getMonoid<number>(
+                    Sg.first(),
+                ),
+            ),
+        ),
+
+        Rd.local(Str.trim),
+
+    );
+
+});
 
 
 

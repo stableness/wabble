@@ -71,6 +71,7 @@ import {
     eqErrorWithCode,
     genLevel,
     bufferToString,
+    readTimes,
 
 } from '../../src/utils/index.js';
 
@@ -658,6 +659,54 @@ describe('socks5Handshake', () => {
             R.o(Array.from, numberToUInt16BE),
         ],
     );
+
+});
+
+
+
+
+
+describe('readTimes', () => {
+
+    test.each([
+
+        [  '1ms',    1 ],
+        [   '1s', 1000 ],
+        [ '3e3s', 3000 * 1000 ],
+        [ '1.2s', 1200 ],
+        [   '1m', 1000 * 60 ],
+        [   '1h', 1000 * 60 * 60 ],
+        [ '  5h', 1000 * 60 * 60 * 5 ],
+        [   '2d', 1000 * 60 * 60 * 24 * 2 ],
+
+        [     '1', 1 ],
+        [   '1.2', 1.2 ],
+        [  '1.20', 1.2 ],
+        [   '1e2', 100 ],
+        [ '1.2e3', 1200 ],
+
+        [   '-1', -1 ],
+        [ '-1.1', -1.1 ],
+        [ '-3ms', -3 ],
+
+    ])('%s = %d', (str, num) => {
+
+        expect(readTimes(str)).toStrictEqual(O.of(num));
+
+    });
+
+    test.each([
+
+        '',
+        's',
+        'ms',
+        'wat1s',
+
+    ])('NOT %s', str => {
+
+        expect(readTimes(str)).toBe(O.none);
+
+    });
 
 });
 
