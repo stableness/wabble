@@ -34,11 +34,11 @@ api:
 
 resolver:
   
-  timeout: 80  # default as 80 milliseconds
+  timeout: 80ms  # default as 80 milliseconds
 
   ttl:
-    min: 3600   # minimum to 1 hour
-    max: 86400  # maximum to 1 day
+    min: 1h  # minimum to 1 hour
+    max: 1d  # maximum to 1 day
 
   upstream:
     - uri:   udp://1.1.1.1             # DNS
