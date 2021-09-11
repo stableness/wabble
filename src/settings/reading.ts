@@ -4,6 +4,7 @@ import {
     either as E,
     option as O,
     predicate as P,
+    number as Num,
     function as F,
 } from 'fp-ts';
 
@@ -209,6 +210,35 @@ export const decodeAPI = F.pipe(
 
 
 
+export const decodeTimesUnion = F.pipe(
+
+    Dc.union(Dc.number, u.readTrimmedNonEmptyString),
+
+    Dc.parse(n => {
+
+        if (Num.isNumber(n)) {
+            return Dc.success(n);
+        }
+
+        return F.pipe(
+
+            u.readTimes(n),
+
+            O.match(
+                () => Dc.failure(n, 'unreadable time'),
+                Dc.success,
+            ),
+
+        );
+
+    }),
+
+);
+
+
+
+
+
 const { MAX_SAFE_INTEGER: MAX_INT } = Number;
 const DEFAULT_RESOLVER_TIMEOUT = 80;
 
@@ -216,11 +246,11 @@ export const decodeResolver = F.pipe(
 
     Dc.partial({
 
-        timeout: Dc.number,
+        timeout: decodeTimesUnion,
 
         ttl: Dc.partial({
-            min: Dc.number,
-            max: Dc.number,
+            min: decodeTimesUnion,
+            max: decodeTimesUnion,
         }),
 
         upstream: F.pipe(

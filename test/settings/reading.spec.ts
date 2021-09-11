@@ -11,6 +11,7 @@ import {
     convert,
     filterTags,
     decodeResolver,
+    decodeTimesUnion,
     decodeAPI,
 
 } from '../../src/settings/reading.js';
@@ -166,6 +167,37 @@ describe('decodeResolver', () => {
         );
 
         expect(ttl).toStrictEqual(O.some(result));
+
+    });
+
+});
+
+
+
+
+
+describe('decodeTimesUnion', () => {
+
+    test.each([
+
+        [  5000, 5000 ],
+        [  '5s', 5000 ],
+        [  '2m', 2000 * 60 ],
+        [ '1ms',    1 ],
+
+    ])('%s', (a, b) => {
+
+        expect(
+            decodeTimesUnion.decode(a),
+        ).toStrictEqual(
+            E.of(b),
+        );
+
+    });
+
+    test('fails', () => {
+
+        expect(E.isLeft(decodeTimesUnion.decode('waaat'))).toBe(true);
 
     });
 
