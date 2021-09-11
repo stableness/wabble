@@ -698,6 +698,23 @@ export const toByteArray = R.unary(bind(Uint8Array).from);
 
 
 
+export type MSeconds = number & { readonly Num: unique symbol };
+
+export const mkMSeconds: CurryT<[
+    'ms' | 's' | 'm' | 'h' | 'd',
+    number,
+    MSeconds,
+]> = u => n => F.pipe(
+    n.toString(),
+    stdStr.append(u),
+    readTimes,
+    O.getOrElse(F.constant(0)) as never,
+);
+
+
+
+
+
 export type NonEmptyString = string & {
     readonly NonEmptyString: unique symbol;
 };

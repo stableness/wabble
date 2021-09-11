@@ -169,7 +169,7 @@ const from_DoH_DoT = (type: string) => (opts: Opts) => (query: Query) => {
         TE.chain(TE.fromOption(no_valid_entries)),
 
         TE.chainFirst(({ data, ttl }) => {
-            return updateCache (data) (ttl) (opts);
+            return updateCache (data) (mkMSecondsInSecond(ttl)) (opts);
         }),
 
         TE.chainFirstIOK(({ data: ip }) => () => {
@@ -192,6 +192,7 @@ const fromDoT = from_DoH_DoT('DoT');
 
 
 
+const mkMSecondsInSecond = u.mkMSeconds('s');
 
 /*#__NOINLINE__*/
 const fromDNS = (opts: Opts) => (query: DNS_query) => {
@@ -209,7 +210,7 @@ const fromDNS = (opts: Opts) => (query: DNS_query) => {
         TE.chain(TE.fromOption(no_valid_entries)),
 
         TE.chainFirst(({ address, ttl }) => {
-            return updateCache (address) (ttl) (opts);
+            return updateCache (address) (mkMSecondsInSecond(ttl)) (opts);
         }),
 
         TE.chainFirstIOK(({ address: ip }) => () => {
@@ -233,11 +234,11 @@ const fromDNS = (opts: Opts) => (query: DNS_query) => {
 export const updateCache: u.CurryT<[
 
     string,
-    number,
+    u.MSeconds,
     Pick<Opts, 'host' | 'resolver'>,
     TE.TaskEither<Error, HashMap>,
 
-]> = ip => seconds => opts => {
+]> = ip => ms => opts => {
 
     const { host, resolver: { ttl, cache: { read, modify } } } = opts;
 
@@ -251,10 +252,10 @@ export const updateCache: u.CurryT<[
         TE.chainFirstIOK(() => () => {
             void u.run(F.pipe(
                 T.fromIO(modify(M.deleteAt (Str.Eq) (host))),
-                T.delay(1000 * F.pipe(
+                T.delay(F.pipe(
                     ttl,
-                    O.map(({ calc }) => calc(seconds)),
-                    O.getOrElse(() => seconds),
+                    O.map(({ calc }) => calc(ms)),
+                    O.getOrElse(() => ms),
                 )),
             ));
         }),

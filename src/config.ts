@@ -7,7 +7,7 @@ import type {
 
 import * as SS from './settings/utils/shadowsocks.js';
 
-import { Fn } from './utils/index.js';
+import { Fn, MSeconds } from './utils/index.js';
 
 
 
@@ -156,12 +156,12 @@ export interface Config {
 
     resolver: {
         ttl: O.Option<{
-            min: number;
-            max: number;
-            calc: Fn<number>;
+            min: MSeconds;
+            max: MSeconds;
+            calc: Fn<MSeconds>;
         }>;
         upstream: O.Option<NA.ReadonlyNonEmptyArray<NSResolver>>;
-        timeout: number;
+        timeout: MSeconds;
     };
 
     api: O.Option<API>;

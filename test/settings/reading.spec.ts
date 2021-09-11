@@ -105,9 +105,9 @@ describe('decodeResolver', () => {
     });
 
     test.each([
-        [      0,  0 ],
-        [    -99,  0 ],
-        [     42, 42 ],
+        [    '0',  0 ],
+        [  '-99',  0 ],
+        [   '42', 42 ],
         [ void 0, 80 ],
     ])('timeout - %d %d', (timeout, result) => {
 
@@ -129,28 +129,28 @@ describe('decodeResolver', () => {
         ],
 
         [
-            { min: 500 },
-            { min: 500, max: Number.MAX_SAFE_INTEGER },
+            { min: '500' },
+            { min:  500, max: Number.MAX_SAFE_INTEGER },
         ],
 
         [
-            {         max: 900 },
-            { min: 0, max: 900 },
+            {         max: '900ms' },
+            { min: 0, max:  900 },
         ],
 
         [
-            { min: -5, max: 9 },
-            { min:  0, max: 9 },
+            { min: '-5s', max: '9s' },
+            { min:    0, max: 9000 },
         ],
 
         [
-            { min: 1, max: 9 },
-            { min: 1, max: 9 },
+            { min: '1s', max: '9s' },
+            { min: 1000, max: 9000 },
         ],
 
         [
-            { min: 9, max: 1 },
-            { min: 9, max: 9 },
+            { min: '9s', max: '1s' },
+            { min: 9000, max: 9000 },
         ],
 
     ])('ttl - %p', (origin, result) => {
@@ -180,7 +180,6 @@ describe('decodeTimesUnion', () => {
 
     test.each([
 
-        [  5000, 5000 ],
         [  '5s', 5000 ],
         [  '2m', 2000 * 60 ],
         [ '1ms',    1 ],
