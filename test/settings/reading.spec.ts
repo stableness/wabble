@@ -105,9 +105,9 @@ describe('decodeResolver', () => {
     });
 
     test.each([
-        [    '0',  0 ],
-        [  '-99',  0 ],
-        [   '42', 42 ],
+        [    '0ms',  0 ],
+        [  '-99ms',  0 ],
+        [   '42ms', 42 ],
         [ void 0, 80 ],
     ])('timeout - %d %d', (timeout, result) => {
 
@@ -129,7 +129,7 @@ describe('decodeResolver', () => {
         ],
 
         [
-            { min: '500' },
+            { min: '500ms' },
             { min:  500, max: Number.MAX_SAFE_INTEGER },
         ],
 

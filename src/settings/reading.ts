@@ -4,7 +4,6 @@ import {
     either as E,
     option as O,
     predicate as P,
-    refinement as Rf,
     function as F,
 } from 'fp-ts';
 
@@ -224,11 +223,6 @@ export const decodeTimesUnion = F.pipe(
         ),
 
     )),
-
-    Dc.refine(
-        F.constTrue as unknown as Rf.Refinement<number, u.MSeconds>,
-        'MSeconds',
-    ),
 
 );
 

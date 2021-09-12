@@ -523,7 +523,8 @@ export const readTimes = run(function () {
         O.fromPredicate(Str.endsWith(unit)),
         O.map(stdStr.unappend(unit)),
         O.chain(stdNum.floatFromString),
-        O.map(stdNum.multiply(base)),
+        O.filter(Number.isInteger as Rf.Refinement<number, MSeconds>),
+        O.map(stdNum.multiply(base) as typeof F.identity),
     );
 
     return F.pipe(
@@ -534,12 +535,11 @@ export const readTimes = run(function () {
             pair( 'm', 1000 * 60),
             pair( 'h', 1000 * 60 * 60),
             pair( 'd', 1000 * 60 * 60 * 24),
-            stdNum.floatFromString,
         ]),
 
         Rd.map(
             Md.concatAll(
-                O.getMonoid<number>(
+                O.getMonoid<MSeconds>(
                     Sg.first(),
                 ),
             ),
@@ -705,9 +705,7 @@ export const mkMSeconds: CurryT<[
     number,
     MSeconds,
 ]> = u => n => F.pipe(
-    n.toString(),
-    stdStr.append(u),
-    readTimes,
+    readTimes(`${ n }${ u }`),
     O.getOrElse(F.constant(0)) as never,
 );
 
