@@ -60,6 +60,7 @@ import {
     timeout,
     raceTaskByTimeout,
     str2arr,
+    mkMSeconds,
     toByteArray,
     readFile,
     readFileInStringOf,
@@ -668,22 +669,35 @@ describe('socks5Handshake', () => {
 
 describe('readTimes', () => {
 
+    const m = F.flip(F.untupled(stdF.uncurry2(mkMSeconds)));
+
     test.each([
 
-        [  '1ms',    1 ],
-        [   '1s', 1000 ],
-        [ '3e3s', 3000 * 1000 ],
-        [   '1m', 1000 * 60 ],
-        [   '1h', 1000 * 60 * 60 ],
-        [ '  5h', 1000 * 60 * 60 * 5 ],
-        [   '2d', 1000 * 60 * 60 * 24 * 2 ],
+        [  '1ms',     1,       1 ],
+        [   '1s', m(  1, 's'), 1000 ],
+        [ '3e3s', m(3e3, 's'), 3000 * 1000 ],
+        [   '1m', m(  1, 'm'), 1000 * 60 ],
+        [   '1h', m(  1, 'h'), 1000 * 60 * 60 ],
+        [   '5h', m(  5, 'h'), 1000 * 60 * 60 * 5 ],
+        [   '2d', m(  2, 'd'), 1000 * 60 * 60 * 24 * 2 ],
 
-        [  '-3s', -3000 ],
-        [ '-3ms', -3 ],
+        [  '-3s', m( -3,  's'), 3000 * -1 ],
+        [ '-3ms', m( -3, 'ms'),    3 * -1 ],
 
-    ])('%s = %d', (str, num) => {
+        [ '1.2e2m', m(1.2e2, 'm'), 1000 * 120 * 60 ],
 
-        expect(readTimes(str)).toStrictEqual(O.of(num));
+    ])('%s = %d', (str, a, b) => {
+
+        expect(a).toBe(b);
+        expect(readTimes(str)).toStrictEqual(O.of(a));
+
+    });
+
+    test('NaN', () => {
+
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-expect-error
+        expect(mkMSeconds ('wat') (42)).toBeNaN();
 
     });
 
@@ -692,6 +706,7 @@ describe('readTimes', () => {
         '2',
         's',
         'ms',
+        '1.23e1m',
         'wat1s',
 
     ])('NOT %s', str => {

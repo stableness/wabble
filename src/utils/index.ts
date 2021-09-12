@@ -517,24 +517,52 @@ export function raceTaskByTimeout (ms: number, e: string | Error) {
 
 
 
+export type MSeconds = number & { readonly Num: unique symbol };
+export type MSecondsU = 'ms' | 's' | 'm' | 'h' | 'd';
+
+export const mkMSeconds = (u: MSecondsU) => (n: number) => {
+
+    const eq: Rd.Reader<MSecondsU, IO.IO<boolean>> = F.flow(
+        IO.of,
+        IO.map(stdF.curry2 (Str.Eq.equals) (u)),
+    );
+
+    const multiply = stdF.flip (stdF.guard) (stdNum.multiply(NaN)) ([
+
+        [ eq('ms'), stdNum.multiply(1) ],
+        [ eq( 's'), stdNum.multiply(1000) ],
+        [ eq( 'm'), stdNum.multiply(1000 * 60) ],
+        [ eq( 'h'), stdNum.multiply(1000 * 60 * 60) ],
+        [ eq( 'd'), stdNum.multiply(1000 * 60 * 60 * 24) ],
+
+    ]);
+
+    return multiply(n) as MSeconds;
+
+};
+
+
+
+
+
 export const readTimes = run(function () {
 
-    const pair = (unit: string, base: number) => F.flow(
+    const to = (unit: MSecondsU) => F.flow(
         O.fromPredicate(Str.endsWith(unit)),
         O.map(stdStr.unappend(unit)),
         O.chain(stdNum.floatFromString),
-        O.filter(Number.isInteger as Rf.Refinement<number, MSeconds>),
-        O.map(stdNum.multiply(base) as typeof F.identity),
+        O.filter(Number.isInteger),
+        O.map(mkMSeconds(unit)),
     );
 
     return F.pipe(
 
         Rd.sequenceArray([
-            pair('ms', 1),
-            pair( 's', 1000),
-            pair( 'm', 1000 * 60),
-            pair( 'h', 1000 * 60 * 60),
-            pair( 'd', 1000 * 60 * 60 * 24),
+            to('ms'),
+            to( 's'),
+            to( 'm'),
+            to( 'h'),
+            to( 'd'),
         ]),
 
         Rd.map(
@@ -693,21 +721,6 @@ export const str2arr = R.o(R.split(/\s+/), R.trim);
 
 
 export const toByteArray = R.unary(bind(Uint8Array).from);
-
-
-
-
-
-export type MSeconds = number & { readonly Num: unique symbol };
-
-export const mkMSeconds: CurryT<[
-    'ms' | 's' | 'm' | 'h' | 'd',
-    number,
-    MSeconds,
-]> = u => n => F.pipe(
-    readTimes(`${ n }${ u }`),
-    O.getOrElse(F.constant(0)) as never,
-);
 
 
 
