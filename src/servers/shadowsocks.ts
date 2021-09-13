@@ -305,6 +305,9 @@ function genAEADDecrypt (
 
 
 
+const RC4 = 'rc4';
+const EMPTY = Uint8Array.of();
+
 export function EncryptStream (
         algorithm: Stream,
         key: Uint8Array,
@@ -313,7 +316,14 @@ export function EncryptStream (
 ) {
 
     const iv = crypto.randomBytes(ivLength);
-    const cipher = crypto.createCipheriv(algorithm, key, iv);
+
+    const isRC4 = algorithm.startsWith(RC4);
+
+    const cipher = crypto.createCipheriv(
+        isRC4 ? RC4 : algorithm,
+        isRC4 ? u.hash.md5(Buffer.concat([ key, iv ])) : key,
+        isRC4 ? EMPTY : iv,
+    );
 
     const init = R.tap((readable: Transform) => {
         readable.push(iv);
@@ -335,7 +345,7 @@ export function EncryptStream (
 
 
 export function DecryptStream (
-        alg: Stream,
+        algorithm: Stream,
         key: Uint8Array,
         ivLength: number,
 ) {
@@ -366,7 +376,13 @@ export function DecryptStream (
 
                     const [ iv, remain ] = u.split ({ at: ivLength }) (data);
 
-                    const decipher = crypto.createDecipheriv(alg, key, iv);
+                    const isRC4 = algorithm.startsWith(RC4);
+
+                    const decipher = crypto.createDecipheriv(
+                        isRC4 ? RC4 : algorithm,
+                        isRC4 ? u.hash.md5(Buffer.concat([ key, iv ])) : key,
+                        isRC4 ? EMPTY : iv,
+                    );
 
                     return F.pipe(
                         ref.write(E.right(decipher)),

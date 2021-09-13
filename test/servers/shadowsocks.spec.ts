@@ -122,6 +122,8 @@ describe('encrypt & decrypt', () => {
 
     test.each([
 
+        'rc4',
+        'rc4-md5',
         'aes-128-ctr',
         'aes-192-ctr',
         'aes-256-ctr',

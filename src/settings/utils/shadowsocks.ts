@@ -41,6 +41,8 @@ const cipher = {
 
     Stream: {
         // algorithm: [ key, iv ]
+        'rc4':              [ 16,  0 ],
+        'rc4-md5':          [ 16, 16 ],
         'chacha20':         [ 32, 12 ],
         'aes-128-ctr':      [ 16, 16 ],
         'aes-192-ctr':      [ 24, 16 ],
