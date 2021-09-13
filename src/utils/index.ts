@@ -48,6 +48,7 @@ import {
     string as stdStr,
     readonlyArray as stdA,
     either as stdE,
+    option as stdO,
     boolean as stdB,
     number as stdNum,
     url as stdURL,
@@ -427,6 +428,14 @@ export const unwrapTaskEither = F.flow(
     T.map(stdE.unsafeUnwrap),
     run,
 );
+
+
+
+
+
+export const unsafeUnwrapO = stdO.unsafeUnwrap;
+
+export const unsafeUnwrapE = stdE.unsafeUnwrap;
 
 
 
