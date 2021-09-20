@@ -1,8 +1,4 @@
-import { TextDecoder as TD } from 'util';
-
 import { base64url } from 'rfc4648';
-
-import { bind } from 'proxy-bind';
 
 import {
     struct,
@@ -133,7 +129,7 @@ export function readAlgKey (opts: Opts): AlgKey {
     return F.pipe(
         u.readOptionalString(userEscaped),
         O.chain(O.tryCatchK(base64url.parse)),
-        O.map(bind(new TD()).decode),
+        O.map(u.bufferToString),
         O.chain(u.readOptionalString),
         O.map(Str.split(':')),
         O.getOrElseW(() => [ userEscaped, passEscaped ]),
