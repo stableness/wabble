@@ -4,7 +4,6 @@ import {
     either as E,
     option as O,
     predicate as P,
-    number as Num,
     function as F,
 } from 'fp-ts';
 
@@ -212,35 +211,25 @@ export const decodeAPI = F.pipe(
 
 export const decodeTimesUnion = F.pipe(
 
-    Dc.union(Dc.number, u.readTrimmedNonEmptyString),
+    u.readTrimmedNonEmptyString,
 
-    Dc.parse(n => {
+    Dc.parse(n => F.pipe(
 
-        if (Num.isNumber(n)) {
-            return Dc.success(n);
-        }
+        u.readTimes(n),
 
-        return F.pipe(
+        O.match(
+            () => Dc.failure(n, 'unreadable time'),
+            Dc.success,
+        ),
 
-            u.readTimes(n),
-
-            O.match(
-                () => Dc.failure(n, 'unreadable time'),
-                Dc.success,
-            ),
-
-        );
-
-    }),
+    )),
 
 );
 
 
 
 
-
-const { MAX_SAFE_INTEGER: MAX_INT } = Number;
-const DEFAULT_RESOLVER_TIMEOUT = 80;
+const DEFAULT_RESOLVER_TIMEOUT = u.mkMillisecond ('ms') (80);
 
 export const decodeResolver = F.pipe(
 
@@ -286,7 +275,12 @@ export const decodeResolver = F.pipe(
 
     }),
 
-    Dc.map(({ ttl, upstream, timeout = DEFAULT_RESOLVER_TIMEOUT }) => {
+    Dc.map(({ ttl, upstream, timeout }) => {
+
+        const mkMS = u.mkMillisecond('ms');
+
+        const Zero = mkMS(0);
+        const Max = mkMS(Number.MAX_SAFE_INTEGER);
 
         return {
 
@@ -294,8 +288,8 @@ export const decodeResolver = F.pipe(
                 O.fromNullable(ttl),
                 O.map(opts => {
 
-                    const min = R.max(0, opts.min ?? 0);
-                    const max = R.clamp(min, MAX_INT, opts.max ?? MAX_INT);
+                    const min = R.max(Zero, opts.min ?? Zero);
+                    const max = R.clamp(min, Max, opts.max ?? Max);
 
                     const calc = R.clamp(min, max);
 
@@ -306,7 +300,7 @@ export const decodeResolver = F.pipe(
 
             upstream: O.fromNullable(upstream),
 
-            timeout: R.clamp(0, MAX_INT, timeout),
+            timeout: R.clamp(Zero, Max, timeout ?? DEFAULT_RESOLVER_TIMEOUT),
 
         };
 

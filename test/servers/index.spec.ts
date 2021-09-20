@@ -13,6 +13,10 @@ import {
     function as F,
 } from 'fp-ts';
 
+import {
+    number as stdNum,
+} from 'fp-ts-std';
+
 import * as u from '../../src/utils/index.js';
 
 import {
@@ -99,6 +103,9 @@ describe('race', () => {
 
 
 
+const mkMS_s = u.mkMillisecond('s');
+const mkMS_ms = u.mkMillisecond('ms');
+
 describe('resolve', () => {
 
     const init = {
@@ -111,7 +118,7 @@ describe('resolve', () => {
         port: 443,
         host: 'example.com',
         resolver: {
-            timeout: 10,
+            timeout: mkMS_ms(10),
             dns: O.none,
             doh: O.none,
             dot: O.none,
@@ -185,7 +192,7 @@ describe('resolve', () => {
 
         const dns = O.some(NA.of(F.constant(F.pipe(
             TE.left(new Error('late')),
-            T.delay(init.resolver.timeout + 5),
+            T.delay(stdNum.add (init.resolver.timeout) (mkMS_ms(5))),
         ))));
 
         const resolver = { ...init.resolver, dns, cache };
@@ -207,7 +214,7 @@ describe('resolve', () => {
 
         const dns = O.some(NA.of(F.constant(F.pipe(
             TE.right(NA.of({ address, ttl: 10 / 1000 })),
-            T.delay(init.resolver.timeout - 5),
+            T.delay(init.resolver.timeout - mkMS_ms(5)),
         ))));
 
         const resolver = { ...init.resolver, dns };
@@ -235,7 +242,7 @@ describe('updateCache', () => {
     const val = 'val';
 
     const init = {
-        timeout: 80,
+        timeout: mkMS_ms(80),
         dns: O.none,
         doh: O.none,
         dot: O.none,
@@ -246,7 +253,7 @@ describe('updateCache', () => {
 
         const cache = u.run(Ref.newIORef(M.singleton(key, val)));
 
-        const task = updateCache (val) (10) ({
+        const task = updateCache (val) (mkMS_s(10)) ({
             host: key,
             resolver: { ...init, cache },
         });
@@ -260,7 +267,7 @@ describe('updateCache', () => {
     test('empty', async () => {
 
         const cache = u.run(Ref.newIORef(M.empty));
-        const delay = 10;
+        const delay = mkMS_s(10);
 
         jest.useFakeTimers();
 
@@ -286,9 +293,9 @@ describe('updateCache', () => {
         {
 
             const ttl = {
-                min: 1,
-                max: 5,
-                calc: R.clamp(1, 5),
+                min: mkMS_s(1),
+                max: mkMS_s(5),
+                calc: R.clamp(mkMS_s(1), mkMS_s(5)),
             };
 
             const task = updateCache (val) (delay) ({
@@ -302,7 +309,7 @@ describe('updateCache', () => {
             expect(cache.read().has(key as never)).toBe(true);
             expect(cache.read().get(key as never)).toBe(val);
 
-            jest.advanceTimersByTime(ttl.max * 1000);
+            jest.advanceTimersByTime(ttl.max);
 
             expect(cache.read().has(key as never)).toBe(false);
 

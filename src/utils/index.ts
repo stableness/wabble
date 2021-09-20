@@ -517,29 +517,57 @@ export function raceTaskByTimeout (ms: number, e: string | Error) {
 
 
 
+export type Millisecond = number & { readonly Num: unique symbol };
+export type MillisecondU = 'ms' | 's' | 'm' | 'h' | 'd';
+
+export const mkMillisecond = (u: MillisecondU) => (n: number) => {
+
+    const eq: Rd.Reader<MillisecondU, IO.IO<boolean>> = F.flow(
+        IO.of,
+        IO.map(stdF.curry2 (Str.Eq.equals) (u)),
+    );
+
+    const multiply = stdF.flip (stdF.guard) (stdNum.multiply(NaN)) ([
+
+        [ eq('ms'), stdNum.multiply(1) ],
+        [ eq( 's'), stdNum.multiply(1000) ],
+        [ eq( 'm'), stdNum.multiply(1000 * 60) ],
+        [ eq( 'h'), stdNum.multiply(1000 * 60 * 60) ],
+        [ eq( 'd'), stdNum.multiply(1000 * 60 * 60 * 24) ],
+
+    ]);
+
+    return multiply(n) as Millisecond;
+
+};
+
+
+
+
+
 export const readTimes = run(function () {
 
-    const pair = (unit: string, base: number) => F.flow(
+    const to = (unit: MillisecondU) => F.flow(
         O.fromPredicate(Str.endsWith(unit)),
         O.map(stdStr.unappend(unit)),
         O.chain(stdNum.floatFromString),
-        O.map(stdNum.multiply(base)),
+        O.filter(Number.isInteger),
+        O.map(mkMillisecond(unit)),
     );
 
     return F.pipe(
 
         Rd.sequenceArray([
-            pair('ms', 1),
-            pair( 's', 1000),
-            pair( 'm', 1000 * 60),
-            pair( 'h', 1000 * 60 * 60),
-            pair( 'd', 1000 * 60 * 60 * 24),
-            stdNum.floatFromString,
+            to('ms'),
+            to( 's'),
+            to( 'm'),
+            to( 'h'),
+            to( 'd'),
         ]),
 
         Rd.map(
             Md.concatAll(
-                O.getMonoid<number>(
+                O.getMonoid<Millisecond>(
                     Sg.first(),
                 ),
             ),
