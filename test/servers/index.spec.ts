@@ -266,12 +266,11 @@ describe('updateCache', () => {
 
     test('empty', async () => {
 
-        const cache = u.run(Ref.newIORef(M.empty));
-        const delay = mkMS_s(10);
-
-        jest.useFakeTimers();
+        const delay = mkMS_ms(100);
 
         {
+
+            const cache = u.run(Ref.newIORef(M.empty));
 
             const task = updateCache (val) (delay) ({
                 host: key,
@@ -284,7 +283,7 @@ describe('updateCache', () => {
             expect(cache.read().has(key as never)).toBe(true);
             expect(cache.read().get(key as never)).toBe(val);
 
-            jest.advanceTimersByTime(delay * 1000);
+            await new Promise(res => setTimeout(() => res(0), delay));
 
             expect(cache.read().has(key as never)).toBe(false);
 
@@ -292,10 +291,12 @@ describe('updateCache', () => {
 
         {
 
+            const cache = u.run(Ref.newIORef(M.empty));
+
             const ttl = {
-                min: mkMS_s(1),
-                max: mkMS_s(5),
-                calc: R.clamp(mkMS_s(1), mkMS_s(5)),
+                min: mkMS_ms(10),
+                max: mkMS_ms(50),
+                calc: R.clamp(mkMS_ms(10), mkMS_ms(50)),
             };
 
             const task = updateCache (val) (delay) ({
@@ -309,7 +310,7 @@ describe('updateCache', () => {
             expect(cache.read().has(key as never)).toBe(true);
             expect(cache.read().get(key as never)).toBe(val);
 
-            jest.advanceTimersByTime(ttl.max);
+            await new Promise(res => setTimeout(() => res(0), ttl.max));
 
             expect(cache.read().has(key as never)).toBe(false);
 
