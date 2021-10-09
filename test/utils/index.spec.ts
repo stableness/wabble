@@ -4,6 +4,7 @@ import {
 } from '@jest/globals';
 
 import { URL } from 'url';
+import * as dgram from 'dgram';
 import { Writable, Readable } from 'stream';
 
 import nock from 'nock';
@@ -31,6 +32,7 @@ import {
     array as stdA,
     function as stdF,
     either as stdE,
+    taskEither as stdTE,
 } from 'fp-ts-std';
 
 import {
@@ -84,6 +86,9 @@ import {
     genLevel,
     bufferToString,
     readTimes,
+    sendUDP,
+    sendUDP4,
+    onceTE,
 
 } from '../../src/utils/index.js';
 
@@ -1055,6 +1060,59 @@ describe('raceTaskByTimeout', () => {
         return expect(task()).resolves.toBe(error);
 
     }, 50);
+
+});
+
+
+
+
+
+describe('sendUDP', () => {
+
+    const err = new Error('timeout');
+
+    test('timeout', () => expect(stdTE.unsafeUnwrap(
+
+        stdF.uncurry3 (sendUDP) ([
+            [
+                () => dgram.createSocket('udp4'),
+                mkMillisecond ('ms') (300),
+                err,
+            ],
+            [ '127.0.0.1', 0 ],
+            'wat',
+        ]),
+
+    )).rejects.toBe(err), 500);
+
+    test('echo', () => {
+
+        const data = 'hello, world';
+
+        const server = dgram.createSocket('udp4');
+
+        server.once('message', (msg, { address, port }) => {
+            dgram.createSocket('udp4').unref().send(msg, port, address);
+        });
+
+        server.bind({ port: 0, address: '127.0.0.1' });
+
+        return expect(stdTE.unsafeUnwrap(F.pipe(
+
+            onceTE('listening', server),
+            TE.map(() => server.address()),
+            TE.chain(({ address, port }) => {
+                return sendUDP4 ([ address, port ]) (data);
+            }),
+            TE.chainFirstIOK(() => () => {
+                server.unref().close();
+            }),
+            TE.apFirst(onceTE('close', server)),
+            TE.map(bufferToString),
+
+        ))).resolves.toEqual(data);
+
+    }, 500);
 
 });
 
