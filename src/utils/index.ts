@@ -1,4 +1,5 @@
 import net from 'net';
+import * as dgram from 'dgram';
 import { URL, domainToASCII } from 'url';
 import { once } from 'events';
 import { IncomingHttpHeaders } from 'http';
@@ -822,6 +823,42 @@ export const readURL = F.pipe(
     }),
 
 );
+
+
+
+
+export const sendUDP: CurryT<[
+
+    [ () => dgram.Socket, Millisecond, string | Error ],
+    [ string, number ],
+    string | Uint8Array,
+    TE.TaskEither<Error, Buffer>,
+
+]> = ([ gen, ms, msg ]) => ([ addr, port ]) => data => bracket(
+
+    try2TE(gen),
+
+    socket => F.pipe(
+
+        onceTE<[ Buffer ]>('message', socket),
+
+        TE.apFirst(try2TE(() => socket.send(data, port, addr))),
+
+        TE.map(NA.head),
+
+        raceTaskByTimeout(Math.max(ms, 0), msg),
+
+    ),
+
+    socket => try2TE(() => socket.unref().close()),
+
+);
+
+export const sendUDP4 = sendUDP([
+    () => dgram.createSocket('udp4'),
+    mkMillisecond ('s') (1),
+    'UDP timeout',
+]);
 
 
 
