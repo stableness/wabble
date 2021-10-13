@@ -408,6 +408,10 @@ export function tryCatchToError <A> (fn: F.Lazy<Promise<A>>) {
     return TE.tryCatch(fn, E.toError);
 }
 
+export function try2TE <A> (fn: F.Lazy<A | Promise<A>>) {
+    return TE.tryCatch(async () => await fn(), E.toError);
+}
+
 
 
 

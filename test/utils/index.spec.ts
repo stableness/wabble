@@ -55,6 +55,7 @@ import {
     elapsed,
     rxTap,
     unwrapTaskEither,
+    try2TE,
     tryCatchToError,
     writeToTaskEither,
     timeout,
@@ -526,6 +527,34 @@ describe('split', () => {
         expect(Buffer.concat([ head, tail ])).toEqual(buffer);
 
     });
+
+});
+
+
+
+
+
+describe('try2TE', () => {
+
+    const check = F.flow(
+        TE.chainFirstIOK(() => () => expect.hasAssertions()),
+        TE.match(
+            e => expect(e).toBeInstanceOf(Error),
+            v => expect(v).toBeUndefined(),
+        ),
+    );
+
+    test('catch throw', check(
+        try2TE(() => { throw new Error('wat') }),
+    ));
+
+    test('catch reject', check(
+        try2TE(() => Promise.reject('wat')),
+    ));
+
+    test('catch throw & reject', check(
+        try2TE(() => Promise.reject(F.absurd('wat' as never))),
+    ));
 
 });
 
