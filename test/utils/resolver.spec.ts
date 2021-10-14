@@ -6,6 +6,8 @@ import nock from 'nock';
 
 import {
     either as E,
+    taskEither as TE,
+    function as F,
 } from 'fp-ts';
 
 import * as R from 'ramda';
@@ -272,6 +274,29 @@ describe('genDNS', () => {
         const results = await u.run(dns('example.com'));
 
         expect(results).toStrictEqual(E.left(new Error('empty result')));
+
+    });
+
+    test('handle sync throw', () => {
+
+        const error = new Error('waaaat');
+
+        resolve4.mockImplementationOnce(() => {
+            throw error;
+        });
+
+        return u.run(F.pipe(
+
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-expect-error
+            genDNS ('1.1.1.1') (42),
+
+            TE.match(
+                e => expect(e).toBe(error),
+                v => expect(v).toBeUndefined(),
+            ),
+
+        ));
 
     });
 
