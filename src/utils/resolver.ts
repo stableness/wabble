@@ -7,7 +7,11 @@ import {
     readonlyNonEmptyArray as NA,
 } from 'fp-ts';
 
-import { run, tryCatchToError } from './index.js';
+import {
+    run,
+    try2TE,
+    tryCatchToError,
+} from './index.js';
 
 
 
@@ -147,9 +151,7 @@ export function genDNS (servers: string | readonly string[]) {
 
 export const resolve4 = (name: string) => (resolver: pDNS.Resolver) => F.pipe(
 
-    tryCatchToError(() => {
-        return resolver.resolve4(name, { ttl: true });
-    }),
+    try2TE(() => resolver.resolve4(name, { ttl: true })),
 
     TE.chain(F.flow(
         NA.fromArray,
