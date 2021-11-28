@@ -76,7 +76,20 @@ export function connect (opts: Opts, server: Remote | 'origin') {
                 return hook(netConnectTo({ host, port }));
             }
 
-            return select (server) (opts);
+            const { protocol } = server;
+
+            /* eslint-disable indent */
+            const go =
+                  protocol === 'ss'     ? chainSS(server)
+                : protocol === 'http'   ? chainHttp(server)
+                : protocol === 'https'  ? chainHttp(server)
+                : protocol === 'socks5' ? chainSocks5(server)
+                : protocol === 'trojan' ? chainTrojan(server)
+                :                         RTE.left(unknownRemote(server))
+            ;
+            /* eslint-enable indent */
+
+            return go(opts);
 
         }),
 
@@ -333,17 +346,6 @@ export function elapsed (remote: Remote, { logger }: ChainOpts) {
 const unknownRemote = ({ protocol }: Remote) => {
     return new Error(`Non supported protocol [${ protocol }]`);
 };
-
-const protocolEq = R.propEq('protocol');
-
-const select: u.Fn<Remote, RTE_O_E_V> = R.cond([
-    [ protocolEq('ss'        ), chainSS ],
-    [ protocolEq('http'    ), chainHttp ],
-    [ protocolEq('https'   ), chainHttp ],
-    [ protocolEq('socks5'), chainSocks5 ],
-    [ protocolEq('trojan'), chainTrojan ],
-    [ R.T, R.o(RTE.left, unknownRemote) ],
-]);
 
 
 
