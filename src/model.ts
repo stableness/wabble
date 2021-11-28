@@ -146,16 +146,16 @@ const rules$ = config$.pipe(
     })),
     Rx.delayWhen(() => Rx.combineLatest([ directList$, rejectList$ ])),
     Rx.withLatestFrom(rejectList$, directList$, (rules, reject, direct) => ({
-        reject: R.either(
+        reject: F.pipe(
             rules.reject.yes,
-            R.both(
+            P.or(F.pipe(
                 P.not(rules.reject.not),
-                reject,
-            ),
+                P.and(reject),
+            )),
         ),
-        direct: R.both(
+        direct: F.pipe(
             P.not(rules.proxy),
-            R.anyPass([ rules.direct, direct, u.isPrivateIP ]),
+            P.and(R.anyPass([ rules.direct, direct, u.isPrivateIP ])),
         ),
     })),
 );

@@ -2,6 +2,8 @@ import { Readable } from 'stream';
 
 import {
     option as O,
+    function as F,
+    predicate as P,
 } from 'fp-ts';
 
 import * as Rx from 'rxjs';
@@ -183,9 +185,9 @@ describe('api', () => {
                                 'Access-Control-Allow-Origin',
                             );
 
-                            const pass = R.either(
+                            const pass = F.pipe(
                                 R.equals('*'),
-                                R.equals(origin),
+                                P.or(R.equals(origin)),
                             );
 
                             expect(pass(allowed)).toBe(true);
