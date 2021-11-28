@@ -93,16 +93,15 @@ export const logging = { logger, logLevel };
 
 export function catchException () {
 
-    process.on('uncaughtException', R.cond([
+    process.on('uncaughtException', err => {
 
-        [
-            R.propEq('code', 'ECONNRESET'),
-            R.when(() => logLevel.on.error === true, bind(logger).error),
-        ],
+        const { code } = { code: 'unknown', ...err };
 
-        [ R.T, F.constVoid ],
+        if (code === 'ECONNRESET') {
+            logger.error(err);
+        }
 
-    ]) as unknown as u.Fn<Error, void>);
+    });
 
 }
 
