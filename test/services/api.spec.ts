@@ -183,7 +183,7 @@ describe('api', () => {
 
                             const allowed = res.headers.get(
                                 'Access-Control-Allow-Origin',
-                            );
+                            ) ?? '';
 
                             const pass = F.pipe(
                                 R.equals('*'),
