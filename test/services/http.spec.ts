@@ -8,10 +8,16 @@ import {
     option as O,
     function as F,
     either as E,
+    string as str,
     taskEither as TE,
     readerTaskEither as RTE,
     stateReaderTaskEither as SRTE,
 } from 'fp-ts';
+
+import {
+    function as stdF,
+    string as stdStr,
+} from 'fp-ts-std';
 
 import * as Rx from 'rxjs';
 
@@ -241,11 +247,10 @@ export const queryFrom =
             url.searchParams.get(key)
 ;
 
-export const readStr: u.Fn<string> = R.cond([
-    [ R.startsWith('-'), R.tail ],
-    [   R.endsWith('-'), R.init ],
-    [ R.T, R.identity ],
-]);
+export const readStr = stdF.guard ([
+    [ str.startsWith('-'), stdStr.dropLeft(1) ],
+    [   str.endsWith('-'), stdStr.dropRight(1) ],
+]) (F.identity);
 
 export function fetchToString (req: Req) {
 
