@@ -183,7 +183,10 @@ export const rules = run(function () {
                 Str.startsWith('CIDR,'), F.flow(
                     Str.replace('CIDR,', ''),
                     cidrSubnet,
-                    ({ contains }) => stdB.both (isIP) (contains),
+                    ({ contains }) => F.pipe(
+                        isIP,
+                        P.and(contains),
+                    ),
                 ),
             ],
             [
@@ -687,9 +690,9 @@ export function portNormalize ({ port, protocol }: URL) {
 
 
 
-export const isPrivateIP = R.both(
+export const isPrivateIP = F.pipe(
     isIP,
-    isPrivate,
+    P.and(isPrivate),
 );
 
 

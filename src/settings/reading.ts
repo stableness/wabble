@@ -411,7 +411,7 @@ export function filterTags
         R.intersection(e),
     );
 
-    return R.filter(R.o(R.both(isSubset, isExclude), t2a), servers);
+    return R.filter(R.o(F.pipe(isSubset, P.and(isExclude)), t2a), servers);
 
 }
 
