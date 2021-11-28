@@ -145,7 +145,7 @@ const rules$ = config$.pipe(
         direct: u.rules.through,
         reject: u.rules.NOT,
     })),
-    Rx.delayWhen(R.always(Rx.combineLatest([ directList$, rejectList$ ]))),
+    Rx.delayWhen(() => Rx.combineLatest([ directList$, rejectList$ ])),
     Rx.withLatestFrom(rejectList$, directList$, (rules, reject, direct) => ({
         reject: R.either(
             rules.reject.yes,
