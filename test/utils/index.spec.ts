@@ -652,7 +652,7 @@ describe('socks5Handshake', () => {
         expect(
             socks5Handshake(host, port),
         ).toStrictEqual(
-            concat(domain(host, port)),
+            domain(host, port),
         );
     });
 
@@ -686,17 +686,11 @@ describe('socks5Handshake', () => {
         stdF.uncurry2(A.prepend),
     );
 
-    const concat = R.o(
-        bind(Uint8Array).from,
-        R.concat([ 0x05, 0x01, 0x00, 0x03 ]) as unknown as Fn<Uint8Array>,
-    );
-
-    const domain = R.useWith(
-        R.concat, [
-            name,
-            R.o(Array.from, numberToUInt16BE),
-        ],
-    );
+    const domain = (s: string, n: number) => Uint8Array.from([
+        ...[ 0x05, 0x01, 0x00, 0x03 ],
+        ...name(s),
+        ...numberToUInt16BE(n),
+    ]);
 
 });
 
