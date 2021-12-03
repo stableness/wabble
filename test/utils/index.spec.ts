@@ -16,6 +16,7 @@ import {
     task as T,
     taskEither as TE,
     function as F,
+    readonlyArray as A,
     string as Str,
 } from 'fp-ts';
 
@@ -143,11 +144,14 @@ describe('numberToUInt16BE', () => {
         bind(Uint8Array).from,
     );
 
-    const check = R.converge(
-        (a: Buffer, b: Buffer) => expect(a).toStrictEqual(b), [
+    const check = F.flow(
+        stdF.fork([
             R.o(numberToUInt16BE, R.curry(parseInt)(R.__, 16)),
             h,
-        ],
+        ]),
+        F.tupled(
+            (a: Uint8Array, b: Uint8Array) => expect(a).toStrictEqual(b),
+        ),
     );
 
 });
@@ -671,11 +675,15 @@ describe('socks5Handshake', () => {
         bufferToString,
     );
 
-    const name = R.converge(
-        R.prepend, [
-            R.length,
-            R.o(Array.from, Buffer.from),
-        ],
+    const name = F.flow(
+        stdF.fork([
+            Str.size,
+            F.flow(
+                R.unary(Buffer.from),
+                R.unary(Array.from),
+            ) as Fn<string, number[]>,
+        ]),
+        stdF.uncurry2(A.prepend),
     );
 
     const concat = R.o(
