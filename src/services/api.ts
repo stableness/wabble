@@ -8,8 +8,16 @@ import { getHeapSnapshot } from 'v8';
 import {
     option as O,
     state as S,
+    string as Str,
+    eq as Eq,
+    predicate as P,
     function as F,
 } from 'fp-ts';
+
+import {
+    string as stdStr,
+    function as stdF,
+} from 'fp-ts-std';
 
 import * as R from 'ramda';
 
@@ -216,24 +224,31 @@ const stateOfReq: u.Fn<Req, S.State<Job$, Job$>> =
     r => s => Rx.partition(s, reqEq(r))
 ;
 
-const reqEq: u.CurryT<[ Req, Job, boolean ]> = R.useWith(
-    R.where, [
-        F.flow(
-            R.split(' '),
-            ([ method, url = '' ]) => ({ method, url }),
-            R.evolve({
-                method: R.equals,
-                url: R.ifElse(
-                    R.endsWith('*'),
-                    R.o(R.startsWith, R.init),
-                    R.equals,
-                ),
-            }),
-        ),
-        R.prop('req'),
-    ],
-);
+function reqEq (path: Req) {
 
+    const not_space: P.Predicate<string> = s => s !== ' ';
+
+    const split_in_space = stdF.fork([
+        stdStr.takeLeftWhile(not_space),
+        stdStr.takeRightWhile(not_space),
+    ]);
+
+    const eq_uri = Eq.tuple(
+        Str.Eq,
+        Eq.fromEquals<string>((a, b) => a.endsWith('*')
+            ? b.startsWith(stdStr.dropRight (1) (a))
+            : Str.Eq.equals(a, b),
+        ),
+    );
+
+    const [ method, url ] = split_in_space(path);
+
+    return ({ req }: Job) => eq_uri.equals(
+        [     method,           url       ],
+        [ req.method ?? '', req.url ?? '' ],
+    );
+
+}
 
 
 // eslint-disable-next-line deprecation/deprecation
