@@ -3,6 +3,7 @@ import * as R from 'ramda';
 import {
     either as E,
     option as O,
+    readonlyArray as A,
     function as F,
 } from 'fp-ts';
 
@@ -342,10 +343,20 @@ describe('filterTags', () => {
 
     const SetC = R.constructN<[string], Set<string>>(1, Set);
 
-    const wrap = R.map(R.o(R.objOf('tags'), SetC));
+    const wrap = A.map(F.flow(
+        SetC,
+        R.objOf('tags'),
+    ));
+
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
-    const unwrap = R.map(R.compose(R.join(''), Array.from, R.prop('tags')));
+    const unwrap = A.map(F.flow(
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        R.prop('tags'),
+        Array.from,
+        R.join(''),
+    ));
 
 });
 
