@@ -43,16 +43,13 @@ export const chain: u.Fn<ShadowSocks, RTE_O_E_V> = remote => opts => {
 
             u.elapsed(ping => () => {
 
-                const proxy = F.pipe(
-                    remote,
-                    R.converge(R.mergeLeft, [
-                        R.pick([ 'host', 'port', 'protocol' ]),
-                        R.o(R.pick([ 'type', 'algorithm' ]), R.prop('cipher')),
-                    ]),
-                    R.mergeLeft({ ping }),
-                );
+                const { cipher: { type, algorithm } } = remote;
+                const base = R.pick([ 'host', 'port', 'protocol' ], remote);
 
-                logger.child({ proxy }).trace('Elapsed');
+                logger
+                    .child({ ...base, type, algorithm, ping })
+                    .trace('Elapsed')
+                ;
 
             }),
 
