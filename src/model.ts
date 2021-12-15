@@ -389,7 +389,7 @@ function construct (setting: string) {
         notFound$,
 
         reload$.pipe(
-            Rx.mapTo(setting),
+            Rx.map(F.constant(setting)),
             Rx.startWith(setting),
             Rx.tap(loader$),
         ),
