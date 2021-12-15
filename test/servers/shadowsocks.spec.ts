@@ -247,7 +247,7 @@ const genSource = (data: Uint8Array) => new Readable({
 
 const genChopper = (n: number) => new Transform({
 
-    transform (chunk, _enc, cb) {
+    transform (chunk: Uint8Array, _enc, cb) {
 
         u.run(F.pipe(
             u.chunksOf (n) (chunk),
