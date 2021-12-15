@@ -110,7 +110,7 @@ describe('api', () => {
 
         ).pipe(
 
-            Rx.ignoreElements(),
+            u.rxIgnoreElements(),
             Rx.takeUntil(done$),
 
         ).subscribe();
@@ -171,7 +171,7 @@ describe('api', () => {
                 Rx.merge(
 
                     health$.pipe(
-                        Rx.ignoreElements(),
+                        u.rxIgnoreElements(),
                     ),
 
                     address$.pipe(
