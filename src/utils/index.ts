@@ -891,10 +891,10 @@ export const eqBasic = stdF.curry2(
 
 export const toBasicCredentials = R.memoizeWith(
     R.identity as typeof String,
-    R.compose(
-        R.concat('Basic '),
-        R.invoker(1, 'toString')('base64'),
-        Buffer.from,
+    F.flow(
+        R.unary(Buffer.from),
+        base64.stringify,
+        stdStr.prepend('Basic '),
     ),
 );
 
