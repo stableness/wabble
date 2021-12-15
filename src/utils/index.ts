@@ -109,6 +109,13 @@ export function rxTap <T> (fn: (arg: T) => void) {
 
 
 
+export const rxIgnoreElements: () => Rx.OperatorFunction<unknown, never> =
+    Rx.ignoreElements;
+
+
+
+
+
 export const Undefined = F.constUndefined();
 
 
