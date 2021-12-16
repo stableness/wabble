@@ -511,7 +511,7 @@ export function raceTaskByTimeout (ms: number, e: string | Error) {
 
             ...tasks.map(run),
 
-            new Promise<E.Either<Error, never>>(resolve => {
+            new Promise<E.Either<Error, M>>(resolve => {
 
                 ref = setTimeout(F.flow(
                     E.toError,
