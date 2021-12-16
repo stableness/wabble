@@ -3,10 +3,9 @@ import { URL, domainToASCII } from 'url';
 import { once } from 'events';
 import { IncomingHttpHeaders } from 'http';
 import crypto from 'crypto';
-import { promisify } from 'util';
+import { promisify, TextDecoder as TD } from 'util';
 import { PathLike, promises as fs } from 'fs';
 import { pipeline } from 'stream';
-import { TextDecoder as TD } from 'util';
 
 import fetch from 'node-fetch';
 
