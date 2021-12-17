@@ -190,9 +190,7 @@ const resolver$ = config$.pipe(
     })),
     Rx.map(({ ttl, upstream, timeout }) => {
 
-        const trim = O.chain(
-            <T> (arr: readonly T[] = []) => NA.fromReadonlyArray(arr),
-        );
+        const trim = O.chain(NA.fromReadonlyArray);
 
         const doh = trim(O.map (R.prop('https')) (upstream));
         const dot = trim(O.map (R.prop('tls')) (upstream));
