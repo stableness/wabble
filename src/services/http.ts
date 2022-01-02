@@ -1,6 +1,6 @@
 import type { Socket } from 'net';
 import { URL } from 'url';
-import { Duplex, PassThrough, Readable } from 'stream';
+import { Duplex, PassThrough } from 'stream';
 
 import http, { IncomingMessage, ServerResponse } from 'http';
 
@@ -355,7 +355,10 @@ const manualDestroy = function (this: Duplex) {
 
 
 
-type Item = Pick<Readable, 'destroyed' | 'destroy'>;
+type Item = {
+    readonly destroyed: boolean;
+    destroy (): unknown;
+};
 
 const destroyArray = /*#__NOINLINE__*/ IO.traverseArray((item: Item) => () => {
     if (item.destroyed !== true) {
