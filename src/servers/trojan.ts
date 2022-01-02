@@ -1,3 +1,4 @@
+import { type Socket } from 'net';
 import { connect } from 'tls';
 
 import * as R from 'ramda';
@@ -88,7 +89,7 @@ export const tunnel = (opts: Trojan) => (head: Uint8Array) => u.bracket(
 
     }),
 
-    socket => F.pipe(
+    (socket: Socket) => F.pipe(
         race(u.onceTE('secureConnect', socket)),
         TE.map(F.constant(socket)),
     ),

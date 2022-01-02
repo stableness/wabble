@@ -1,3 +1,5 @@
+import { type Socket } from 'net';
+
 import * as R from 'ramda';
 
 import {
@@ -52,7 +54,7 @@ export const tunnel = (remote: ConnOpts) => (head: Uint8Array) => u.bracket(
 
     TE.rightIO(() => netConnectTo(remote)),
 
-    socket => {
+    (socket: Socket) => {
 
         const { auth } = remote;
 
