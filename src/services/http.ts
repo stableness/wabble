@@ -62,7 +62,8 @@ export const httpProxy =
             }
 
             if (request.url?.startsWith('http://') === false) {
-                return response.writeHead(400).end();
+                response.writeHead(400).end();
+                return;
             }
 
             next(mapRequest(request, response));
