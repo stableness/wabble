@@ -1,3 +1,4 @@
+import { type Socket } from 'net';
 import crypto from 'crypto';
 import { Transform, TransformCallback } from 'stream';
 
@@ -80,7 +81,7 @@ export const tunnel = (remote: ConnOpts) => u.bracket(
 
     TE.rightIO(() => netConnectTo(remote)),
 
-    socket => F.pipe(
+    (socket: Socket) => F.pipe(
         race(u.onceTE('connect', socket)),
         TE.map(F.constant(socket)),
     ),
