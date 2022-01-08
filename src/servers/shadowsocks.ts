@@ -9,6 +9,7 @@ import {
     ioRef as Ref,
     state as S,
     readonlyArray as A,
+    reader as Rd,
     taskEither as TE,
     io as IO,
     ioEither as IoE,
