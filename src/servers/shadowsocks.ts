@@ -206,26 +206,34 @@ function genAEADEncrypt (
         authTagLength: number,
 ) {
 
-    const ref = u.run(Ref.newIORef(new_uint8_mem_10(nonceSize)));
+    const { read, modify } = u.run(Ref.newIORef(new_uint8_mem_10(nonceSize)));
 
-    return function (chunk: Uint8Array) {
+    return F.pipe(
 
-        const cipher = crypto.createCipheriv(
-            algorithm as crypto.CipherGCMTypes,
-            subKey,
-            ref.read(),
-            { authTagLength },
-        );
+        Rd.asks((data: Uint8Array) => ({ data })),
 
-        u.run(ref.modify(increment_LE_mem_10));
+        Rd.apSW('cipher', F.pipe(
 
-        return Buffer.concat([
-            cipher.update(chunk),
+            Rd.asks(read),
+
+            Rd.map(iv => crypto.createCipheriv(
+                algorithm as crypto.CipherGCMTypes,
+                subKey,
+                iv,
+                { authTagLength },
+            )),
+
+            Rd.apFirst(modify(increment_LE_mem_10)),
+
+        )),
+
+        Rd.map(({ cipher, data }) => Buffer.concat([
+            cipher.update(data),
             cipher.final(),
             cipher.getAuthTag(),
-        ]);
+        ])),
 
-    };
+    );
 
 }
 
