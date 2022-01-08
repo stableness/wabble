@@ -291,24 +291,35 @@ function genAEADDecrypt (
 
     const subKey = u.HKDF_SHA1(key, salt, keySize);
 
-    const ref = u.run(Ref.newIORef(new_uint8_mem_10(nonceSize)));
+    const { read, modify } = u.run(Ref.newIORef(new_uint8_mem_10(nonceSize)));
 
-    return function ([ data, tag ]: [ Uint8Array, Uint8Array ]) {
+    return F.pipe(
 
-        const decipher = crypto.createDecipheriv(
-            algorithm as crypto.CipherCCMTypes,
-            subKey,
-            ref.read(),
-            { authTagLength },
-        );
+        Rd.asks(([ data, tag ]: [ Uint8Array, Uint8Array ]) => ({ data, tag })),
 
-        decipher.setAuthTag(tag);
+        Rd.apSW('decipher', F.pipe(
 
-        u.run(ref.modify(increment_LE_mem_10));
+            Rd.asks(read),
 
-        return Buffer.concat([ decipher.update(data), decipher.final() ]);
+            Rd.map(iv => crypto.createDecipheriv(
+                algorithm as crypto.CipherCCMTypes,
+                subKey,
+                iv,
+                { authTagLength },
+            )),
 
-    };
+            Rd.apFirst(modify(increment_LE_mem_10)),
+
+        )),
+
+        Rd.chainFirst(({ decipher, tag }) => Rd.of(decipher.setAuthTag(tag))),
+
+        Rd.map(({ decipher, data }) => Buffer.concat([
+            decipher.update(data),
+            decipher.final(),
+        ])),
+
+    );
 
 }
 
