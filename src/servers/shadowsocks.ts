@@ -194,6 +194,8 @@ export function EncryptAEAD (
 
 const chop = u.chunksOf(0x3FFF);
 
+const new_uint8_mem_10 = u.mem.in10((n: number) => new Uint8Array(n));
+
 function genAEADEncrypt (
         algorithm: AEAD,
         subKey: Uint8Array,
@@ -201,7 +203,7 @@ function genAEADEncrypt (
         authTagLength: number,
 ) {
 
-    const ref = u.run(Ref.newIORef(new Uint8Array(nonceSize)));
+    const ref = u.run(Ref.newIORef(new_uint8_mem_10(nonceSize)));
 
     return function (chunk: Uint8Array) {
 
@@ -278,7 +280,7 @@ function genAEADDecrypt (
 
     const subKey = u.HKDF_SHA1(key, salt, keySize);
 
-    const ref = u.run(Ref.newIORef(new Uint8Array(nonceSize)));
+    const ref = u.run(Ref.newIORef(new_uint8_mem_10(nonceSize)));
 
     return function ([ data, tag ]: [ Uint8Array, Uint8Array ]) {
 
