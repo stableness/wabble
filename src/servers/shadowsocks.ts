@@ -196,6 +196,8 @@ const chop = u.chunksOf(0x3FFF);
 
 const new_uint8_mem_10 = u.mem.in10((n: number) => new Uint8Array(n));
 
+const increment_LE_mem_10 = u.mem.in10(u.incrementLE2);
+
 function genAEADEncrypt (
         algorithm: AEAD,
         subKey: Uint8Array,
@@ -214,7 +216,7 @@ function genAEADEncrypt (
             { authTagLength },
         );
 
-        u.run(ref.modify(u.incrementLE2));
+        u.run(ref.modify(increment_LE_mem_10));
 
         return Buffer.concat([
             cipher.update(chunk),
@@ -293,7 +295,7 @@ function genAEADDecrypt (
 
         decipher.setAuthTag(tag);
 
-        u.run(ref.modify(u.incrementLE2));
+        u.run(ref.modify(increment_LE_mem_10));
 
         return Buffer.concat([ decipher.update(data), decipher.final() ]);
 
