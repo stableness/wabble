@@ -417,7 +417,7 @@ function construct (setting: string) {
 
     ).pipe(
 
-        u.rxIgnoreElements(),
+        Rx.ignoreElements(),
         Rx.takeUntil(exit$),
 
     );
