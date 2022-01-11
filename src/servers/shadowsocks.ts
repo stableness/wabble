@@ -9,6 +9,7 @@ import {
     ioRef as Ref,
     state as S,
     readonlyArray as A,
+    reader as Rd,
     taskEither as TE,
     io as IO,
     ioEither as IoE,
@@ -194,6 +195,10 @@ export function EncryptAEAD (
 
 const chop = u.chunksOf(0x3FFF);
 
+const new_uint8_mem_10 = u.mem.in10((n: number) => new Uint8Array(n));
+
+const increment_LE_mem_10 = u.mem.in10(u.incrementLE2);
+
 function genAEADEncrypt (
         algorithm: AEAD,
         subKey: Uint8Array,
@@ -201,26 +206,34 @@ function genAEADEncrypt (
         authTagLength: number,
 ) {
 
-    const ref = u.run(Ref.newIORef(new Uint8Array(nonceSize)));
+    const { read, modify } = u.run(Ref.newIORef(new_uint8_mem_10(nonceSize)));
 
-    return function (chunk: Uint8Array) {
+    return F.pipe(
 
-        const cipher = crypto.createCipheriv(
-            algorithm as crypto.CipherGCMTypes,
-            subKey,
-            ref.read(),
-            { authTagLength },
-        );
+        Rd.asks((data: Uint8Array) => ({ data })),
 
-        u.run(ref.modify(u.incrementLE2));
+        Rd.apSW('cipher', F.pipe(
 
-        return Buffer.concat([
-            cipher.update(chunk),
+            Rd.asks(read),
+
+            Rd.map(iv => crypto.createCipheriv(
+                algorithm as crypto.CipherGCMTypes,
+                subKey,
+                iv,
+                { authTagLength },
+            )),
+
+            Rd.apFirst(modify(increment_LE_mem_10)),
+
+        )),
+
+        Rd.map(({ cipher, data }) => Buffer.concat([
+            cipher.update(data),
             cipher.final(),
             cipher.getAuthTag(),
-        ]);
+        ])),
 
-    };
+    );
 
 }
 
@@ -278,24 +291,35 @@ function genAEADDecrypt (
 
     const subKey = u.HKDF_SHA1(key, salt, keySize);
 
-    const ref = u.run(Ref.newIORef(new Uint8Array(nonceSize)));
+    const { read, modify } = u.run(Ref.newIORef(new_uint8_mem_10(nonceSize)));
 
-    return function ([ data, tag ]: [ Uint8Array, Uint8Array ]) {
+    return F.pipe(
 
-        const decipher = crypto.createDecipheriv(
-            algorithm as crypto.CipherCCMTypes,
-            subKey,
-            ref.read(),
-            { authTagLength },
-        );
+        Rd.asks(([ data, tag ]: [ Uint8Array, Uint8Array ]) => ({ data, tag })),
 
-        decipher.setAuthTag(tag);
+        Rd.apSW('decipher', F.pipe(
 
-        u.run(ref.modify(u.incrementLE2));
+            Rd.asks(read),
 
-        return Buffer.concat([ decipher.update(data), decipher.final() ]);
+            Rd.map(iv => crypto.createDecipheriv(
+                algorithm as crypto.CipherCCMTypes,
+                subKey,
+                iv,
+                { authTagLength },
+            )),
 
-    };
+            Rd.apFirst(modify(increment_LE_mem_10)),
+
+        )),
+
+        Rd.chainFirst(({ decipher, tag }) => Rd.of(decipher.setAuthTag(tag))),
+
+        Rd.map(({ decipher, data }) => Buffer.concat([
+            decipher.update(data),
+            decipher.final(),
+        ])),
+
+    );
 
 }
 
