@@ -64,6 +64,7 @@ import {
     str2arr,
     mkMillisecond,
     toByteArray,
+    monoidBuffer,
     readFile,
     readFileInStringOf,
     collectAsyncIterable,
@@ -229,6 +230,32 @@ describe('headerJoin', () => {
 
     ])('%p', fields => {
         expect(headerJoin(fields)).toMatch(/\r\n\r\n$/);
+    });
+
+});
+
+
+
+
+
+describe('monoidBuffer', () => {
+
+    const x = Uint8Array.of(1);
+
+    const { concat, empty: o } = monoidBuffer;
+
+    test.each([
+
+        [ o, o, o ],
+        [ x, o, x ],
+        [ o, x, x ],
+
+    ])('%i - %i', (a, b, c) => {
+        expect(concat(a, b)).toBe(c);
+    });
+
+    test('x <> x', () => {
+        expect(concat(x, x)).toStrictEqual(Uint8Array.of(...x, ...x));
     });
 
 });

@@ -286,8 +286,28 @@ export class ErrorWithCode extends Error {
 
 
 export const monoidBuffer: Md.Monoid<Uint8Array> = {
+
     empty: Uint8Array.of(),
-    concat: (x, y) => Uint8Array.from(Buffer.concat([ x, y ])),
+
+    concat (x, y) {
+
+        if (x.length < 1) {
+            return y;
+        }
+
+        if (y.length < 1) {
+            return x;
+        }
+
+        const merged = new Uint8Array(x.length + y.length);
+
+        merged.set(x, 0);
+        merged.set(y, x.length);
+
+        return merged;
+
+    },
+
 };
 
 
