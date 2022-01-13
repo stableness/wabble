@@ -313,6 +313,12 @@ export const monoidBuffer = run(function () {
 
 
 
+export const foldBytes = Md.concatAll(monoidBuffer);
+
+
+
+
+
 export const chunksOf = (at: number) => (chunk: Uint8Array) => {
 
     return A.unfold(chunk, F.flow(
@@ -336,7 +342,7 @@ export const socks5Handshake = mem.in50((host: string, port: number) => {
 
     const name = domainToASCII(host);
 
-    return Md.concatAll (monoidBuffer) ([
+    return foldBytes([
 
         Uint8Array.of(0x05, 0x01, 0x00, 0x03, name.length),
 
