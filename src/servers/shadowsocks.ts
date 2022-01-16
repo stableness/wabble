@@ -334,7 +334,7 @@ export function EncryptStream (
         algorithm: Stream,
         key: Uint8Array,
         ivLength: number,
-        initBuffer: Uint8Array,
+        head: Uint8Array,
 ) {
 
     const iv = crypto.randomBytes(ivLength);
@@ -349,7 +349,7 @@ export function EncryptStream (
 
     const init = R.tap((readable: Transform) => {
         readable.push(iv);
-        readable.push(cipher.update(initBuffer));
+        readable.push(cipher.update(head));
     });
 
     return init(new Transform({
@@ -374,7 +374,7 @@ export function DecryptStream (
 
     type State = E.Either<Uint8Array, crypto.Decipher>;
 
-    const ref = u.run(Ref.newIORef<State>(E.left(Uint8Array.of())));
+    const { read, write } = u.run(Ref.newIORef<State>(E.left(Uint8Array.of())));
 
     return new Transform({
 
@@ -383,7 +383,7 @@ export function DecryptStream (
             const push = IoE.tryCatchK(R.unary(F.flip(cb)), E.toError);
 
             u.run(F.pipe(
-                ref.read,
+                read,
                 IoE.chainFirstIOK(decipher => push(decipher.update(chunk))),
                 IoE.mapLeft(data => Buffer.concat([ data, chunk ])),
                 IoE.swap,
@@ -391,7 +391,7 @@ export function DecryptStream (
 
                     if (data.length < ivLength) {
                         return F.pipe(
-                            ref.write(E.left(data)),
+                            write(E.left(data)),
                             IO.apFirst(cb),
                         );
                     }
@@ -407,7 +407,7 @@ export function DecryptStream (
                     );
 
                     return F.pipe(
-                        ref.write(E.right(decipher)),
+                        write(E.right(decipher)),
                         IO.apFirst(push(decipher.update(remain))),
                     );
 
