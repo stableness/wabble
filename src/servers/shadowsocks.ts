@@ -13,6 +13,7 @@ import {
     taskEither as TE,
     io as IO,
     ioEither as IoE,
+    identity as Id,
     function as F,
 } from 'fp-ts';
 
@@ -166,30 +167,31 @@ export function EncryptAEAD (
         A.map(genAEADEncrypt(algorithm, subKey, nonceSize, tagSize)),
     );
 
-    const init = R.tap((readable: Transform) => {
+    return F.pipe(
 
-        readable.push(F.pipe(
-            pack(head),
-            A.prepend(salt),
-            Buffer.concat,
-        ));
+        Id.of(new Transform({
 
-    });
+            transform (chunk: Uint8Array, _enc: string, cb: TransformCallback) {
 
-    return init(new Transform({
+                u.run(F.pipe(
+                    chop(chunk),
+                    A.chain(pack),
+                    IO.traverseArray(data => () => this.push(data)),
+                    IO.apSecond(cb),
+                ));
 
-        transform (chunk: Uint8Array, _enc: string, cb: TransformCallback) {
+            },
 
-            u.run(F.pipe(
-                chop(chunk),
-                A.chain(pack),
-                IO.traverseArray(data => () => this.push(data)),
-                IO.apSecond(cb),
-            ));
+        })),
 
-        },
+        Id.chainFirst(readable => {
 
-    }));
+            readable.push(salt);
+            readable.push(u.foldBytes(pack(head)));
+
+        }),
+
+    );
 
 }
 
@@ -347,18 +349,24 @@ export function EncryptStream (
         isRC4 ? EMPTY : iv,
     );
 
-    const init = R.tap((readable: Transform) => {
-        readable.push(iv);
-        readable.push(cipher.update(head));
-    });
+    return F.pipe(
 
-    return init(new Transform({
+        Id.of(new Transform({
 
-        transform (chunk: Uint8Array, _enc: string, cb: TransformCallback) {
-            cb(u.Undefined, cipher.update(chunk));
-        },
+            transform (chunk: Uint8Array, _enc: string, cb: TransformCallback) {
+                cb(u.Undefined, cipher.update(chunk));
+            },
 
-    }));
+        })),
+
+        Id.chainFirst(readable => {
+
+            readable.push(iv);
+            readable.push(cipher.update(head));
+
+        }),
+
+    );
 
 }
 
