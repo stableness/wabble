@@ -7,7 +7,6 @@ import * as R from 'ramda';
 import {
     either as E,
     ioRef as Ref,
-    state as S,
     readonlyArray as A,
     reader as Rd,
     taskEither as TE,
@@ -160,10 +159,7 @@ export function EncryptAEAD (
     const subKey = u.HKDF_SHA1(key, salt, keySize);
 
     const pack = F.flow(
-        S.gets(F.flow(
-            A.size as never as u.Fn<Uint8Array, number>,
-            u.numberToUInt16BE,
-        )),
+        u.std.Tp.toFst((data: Uint8Array) => u.numberToUInt16BE(data.length)),
         A.map(genAEADEncrypt(algorithm, subKey, nonceSize, tagSize)),
     );
 
