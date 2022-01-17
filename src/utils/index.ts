@@ -43,16 +43,8 @@ import {
     readonlyNonEmptyArray as NA,
 } from 'fp-ts';
 
-import {
-    string as stdStr,
-    readonlyArray as stdA,
-    either as stdE,
-    option as stdO,
-    boolean as stdB,
-    number as stdNum,
-    url as stdURL,
-    function as stdF,
-} from 'fp-ts-std';
+export * as std from './fp-ts-std.js';
+import * as std from './fp-ts-std.js';
 
 import * as Dc from 'io-ts/lib/Decoder.js';
 
@@ -192,14 +184,14 @@ export const rules = run(function () {
                 Str.startsWith('REG,'), F.flow(
                     Str.replace('REG,', ''),
                     F.tuple,
-                    stdF.construct(RegExp),
-                    stdStr.test,
+                    std.F.construct(RegExp),
+                    std.Str.test,
                 ),
             ],
             [
                 Str.startsWith('FULL,'), F.flow(
                     Str.replace('FULL,', ''),
-                    stdF.curry2(Str.Eq.equals),
+                    std.F.curry2(Str.Eq.equals),
                 ),
             ],
             [
@@ -253,14 +245,14 @@ export const onceF = <T extends unknown[]> (
 
 export const onceTE = catchKToError(onceF);
 
-export const onceTEC = stdF.curry2(onceTE);
+export const onceTEC = std.F.curry2(onceTE);
 
 export const onceSndTE = F.flow(
     onceTE,
     TE.map(Tp.snd as never),
 ) as <T> (...args: Parameters<typeof onceF>) => TE.TaskEither<Error, T>;
 
-export const onceSndTEC = stdF.curry2(onceSndTE);
+export const onceSndTEC = std.F.curry2(onceSndTE);
 
 
 
@@ -377,7 +369,7 @@ export const elapsed = (cb: Fn<number, IO.IO<unknown>>) => F.flow(
     T.apS('start', T.fromIO(D.now)),
     T.bind('end', ({ start }) => F.pipe(
         T.fromIO(D.now),
-        T.map(stdNum.subtract(start)),
+        T.map(std.Num.subtract(start)),
     )),
     T.chainFirstIOK(({ end }) => cb(end)),
     T.map(({ result }) => result),
@@ -451,7 +443,7 @@ export function catchKToError <A extends ReadonlyArray<unknown>, B>
 // :: TaskEither e a -> Promise a
 export const unwrapTaskEither = F.flow(
     TE.mapLeft(E.toError),
-    T.map(stdE.unsafeUnwrap),
+    T.map(std.E.unsafeUnwrap),
     run,
 );
 
@@ -459,9 +451,9 @@ export const unwrapTaskEither = F.flow(
 
 
 
-export const unsafeUnwrapO = stdO.unsafeUnwrap;
+export const unsafeUnwrapO = std.O.unsafeUnwrap;
 
-export const unsafeUnwrapE = stdE.unsafeUnwrap;
+export const unsafeUnwrapE = std.E.unsafeUnwrap;
 
 
 
@@ -550,16 +542,16 @@ export const mkMillisecond = (u: MillisecondU) => (n: number) => {
 
     const eq: Rd.Reader<MillisecondU, IO.IO<boolean>> = F.flow(
         IO.of,
-        IO.map(stdF.curry2 (Str.Eq.equals) (u)),
+        IO.map(std.F.curry2 (Str.Eq.equals) (u)),
     );
 
-    const multiply = stdF.flip (stdF.guard) (stdNum.multiply(NaN)) ([
+    const multiply = std.F.flip (std.F.guard) (std.Num.multiply(NaN)) ([
 
-        [ eq('ms'), stdNum.multiply(1) ],
-        [ eq( 's'), stdNum.multiply(1000) ],
-        [ eq( 'm'), stdNum.multiply(1000 * 60) ],
-        [ eq( 'h'), stdNum.multiply(1000 * 60 * 60) ],
-        [ eq( 'd'), stdNum.multiply(1000 * 60 * 60 * 24) ],
+        [ eq('ms'), std.Num.multiply(1) ],
+        [ eq( 's'), std.Num.multiply(1000) ],
+        [ eq( 'm'), std.Num.multiply(1000 * 60) ],
+        [ eq( 'h'), std.Num.multiply(1000 * 60 * 60) ],
+        [ eq( 'd'), std.Num.multiply(1000 * 60 * 60 * 24) ],
 
     ]);
 
@@ -575,8 +567,8 @@ export const readTimes = run(function () {
 
     const to = (unit: MillisecondU) => F.flow(
         O.fromPredicate(Str.endsWith(unit)),
-        O.map(stdStr.unappend(unit)),
-        O.chain(stdNum.floatFromString),
+        O.map(std.Str.unappend(unit)),
+        O.chain(std.Num.floatFromString),
         O.filter(Number.isInteger),
         O.map(mkMillisecond(unit)),
     );
@@ -686,7 +678,7 @@ export function HKDF_SHA1 (
 
 
 
-export const numberToUInt16BE = stdF.guard ([
+export const numberToUInt16BE = std.F.guard ([
 
     [    R.equals(443), F.constant(Uint8Array.of(0x01, 0xBB)) ],
     [     R.equals(80), F.constant(Uint8Array.of(0x00, 0x50)) ],
@@ -720,14 +712,14 @@ export const isPrivateIP = F.pipe(
 
 export const isBlockedIP = run(function () {
 
-    const eqIPc = stdF.curry2(eqIP);
-    const eqStr = stdF.curry2(Str.Eq.equals);
+    const eqIPc = std.F.curry2(eqIP);
+    const eqStr = std.F.curry2(Str.Eq.equals);
 
-    return stdB.anyPass([
+    return std.P.anyPass([
         eqStr('0.0.0.0'),
-        stdB.allPass([
+        std.P.allPass([
             isIP,
-            stdB.anyPass([
+            std.P.anyPass([
                 eqIPc('0.0.0.0'),
                 eqIPc('0:0:0:0:0:0:0:0'),
             ]),
@@ -809,7 +801,7 @@ export const trimBase64URI = (raw: string) => F.pipe(
         O.tryCatch(() => base64.parse(base)),
         O.map(bufferToString),
         O.map(after => Str.replace (base, after) (raw)),
-        O.chainFirst(stdURL.parseO),
+        O.chainFirst(std.URL.parseO),
     )),
     O.getOrElse(F.constant(raw)),
 );
@@ -888,7 +880,7 @@ export const option2B = O.fold(F.constFalse, F.constTrue);
 
 
 
-export const eqBasic = stdF.curry2(
+export const eqBasic = std.F.curry2(
 
     Eq.struct<Basic>({
         password: Str.Eq,
@@ -906,7 +898,7 @@ export const toBasicCredentials = R.memoizeWith(
     F.flow(
         R.unary(Buffer.from),
         base64.stringify,
-        stdStr.prepend('Basic '),
+        std.Str.prepend('Basic '),
     ),
 );
 
@@ -915,8 +907,8 @@ export const toBasicCredentials = R.memoizeWith(
 
 
 export const headerJoin = F.flow(
-    stdA.join('\r\n'),
-    stdStr.append('\r\n\r\n'),
+    std.A.join('\r\n'),
+    std.Str.append('\r\n\r\n'),
 );
 
 
@@ -1005,16 +997,16 @@ export const fetchGet = F.flow(
 
 
 
-export const loadPath = stdF.uncurry3 (stdF.ifElse) ([
+export const loadPath = std.F.uncurry3 (std.F.ifElse) ([
     fetchGet,
     readFileInStringOf('utf8'),
-    stdStr.test(/^https?:\/\//),
+    std.Str.test(/^https?:\/\//),
 ]);
 
 export const loadPathObs = F.flow(
     loadPath,
     Rx.defer,
-    Rx.map(stdE.unsafeUnwrap),
+    Rx.map(std.E.unsafeUnwrap),
 );
 
 

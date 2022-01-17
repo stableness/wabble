@@ -14,11 +14,6 @@ import {
     function as F,
 } from 'fp-ts';
 
-import {
-    string as stdStr,
-    function as stdF,
-} from 'fp-ts-std';
-
 import * as R from 'ramda';
 
 import * as Rx from 'rxjs';
@@ -224,15 +219,15 @@ function reqEq (path: Req) {
 
     const not_space: P.Predicate<string> = s => s !== ' ';
 
-    const split_in_space = stdF.fork([
-        stdStr.takeLeftWhile(not_space),
-        stdStr.takeRightWhile(not_space),
+    const split_in_space = u.std.F.fork([
+        u.std.Str.takeLeftWhile(not_space),
+        u.std.Str.takeRightWhile(not_space),
     ]);
 
     const eq_uri = Eq.tuple(
         Str.Eq,
         Eq.fromEquals<string>((a, b) => a.endsWith('*')
-            ? b.startsWith(stdStr.dropRight (1) (a))
+            ? b.startsWith(u.std.Str.dropRight (1) (a))
             : Str.Eq.equals(a, b),
         ),
     );

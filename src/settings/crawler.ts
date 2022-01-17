@@ -10,12 +10,6 @@ import {
     readonlyNonEmptyArray as NA,
 } from 'fp-ts';
 
-import {
-    string as stdStr,
-    function as stdF,
-    either as stdE,
-} from 'fp-ts-std';
-
 import * as Rx from 'rxjs';
 
 import * as u from '../utils/index.js';
@@ -34,7 +28,7 @@ export const load = (env: Required<LoadEnv>) => F.pipe(
         env.timeout,
         new Error(`load timeout in ${ env.timeout }`),
     ),
-    TE.map(u.uncurry2 (stdF.when) ([
+    TE.map(u.uncurry2 (u.std.F.when) ([
         F.constant(env.base64),
         u.decodeBase._64Recovered,
     ])),
@@ -66,7 +60,7 @@ export const mkCrawler = <A> (f: (d: string) => E.Either<Error, A>) => F.pipe(
 
         Rx.map(F.flow(
             E.chain(f),
-            stdE.unsafeUnwrap,
+            u.std.E.unsafeUnwrap,
         )),
 
         env.retry > 0
@@ -97,7 +91,7 @@ export const mkCrawler = <A> (f: (d: string) => E.Either<Error, A>) => F.pipe(
 
 export const crawlRows = (grep: P.Predicate<string>) => mkCrawler(F.flow(
     Str.trim,
-    stdStr.lines,
+    u.std.Str.lines,
     A.filterMap(u.readOptionalString),
     E.fromOptionK  (() => new Error('empty list'))   (NA.fromReadonlyArray),
     E.chainOptionK (() => new Error('empty result')) (NA.filter(grep)),
