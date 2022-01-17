@@ -23,10 +23,6 @@ import {
     readonlyNonEmptyArray as NA,
 } from 'fp-ts';
 
-import {
-    function as stdF,
-} from 'fp-ts-std';
-
 import type { Remote } from '../config.js';
 import * as u from '../utils/index.js';
 import type { DoH_query, DNS_query, DoT_query } from '../utils/resolver.js';
@@ -105,7 +101,7 @@ const raceTill = race(new Error('DNS resolving timeout'));
 
 export function race (err: Error) {
 
-    return stdF.memoize (Num.Eq) (ms => F.flow(
+    return u.std.F.memoize (Num.Eq) (ms => F.flow(
 
         monoid.concatAll(
             O.getMonoid(
