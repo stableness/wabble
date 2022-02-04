@@ -35,7 +35,7 @@ import {
     refinement as Rf,
     reader as Rd,
     monoid as Md,
-    semigroup as Sg,
+    alternative as Altv,
     tuple as Tp,
     function as F,
     chainRec as CR,
@@ -583,13 +583,7 @@ export const readTimes = run(function () {
             to( 'd'),
         ]),
 
-        Rd.map(
-            Md.concatAll(
-                O.getMonoid<Millisecond>(
-                    Sg.first(),
-                ),
-            ),
-        ),
+        Rd.map(Altv.altAll(O.Alternative)),
 
         Rd.local(Str.trim),
 
