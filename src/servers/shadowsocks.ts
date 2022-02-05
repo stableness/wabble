@@ -145,6 +145,8 @@ export function cryptoPairs (
 
 
 
+const SS_SUBKEY = 'ss-subkey';
+
 export function EncryptAEAD (
         algorithm: AEAD,
         key: Buffer,
@@ -156,7 +158,7 @@ export function EncryptAEAD (
 ) {
 
     const salt = crypto.randomBytes(saltSize);
-    const subKey = u.HKDF_SHA1(key, salt, keySize);
+    const subKey = u.HKDF_SHA1(key, salt, keySize, SS_SUBKEY);
 
     const pack = F.flow(
         u.std.Tp.toFst((data: Uint8Array) => u.numberToUInt16BE(data.length)),
@@ -287,7 +289,7 @@ function genAEADDecrypt (
         salt: Buffer,
 ) {
 
-    const subKey = u.HKDF_SHA1(key, salt, keySize);
+    const subKey = u.HKDF_SHA1(key, salt, keySize, SS_SUBKEY);
 
     const { read, modify } = u.run(Ref.newIORef(new_uint8_mem_10(nonceSize)));
 
