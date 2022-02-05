@@ -1416,7 +1416,7 @@ describe('HKDF_SHA1', () => {
 
     ])('%i - %s', (length, key, salt, info, hash) => {
         expect(
-            HKDF_SHA1(key, salt, length, info),
+            HKDF_SHA1(key, salt, info, length),
         ).toStrictEqual(h(hash));
     });
 
