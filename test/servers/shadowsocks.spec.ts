@@ -173,7 +173,7 @@ describe('encrypt & decrypt', () => {
 
         ));
 
-    }, 100);
+    }, 200);
 
 });
 
