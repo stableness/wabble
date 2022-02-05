@@ -682,9 +682,13 @@ export function EVP_BytesToKey (password: string, keySize: number): Uint8Array {
 export function HKDF_SHA1 (
         key: Uint8Array | string,
         salt: Uint8Array | string,
-        length: number,
         info: Uint8Array | string,
+        length: number,
 ) {
+
+    // TODO: Node.js >= v16
+    // return Buffer.from(crypto.hkdfSync('sha1', key, salt, info, length));
+
     return HKDF(Buffer.from(key), length, {
         info: Buffer.from(info),
         salt: Buffer.from(salt),

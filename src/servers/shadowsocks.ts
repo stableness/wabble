@@ -158,7 +158,7 @@ export function EncryptAEAD (
 ) {
 
     const salt = crypto.randomBytes(saltSize);
-    const subKey = u.HKDF_SHA1(key, salt, keySize, SS_SUBKEY);
+    const subKey = u.HKDF_SHA1(key, salt, SS_SUBKEY, keySize);
 
     const pack = F.flow(
         u.std.Tp.toFst((data: Uint8Array) => u.numberToUInt16BE(data.length)),
@@ -289,7 +289,7 @@ function genAEADDecrypt (
         salt: Uint8Array,
 ) {
 
-    const subKey = u.HKDF_SHA1(key, salt, keySize, SS_SUBKEY);
+    const subKey = u.HKDF_SHA1(key, salt, SS_SUBKEY, keySize);
 
     const { read, modify } = u.run(Ref.newIORef(new_uint8_mem_10(nonceSize)));
 
