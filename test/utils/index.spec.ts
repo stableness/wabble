@@ -1410,17 +1410,13 @@ describe('HKDF_SHA1', () => {
 
     test.each([
 
-        [   42,
-            '0b0b0b0b0b0b0b0b0b0b0b',
-            '000102030405060708090a0b0c',
-            'f0f1f2f3f4f5f6f7f8f9',
-            // eslint-disable-next-line max-len
-            '085a01ea1b10f36933068b56efa5ad81a4f14b822f5b091568a9cdd4f155fda2c22e422478d305f3f896',
+        [   32, 'key', 'salt', 'info',
+            'a0bc90fe7a3fef57087f96ceeaccea0241f6e00a3fe35a789ced78dfbc7c95f5',
         ],
 
     ])('%i - %s', (length, key, salt, info, hash) => {
         expect(
-            HKDF_SHA1(h(key), h(salt), length, h(info).toString()),
+            HKDF_SHA1(key, salt, length, info),
         ).toStrictEqual(h(hash));
     });
 
