@@ -680,12 +680,16 @@ export function EVP_BytesToKey (password: string, keySize: number): Uint8Array {
 
 
 export function HKDF_SHA1 (
-        key: Buffer | string,
-        salt: Buffer,
+        key: Uint8Array | string,
+        salt: Uint8Array | string,
         length: number,
-        info: string,
+        info: Uint8Array | string,
 ) {
-    return HKDF(key, length, { info, salt, hash: 'sha1' });
+    return HKDF(Buffer.from(key), length, {
+        info: Buffer.from(info),
+        salt: Buffer.from(salt),
+        hash: 'sha1',
+    });
 }
 
 

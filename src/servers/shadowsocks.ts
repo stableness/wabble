@@ -149,7 +149,7 @@ const SS_SUBKEY = 'ss-subkey';
 
 export function EncryptAEAD (
         algorithm: AEAD,
-        key: Buffer,
+        key: Uint8Array,
         keySize: number,
         nonceSize: number,
         tagSize: number,
@@ -243,7 +243,7 @@ function genAEADEncrypt (
 
 export function DecryptAEAD (
         algorithm: AEAD,
-        key: Buffer,
+        key: Uint8Array,
         keySize: number,
         nonceSize: number,
         tagSize: number,
@@ -282,11 +282,11 @@ export function DecryptAEAD (
 
 function genAEADDecrypt (
         algorithm: AEAD,
-        key: Buffer,
+        key: Uint8Array,
         keySize: number,
         nonceSize: number,
         authTagLength: number,
-        salt: Buffer,
+        salt: Uint8Array,
 ) {
 
     const subKey = u.HKDF_SHA1(key, salt, keySize, SS_SUBKEY);
