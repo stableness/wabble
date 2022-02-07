@@ -270,30 +270,44 @@ export class ErrorWithCode extends Error {
 
 
 
-export const monoidBuffer: Md.Monoid<Uint8Array> = {
+export const monoidBuffer = run(function () {
 
-    empty: Uint8Array.of(),
+    const monoid: Md.Monoid<Uint8Array> = {
 
-    concat (x, y) {
+        empty: Uint8Array.of(),
 
-        if (x.length < 1) {
-            return y;
-        }
+        concat (x, y) {
 
-        if (y.length < 1) {
-            return x;
-        }
+            if (x.length < 1) {
+                return y;
+            }
 
-        const merged = new Uint8Array(x.length + y.length);
+            if (y.length < 1) {
+                return x;
+            }
 
-        merged.set(x, 0);
-        merged.set(y, x.length);
+            const merged = new Uint8Array(x.length + y.length);
 
-        return merged;
+            merged.set(x, 0);
+            merged.set(y, x.length);
 
-    },
+            return merged;
 
-};
+        },
+
+    };
+
+    return {
+
+        ...monoid,
+
+        concatC: std.F.curry2(monoid.concat),
+
+        concatF: std.F.curry2(F.flip(monoid.concat)),
+
+    };
+
+});
 
 
 

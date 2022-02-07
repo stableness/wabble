@@ -241,8 +241,9 @@ describe('headerJoin', () => {
 describe('monoidBuffer', () => {
 
     const x = Uint8Array.of(1);
+    const y = Uint8Array.of(2);
 
-    const { concat, empty: o } = monoidBuffer;
+    const { concat, empty: o, concatC, concatF } = monoidBuffer;
 
     test.each([
 
@@ -256,6 +257,10 @@ describe('monoidBuffer', () => {
 
     test('x <> x', () => {
         expect(concat(x, x)).toStrictEqual(Uint8Array.of(...x, ...x));
+    });
+
+    test('flipped', () => {
+        expect(concatF (y) (x)).toStrictEqual(concatC (x) (y));
     });
 
 });
