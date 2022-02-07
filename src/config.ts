@@ -72,7 +72,7 @@ export interface ShadowSocks extends Base {
 
     protocol: 'ss';
 
-    key: Buffer;
+    key: Uint8Array;
 
     cipher: Stream | AEAD;
 
