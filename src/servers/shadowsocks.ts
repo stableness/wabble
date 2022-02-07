@@ -330,7 +330,8 @@ function genAEADDecrypt (
 
 
 const RC4 = 'rc4';
-const EMPTY = Uint8Array.of();
+
+const { empty: EMPTY, concat, concatF } = u.monoidBuffer;
 
 export function EncryptStream (
         algorithm: Stream,
@@ -345,7 +346,7 @@ export function EncryptStream (
 
     const cipher = crypto.createCipheriv(
         isRC4 ? RC4 : algorithm,
-        isRC4 ? u.hash.md5(Buffer.concat([ key, iv ])) : key,
+        isRC4 ? u.hash.md5(concat(key, iv)) : key,
         isRC4 ? EMPTY : iv,
     );
 
@@ -382,7 +383,7 @@ export function DecryptStream (
 
     type State = E.Either<Uint8Array, crypto.Decipher>;
 
-    const { read, write } = u.run(Ref.newIORef<State>(E.left(Uint8Array.of())));
+    const { read, write } = u.run(Ref.newIORef<State>(E.left(EMPTY)));
 
     return new Transform({
 
@@ -393,7 +394,7 @@ export function DecryptStream (
             u.run(F.pipe(
                 read,
                 IoE.chainFirstIOK(decipher => push(decipher.update(chunk))),
-                IoE.mapLeft(data => Buffer.concat([ data, chunk ])),
+                IoE.mapLeft(concatF(chunk)),
                 IoE.swap,
                 IoE.chainFirstIOK(data => {
 
@@ -410,7 +411,7 @@ export function DecryptStream (
 
                     const decipher = crypto.createDecipheriv(
                         isRC4 ? RC4 : algorithm,
-                        isRC4 ? u.hash.md5(Buffer.concat([ key, iv ])) : key,
+                        isRC4 ? u.hash.md5(concat(key, iv)) : key,
                         isRC4 ? EMPTY : iv,
                     );
 
