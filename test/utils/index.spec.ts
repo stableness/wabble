@@ -185,9 +185,10 @@ describe('EVP_BytesToKey', () => {
 
 
 
-    const h = R.o(
-        R.curryN(2, Buffer.from)(R.__, 'hex'),
+    const h = F.flow(
         R.replace(/\s+/g, ''),
+        R.curryN(2, Buffer.from)(R.__, 'hex'),
+        bind(Uint8Array).from,
     );
 
 });

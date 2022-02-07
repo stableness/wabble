@@ -642,16 +642,16 @@ export const hash = run(function () {
 
 
 
-export function EVP_BytesToKey (password: string, keySize: number) {
+export function EVP_BytesToKey (password: string, keySize: number): Uint8Array {
+
+    const { empty, concatF } = monoidBuffer;
 
     const sample = F.flow(
-        NA.of as Fn<Buffer, [ Buffer ]>,
-        A.append(Buffer.from(password)),
-        Buffer.concat,
+        concatF(Buffer.from(password)),
         hash.md5,
     );
 
-    const head = sample(Buffer.alloc(0));
+    const head = sample(empty);
 
     const init = {
         len: head.length,
@@ -661,7 +661,7 @@ export function EVP_BytesToKey (password: string, keySize: number) {
     return CR.tailRec(init, ({ len, acc }) => {
 
         if (len >= keySize) {
-            return E.right(Buffer.concat(acc, keySize));
+            return E.right(Uint8Array.from(Buffer.concat(acc, keySize)));
         }
 
         const chunk = sample(NA.last(acc));
