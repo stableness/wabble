@@ -1,4 +1,4 @@
-import pino from 'pino';
+import { pino } from 'pino';
 
 import { load as loadYAML } from 'js-yaml';
 
@@ -65,7 +65,6 @@ export const readLevel = u.genLevel(F.pipe(
 
 export const logger = pino({
     base: null,
-    prettyPrint: false,
     level: readLevel({ ...process.env, NODE_ENV }),
 });
 
