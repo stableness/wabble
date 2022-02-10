@@ -10,7 +10,6 @@ import {
 import {
     run,
     try2TE,
-    tryCatchToError,
 } from './index.js';
 
 
@@ -39,7 +38,7 @@ export function genDoH (endpoint: string, path = '@stableness/dohdec') {
         lookup(name: string, opts?: { json?: boolean }): Promise<Res_DoH_DoT>;
     }
 
-    const doh = run(tryCatchToError(async () => {
+    const doh = run(try2TE(async () => {
         const pkg = await import(path) as { DNSoverHTTPS: ResolverDoH };
         return new pkg.DNSoverHTTPS({ url: endpoint, preferPost: false });
     }));
@@ -48,11 +47,7 @@ export function genDoH (endpoint: string, path = '@stableness/dohdec') {
 
         () => doh,
 
-        TE.chain(dns => {
-            return tryCatchToError(() => {
-                return dns.lookup(name, { json: false });
-            });
-        }),
+        TE.chain(dns => try2TE(() => dns.lookup(name, { json: false }))),
 
         TE.chain(({ answers }) => F.pipe(
             NA.fromArray(answers),
@@ -91,7 +86,7 @@ export function genDoT (conn: Conn, path = '@stableness/dohdec') {
 
     const port = +portS || 853;
 
-    const dot = run(tryCatchToError(async () => {
+    const dot = run(try2TE(async () => {
         const pkg = await import(path) as { DNSoverTLS: ResolverDoT };
         return new pkg.DNSoverTLS({ host, port });
     }));
@@ -100,11 +95,7 @@ export function genDoT (conn: Conn, path = '@stableness/dohdec') {
 
         () => dot,
 
-        TE.chain(dns => {
-            return tryCatchToError(() => {
-                return dns.lookup(name, opts);
-            });
-        }),
+        TE.chain(dns => try2TE(() => dns.lookup(name, opts))),
 
         TE.chain(({ answers }) => F.pipe(
             NA.fromArray(answers),

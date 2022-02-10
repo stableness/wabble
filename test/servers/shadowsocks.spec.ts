@@ -158,7 +158,7 @@ describe('encrypt & decrypt', () => {
                 host, port, body, sink, { alg, key: 'foobar' },
             ]),
 
-            TE.chain(() => u.tryCatchToError(() => {
+            TE.chain(() => u.try2TE(() => {
                 return u.collectAsyncIterable<Uint8Array>(sink);
             })),
 
