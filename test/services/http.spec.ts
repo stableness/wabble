@@ -254,7 +254,7 @@ export const readStr = stdF.guard ([
 
 export function fetchToString (req: Req) {
 
-    return u.tryCatchToError(async () => {
+    return u.try2TE(async () => {
 
         const [ res ] = (await once(req, 'response')) as [ IcM ];
 
@@ -350,7 +350,7 @@ export const temp = u.run(function () {
 
         return TE.of(F.tuple(F.pipe(
 
-            u.tryCatchToError<net.Socket>(() => new Promise((res, rej) => {
+            u.try2TE<net.Socket>(() => new Promise((res, rej) => {
 
                 void u.run(F.pipe(
 
@@ -461,7 +461,7 @@ export const temp = u.run(function () {
             port: ports.proxy,
         };
 
-        return u.tryCatchToError(async () => {
+        return u.try2TE(async () => {
 
             const { resolve, promise } = Defer<number>();
 

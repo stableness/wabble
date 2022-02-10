@@ -437,11 +437,12 @@ export function split ({ at }: { at: number }) {
 
 
 
-// :: (() -> Promise a) -> TaskEither Error a
-export function tryCatchToError <A> (fn: F.Lazy<Promise<A>>) {
-    return TE.tryCatch(fn, E.toError);
-}
+/**
+ * @deprecated use try2TE instead
+ */
+export const tryCatchToError = try2TE;
 
+// :: (() -> Promise a) -> TaskEither Error a
 export function try2TE <A> (fn: F.Lazy<A | Promise<A>>) {
     return TE.tryCatch(async () => await fn(), E.toError);
 }
@@ -983,7 +984,7 @@ type TE_E <T> = TE.TaskEither<Error, T>;
 export function readFile (filename: PathLike): TE_E<Buffer>;
 export function readFile (filename: PathLike, encoding: string): TE_E<string>;
 export function readFile (filename: PathLike, encoding?: string) {
-    return tryCatchToError(() => fs.readFile(filename, encoding));
+    return try2TE(() => fs.readFile(filename, encoding));
 }
 
 export const readFileInStringOf =
@@ -1012,7 +1013,7 @@ export const fetchGet = F.flow(
 
     TE.mapLeft(run),
 
-    TE.chain(res => tryCatchToError(() => res.text())),
+    TE.chain(res => try2TE(() => res.text())),
 
 );
 

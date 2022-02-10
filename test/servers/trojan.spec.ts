@@ -85,7 +85,7 @@ describe('chain', () => {
 
             TE.flatten,
 
-            TE.apSecond(u.tryCatchToError(() => {
+            TE.apSecond(u.try2TE(() => {
 
                 const head = makeHead(password, host, port);
 

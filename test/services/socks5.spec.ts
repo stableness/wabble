@@ -114,7 +114,7 @@ const socks5: Result<TE_ES> = ports => ({ url }) => {
 
     return TE.fromIO(() => F.tuple(F.pipe(
 
-        u.tryCatchToError<net.Socket>(() => new Promise((res, rej) => {
+        u.try2TE<net.Socket>(() => new Promise((res, rej) => {
 
             const opts = {
                 host: url.hostname,

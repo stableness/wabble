@@ -57,7 +57,6 @@ import {
     rxTap,
     unwrapTaskEither,
     try2TE,
-    tryCatchToError,
     writeToTaskEither,
     timeout,
     raceTaskByTimeout,
@@ -604,7 +603,7 @@ describe('unwrapTaskEither', () => {
     test('resolve', async () => {
 
         const wat = 42;
-        const task = tryCatchToError(T.of(wat));
+        const task = try2TE(T.of(wat));
 
         await expect(unwrapTaskEither(task)).resolves.toBe(wat);
 
