@@ -69,7 +69,7 @@ export const mkCrawler = <A> (f: (d: string) => E.Either<Error, A>) => F.pipe(
         ,
 
         env.refresh > 0
-            ? Rx.repeatWhen(Rx.delay(env.refresh))
+            ? Rx.repeat({ delay: env.refresh })
             : Rx.identity
         ,
 
