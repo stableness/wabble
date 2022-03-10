@@ -1,5 +1,6 @@
 import {
     taskEither as TE,
+    readonlyArray as A,
     function as F,
 } from 'fp-ts';
 
@@ -111,6 +112,38 @@ describe('crawler', () => {
         fn.mockReturnValue(TE.of(R.join('\n', arr)));
 
         return expect(Rx.firstValueFrom(task)).rejects.toThrowError();
+
+    }, 500);
+
+
+
+    test('repeat', () => {
+
+        const env: Env = {
+            endpoint: 'https://github.com/whatwg/url/blob/main/README.md',
+            refresh: 10,
+        };
+
+        const first  = 'ss://foo';
+        const second = 'ss://bar';
+
+        const fn = (loadPath as jest.MockedFunction<typeof loadPath>)
+            .mockReturnValueOnce(TE.of(first))
+            .mockReturnValueOnce(TE.of(second))
+        ;
+
+        const task = crawlRowsStartsBy ('ss://') (env);
+
+        expect.assertions(3);
+
+        return expect(Rx.firstValueFrom(task.pipe(
+
+            Rx.tap(() => expect(fn).toBeCalledWith(env.endpoint)),
+            Rx.take(2),
+            Rx.toArray(),
+            Rx.map(A.flatten),
+
+        ))).resolves.toStrictEqual([ first, second ]);
 
     }, 500);
 
