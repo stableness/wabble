@@ -4,7 +4,7 @@ import {
     function as F,
 } from 'fp-ts';
 
-import * as Dc from 'io-ts/lib/Decoder.js';
+import * as Dc from 'io-ts/Decoder';
 
 import * as u from '../../utils/index.js';
 
