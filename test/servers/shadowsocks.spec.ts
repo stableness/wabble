@@ -10,6 +10,7 @@ import {
 
 import {
     function as stdF,
+    taskEither as stdTE,
 } from 'fp-ts-std';
 
 import * as R from 'ramda';
@@ -150,9 +151,7 @@ describe('encrypt & decrypt', () => {
 
         });
 
-        expect.assertions(1);
-
-        return u.run(F.pipe(
+        return expect(F.pipe(
 
             stdF.uncurry5 (through) ([
                 host, port, body, sink, { alg, key: 'foobar' },
@@ -164,14 +163,9 @@ describe('encrypt & decrypt', () => {
 
             TE.map(Buffer.concat),
 
-            TE.bimap(expect, expect),
+            stdTE.unsafeUnwrap,
 
-            TE.matchW(
-                e => e.toBeUndefined(),
-                a => a.toStrictEqual(data),
-            ),
-
-        ));
+        )).resolves.toStrictEqual(data);
 
     }, 200);
 
