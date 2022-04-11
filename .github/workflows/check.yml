@@ -41,8 +41,11 @@ jobs:
         timeout-minutes: 2
         if: matrix.node < 17
 
-      - if: matrix.node >= 17
-        run: NODE_OPTIONS=--openssl-legacy-provider npm run test -- --coverage --verbose
+      - run: NO_SKIP=on npm run test -- --coverage --verbose
+        timeout-minutes: 2
+        if: matrix.node >= 17
+        env:
+          NODE_OPTIONS: --openssl-legacy-provider
 
       - name: Smoking build
         run: |-
