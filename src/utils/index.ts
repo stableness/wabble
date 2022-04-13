@@ -46,7 +46,7 @@ import {
 export * as std from './fp-ts-std.js';
 import * as std from './fp-ts-std.js';
 
-import * as Dc from 'io-ts/Decoder';
+import * as Dc from 'io-ts/lib/Decoder.js';
 
 import { parse as parseBasicAuth } from '@stableness/basic-auth';
 
