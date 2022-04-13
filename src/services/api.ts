@@ -6,6 +6,8 @@ import { pipeline } from 'stream';
 import { getHeapSnapshot } from 'v8';
 
 import {
+    io,
+    date,
     option as O,
     state as S,
     string as Str,
@@ -22,6 +24,7 @@ import { bind } from 'proxy-bind';
 
 import type { Config, API } from '../config.js';
 import * as u from '../utils/index.js';
+import { date_to_dump_name } from './utils.js';
 
 
 
@@ -118,29 +121,18 @@ export function establish (api$: Rx.Observable<Config['api']>) {
 
             stateOfReq('GET /dump'),
 
-            S.map(u.rxTap(({ res }) => {
-
-                const format = R.pipe(
-                    R.dropLast(5),
-                    R.replace(/-/g, ''),
-                    R.replace(/:/g, ''),
-                    R.split('T'),
-                    R.prepend('Heap'),
-                    R.append(process.pid),
-                    R.join('-'),
-                );
-
-                const name = format(new Date().toISOString())
-                    .concat('.heapsnapshot')
-                ;
-
-                res.writeHead(200, {
+            S.map(u.rxTap(({ res }) => u.run(F.pipe(
+                io.Do,
+                io.apS('pid', () => process.pid.toString()),
+                io.apS('now', date.create),
+                io.map(({ pid, now }) => date_to_dump_name (pid) (now)),
+                io.chainFirst(name => () => res.writeHead(200, {
                     'Content-Disposition': `attachment; filename="${ name }"`,
-                });
-
-                pipeline(getHeapSnapshot(), res, u.noop);
-
-            })),
+                })),
+                io.apSecond(() => {
+                    pipeline(getHeapSnapshot(), res, u.noop);
+                }),
+            )))),
 
         )),
 
