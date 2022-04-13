@@ -10,3 +10,5 @@ export {
     url as URL,
 } from 'fp-ts-std';
 
+export * from 'fp-ts-std';
+
