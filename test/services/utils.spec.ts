@@ -3,6 +3,7 @@ import { Readable } from 'stream';
 import {
     option as O,
     either as E,
+    function as F,
 } from 'fp-ts';
 
 import * as R from 'ramda';
@@ -10,6 +11,7 @@ import * as R from 'ramda';
 import {
     run as force,
     readToTaskEither,
+    type CurryT,
 } from '../../src/utils/index.js';
 
 import {
@@ -17,6 +19,7 @@ import {
     readFrame,
     do_not_require,
     do_not_have_authentication,
+    date_to_dump_name,
 
 } from '../../src/services/utils.js';
 
@@ -104,6 +107,39 @@ describe('readFrame', () => {
         const result = await force(readFrame(read));
 
         expect(result).toStrictEqual(E.left(error));
+
+    });
+
+});
+
+
+
+
+
+describe('date_to_dump_name', () => {
+
+    type S = string;
+
+    const sample: CurryT<[ S, S, S, S, S, [ S, S ] ]>
+    = y => m => d => time => p => F.tuple(
+        `${ y }-${ m }-${ d }T${ time }.000Z`,
+        `Heap-${ y }${ m }${ d }-${ time.replace(/:/g, '') }-${ p }.heapsnapshot`,
+    );
+
+    const pid = '42';
+
+    const the = date_to_dump_name(pid);
+
+
+
+    test.each([
+
+        sample ('2018') ('01') ('05') ('00:00:00') (pid),
+        sample ('2022') ('04') ('13') ('10:20:30') (pid),
+
+    ])('%s', (iso, dump) => {
+
+        expect(the(new Date(iso))).toEqual(dump);
 
     });
 
