@@ -348,12 +348,10 @@ describe('filterTags', () => {
 
 
 
-    const SetC = R.constructN<[string], Set<string>>(1, Set);
-
-    const wrap = A.map(F.flow(
-        SetC,
-        R.objOf('tags'),
-    ));
+    const wrap = F.flow(
+        A.map((str: string) => new Set(str)),
+        A.map(R.objOf('tags')),
+    );
 
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
