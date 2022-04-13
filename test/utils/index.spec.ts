@@ -238,7 +238,10 @@ describe('EVP_BytesToKey', () => {
 
 describe('portNormalize', () => {
 
-    const read = R.o(portNormalize, R.constructN(1, URL));
+    const read = F.flow(
+        (str: string) => new URL(str),
+        portNormalize,
+    );
 
     test.each([
 
