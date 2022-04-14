@@ -443,8 +443,8 @@ export function split ({ at }: { at: number }) {
 export const tryCatchToError = try2TE;
 
 // :: (() -> Promise a) -> TaskEither Error a
-export function try2TE <A> (fn: F.Lazy<A | Promise<A>>) {
-    return TE.tryCatch(async () => await fn(), E.toError);
+export function try2TE <A> (fn: F.Lazy<Promise<A>>) {
+    return TE.tryCatch(fn, E.toError);
 }
 
 
