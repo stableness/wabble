@@ -37,7 +37,7 @@
     "async-readable": "~0.4.2",
     "buffer-pond": "~0.8.2",
     "command-line-args": "^5.1.1",
-    "fp-ts": "^2.11.1",
+    "fp-ts": "^2.11.10",
     "fp-ts-std": "~0.13.1",
     "futoin-hkdf": "^1.2.1",
     "io-ts": "^2.2.15",
