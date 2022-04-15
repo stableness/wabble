@@ -167,7 +167,7 @@ describe('encrypt & decrypt', () => {
 
         )).resolves.toStrictEqual(data);
 
-    }, 200);
+    }, 500);
 
 });
 
