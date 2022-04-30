@@ -16,6 +16,12 @@ import {
 
 
 
+const io_error_empty_result = () => new Error('empty result');
+
+
+
+
+
 interface Result_DoH_DoT {
     name: string;
     type: 'A' | 'AAAA';
@@ -51,7 +57,7 @@ export function genDoH (endpoint: string, path = '@stableness/dohdec') {
 
         TE.chain(({ answers }) => F.pipe(
             NA.fromArray(answers),
-            TE.fromOption(() => new Error('empty result')),
+            TE.fromOption(io_error_empty_result),
         )),
 
     );
@@ -99,7 +105,7 @@ export function genDoT (conn: Conn, path = '@stableness/dohdec') {
 
         TE.chain(({ answers }) => F.pipe(
             NA.fromArray(answers),
-            TE.fromOption(() => new Error('empty result')),
+            TE.fromOption(io_error_empty_result),
         )),
 
     );
@@ -146,7 +152,7 @@ export const resolve4 = (name: string) => (resolver: pDNS.Resolver) => F.pipe(
 
     TE.chain(F.flow(
         NA.fromArray,
-        TE.fromOption(() => new Error('empty result')),
+        TE.fromOption(io_error_empty_result),
     )),
 
 );
