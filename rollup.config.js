@@ -21,8 +21,9 @@ export const dist = R.compose(path, R.prepend(OUT), R.of, R.trim);
 export const list = R.compose(R.filter(Boolean), R.split(/[,|;]|\s+/g), R.trim);
 
 export const builtin = list(`
-    | http | https | tls | net | crypto | stream | buffer | querystring |
-    | util | os | events | url | fs | assert | vm | v8 | dns |
+    | vm | os | net | dns | http | https | assert | crypto | buffer |
+    | v8 | fs | tls | url | util |       | events | stream |        |
+    | querystring   |
 `);
 
 
