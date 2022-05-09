@@ -10,7 +10,7 @@ import * as Rx from 'rxjs';
 
 import * as R from 'ramda';
 
-import fetch from 'node-fetch';
+import node_fetch from 'node-fetch';
 
 import {
     establish,
@@ -85,7 +85,7 @@ describe('api', () => {
 
                 addr$.pipe(
                     Rx.map(addr => addr.to(path)),
-                    Rx.mergeMap(url => fetch(url, { method })),
+                    Rx.mergeMap(url => node_fetch(url, { method })),
                     Rx.first(({ ok }) => path === '/404' ? true : ok === true),
                 ),
 
@@ -177,7 +177,9 @@ describe('api', () => {
                     address$.pipe(
                         Rx.tap(({ address }) => expect(address).toBe(api.host)),
                         Rx.map(addr => addr.to('/health')),
-                        Rx.mergeMap(url => fetch(url, { headers: { origin } })),
+                        Rx.mergeMap(url => {
+                            return node_fetch(url, { headers: { origin } });
+                        }),
                         Rx.first(({ ok }) => ok === true),
                         Rx.mergeMap(res => {
 
