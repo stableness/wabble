@@ -7,7 +7,7 @@ import { promisify, TextDecoder as TD } from 'util';
 import { PathLike, promises as fs } from 'fs';
 import { pipeline } from 'stream';
 
-import fetch from 'node-fetch';
+import node_fetch from 'node-fetch';
 
 import { base64 } from 'rfc4648';
 
@@ -999,7 +999,7 @@ export const readFileInStringOf =
 
 export const fetchGet = F.flow(
 
-    catchKToError((url: string) => fetch(url)),
+    catchKToError((url: string) => node_fetch(url)),
 
     TE.mapLeft(IO.of),
 
