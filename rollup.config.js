@@ -64,7 +64,9 @@ export default defineConfig({
     },
 
     plugins: [
-        resolve(),
+        resolve({
+            exportConditions: [ 'es2015' ],
+        }),
         commonjs({
             include: [
                 'node_modules/**'
