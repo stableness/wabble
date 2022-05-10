@@ -113,7 +113,7 @@ const loader$ = new Rx.ReplaySubject<string>(1);
 
 const config$ = loader$.pipe(
     Rx.switchMap(u.loadPathObs),
-    Rx.map(R.unary(loadYAML)),
+    Rx.map(u.unary(loadYAML)),
     Rx.map(convert),
     Rx.catchError(err => {
         const { message } = E.toError(err);
