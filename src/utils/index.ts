@@ -78,6 +78,14 @@ export type CurryT <T extends readonly unknown[]> =
 
 
 
+export function unary <T, R> (fn: (...args: [ T, ...never[] ]) => R) {
+    return (x: T) => fn(x);
+}
+
+
+
+
+
 export function run <F extends (...arg: unknown[]) => unknown> (fn: F) {
     return fn() as ReturnType<F>;
 }

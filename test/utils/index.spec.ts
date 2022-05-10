@@ -30,6 +30,7 @@ import {
     run,
     mem,
     noop,
+    unary,
     chunksOf,
     numberToUInt16BE,
     EVP_BytesToKey,
@@ -91,6 +92,41 @@ describe('noop', () => {
     test('', () => {
         expect(noop).toBeInstanceOf(Function);
         expect(noop()).toBe(void 0);
+    });
+
+});
+
+
+
+
+
+describe('unary', () => {
+
+    const num = 42;
+
+    test('args.length = 1', () => {
+
+        const one = unary(function (...args: unknown[]) {
+            expect(args.length).toBe(1);
+        });
+
+        one(num);
+
+    });
+
+    test('snd = undefined', () => {
+
+        const one: Fn<number> = unary(function (a: number, b: string) {
+            expect(b).toBeUndefined();
+            return a;
+        });
+
+        expect(one(num)).toBe(num);
+
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-expect-error
+        expect(one(num, 'foo')).toBe(num);
+
     });
 
 });
