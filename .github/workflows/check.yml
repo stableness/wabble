@@ -70,6 +70,8 @@ jobs:
             allow_coverage_offsets: True
             notify:
               after_n_builds: 3
+          comment:
+            after_n_builds: 3
           EOF
 
       - uses: codecov/codecov-action@v2
