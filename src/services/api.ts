@@ -78,9 +78,9 @@ export function establish (api$: Rx.Observable<Config['api']>) {
 
             S.map(Rx.mergeMap(({ req, res }) => from(req).pipe(
                 Rx.map(F.flow(
-                    R.unary(Buffer.concat),
+                    u.unary(Buffer.concat),
                     R.toString,
-                    R.unary(QS.parse),
+                    u.unary(QS.parse),
                     R.propOr('', 'host') as u.Fn<unknown, string | string[]>,
                     R.unless(
                         R.is(String),

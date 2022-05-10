@@ -215,7 +215,7 @@ export const rules = run(function () {
                 ),
             ],
             [
-                F.constTrue, R.unary(Str.includes),
+                F.constTrue, unary(Str.includes),
             ],
         ])),
         testWith,
@@ -769,7 +769,7 @@ export const str2arr = R.o(R.split(/\s+/), R.trim);
 
 
 
-export const toByteArray = R.unary(bind(Uint8Array).from);
+export const toByteArray = unary(bind(Uint8Array).from);
 
 
 
@@ -927,7 +927,7 @@ export const eqBasic = std.F.curry2(
 export const toBasicCredentials = R.memoizeWith(
     R.identity as typeof String,
     F.flow(
-        R.unary(Buffer.from),
+        unary(Buffer.from),
         base64.stringify,
         std.Str.prepend('Basic '),
     ),
@@ -969,7 +969,7 @@ export const genLevel: CurryT<[
 
 
 export const incrementLE2 = F.flow(
-    R.unary(Array.from) as Fn<Uint8Array, ReadonlyArray<number>>,
+    unary(Array.from) as Fn<Uint8Array, ReadonlyArray<number>>,
     S.traverseArray<number, boolean, number>(n => carry => {
 
         const next = carry ? F.increment(n) : n;
