@@ -106,26 +106,22 @@ describe('unary', () => {
 
     test('args.length = 1', () => {
 
-        const one = unary(function (...args: unknown[]) {
-            expect(args.length).toBe(1);
-        });
+        const one = unary((...args: unknown[]) => args.length);
 
-        one(num);
+        expect(one(num)).toBe(1);
 
     });
 
     test('snd = undefined', () => {
 
-        const one: Fn<number> = unary(function (a: number, b: string) {
-            expect(b).toBeUndefined();
-            return a;
-        });
+        const one: Fn<number, [ number, string ]>
+        = unary((a: number, b: string) => [ a, b ]);
 
-        expect(one(num)).toBe(num);
+        expect(one(num)).toStrictEqual([ num, Undefined ]);
 
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-expect-error
-        expect(one(num, 'foo')).toBe(num);
+        expect(one(num)).toStrictEqual(one(num, 'foo'));
 
     });
 
