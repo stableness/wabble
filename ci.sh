@@ -21,7 +21,7 @@ prerelease()
 
 release()
 {
-    curl -X PUT -sLo /dev/null https://npm.taobao.org/sync/$(jq -r '.name' package.json)?sync_upstream=true
+    curl -X PUT -sLo /dev/null https://npmmirror.com/sync/$(jq -r '.name' package.json)?sync_upstream=true
 
     PKG=package.json VER=$(jq -r '.version' package.json) TMP=lite.json
 
