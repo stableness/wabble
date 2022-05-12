@@ -1,4 +1,8 @@
 import {
+    describe, test, expect,
+} from '@jest/globals';
+
+import {
     option as O,
 } from 'fp-ts';
 
