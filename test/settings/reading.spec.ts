@@ -1,3 +1,7 @@
+import {
+    describe, test, expect,
+} from '@jest/globals';
+
 import * as R from 'ramda';
 
 import {
@@ -110,7 +114,7 @@ describe('decodeResolver', () => {
         [  '-99ms',  0 ],
         [   '42ms', 42 ],
         [ void 0, 80 ],
-    ])('timeout - %d %d', (timeout, result) => {
+    ])('timeout - %d %d', (timeout: string, result: number) => {
 
         const either = readResolver(timeout == null ? {} : { timeout });
 
@@ -121,6 +125,9 @@ describe('decodeResolver', () => {
         expect(either.right.timeout).toBe(result);
 
     });
+
+    type Bound_IN  = { min?: string, max?: string };
+    type Bound_OUT = { min:  number, max:  number };
 
     test.each([
 
@@ -154,7 +161,7 @@ describe('decodeResolver', () => {
             { min: 9000, max: 9000 },
         ],
 
-    ])('ttl - %p', (origin, result) => {
+    ])('ttl - %p', (origin: Bound_IN, result: Bound_OUT) => {
 
         const either = readResolver({ ttl: origin });
 
@@ -314,7 +321,7 @@ describe('filterTags', () => {
             [ 'ab', 'abc'      ],
         ],
 
-    ])('%p', (bar, source, result) => {
+    ])('%p', (bar: string[], source: string[], result: string[]) => {
         expect(unwrap(filterTags(wrap(source), bar))).toEqual(result);
     });
 
@@ -335,7 +342,7 @@ describe('filterTags', () => {
             [                    'c', 'cd'        ],
         ],
 
-    ])('%p', (bar, source, result) => {
+    ])('%p', (bar: string[], source: string[], result: string[]) => {
         expect(unwrap(filterTags(wrap(source), bar))).toEqual(result);
     });
 

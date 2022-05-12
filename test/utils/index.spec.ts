@@ -1,3 +1,8 @@
+import {
+    jest, describe, test, expect,
+    beforeAll, beforeEach,
+} from '@jest/globals';
+
 import { URL } from 'url';
 import { Writable, Readable } from 'stream';
 
@@ -63,6 +68,7 @@ import {
     raceTaskByTimeout,
     str2arr,
     mkMillisecond,
+    type Millisecond,
     toByteArray,
     monoidBuffer,
     readFile,
@@ -151,7 +157,7 @@ describe('numberToUInt16BE', () => {
         443,
         80,
         8080,
-    ])('%s', item => {
+    ])('%s', (item: string | number) => {
 
         check(
             typeof item === 'string'
@@ -210,7 +216,7 @@ describe('EVP_BytesToKey', () => {
             7d793037a0760186574b0282f2f435e7
         ` ],
 
-    ])('[%i] %s', (size, pass, hex) => {
+    ])('[%i] %s', (size: number, pass: string, hex: string) => {
         expect(EVP_BytesToKey(pass, size)).toEqual(h(hex));
     });
 
@@ -243,7 +249,7 @@ describe('portNormalize', () => {
         [ 'http://example.com:443', 443 ],
         [ 'https://example.com:80', 80 ],
 
-    ])('%s - %i', (url, port) => {
+    ])('%s - %i', (url: string, port: number) => {
         expect(read(url)).toBe(port);
     });
 
@@ -260,7 +266,7 @@ describe('headerJoin', () => {
         [ [ 'HTTP/1.0 200' ] ],
         [ [ 'HTTP/1.1 407 Proxy', 'Auth: Basic' ] ],
 
-    ])('%p', fields => {
+    ])('%p', (fields: string[]) => {
         expect(headerJoin(fields)).toMatch(/\r\n\r\n$/);
     });
 
@@ -283,7 +289,7 @@ describe('monoidBuffer', () => {
         [ x, o, x ],
         [ o, x, x ],
 
-    ])('%i - %i', (a, b, c) => {
+    ])('%i - %i', (a: Uint8Array, b: Uint8Array, c: Uint8Array) => {
         expect(concat(a, b)).toBe(c);
     });
 
@@ -303,13 +309,15 @@ describe('monoidBuffer', () => {
 
 describe('eqBasic', () => {
 
+    type Tuple = [ string, string ];
+
     test.each([
 
         [ [ 'a', 'b' ], [ 'a', 'b' ] ],
         [ [ 'a',  '' ], [ 'a',  '' ] ],
         [ [  '', 'b' ], [  '', 'b' ] ],
 
-    ] as const)('%p %p', (foo, bar) => {
+    ] as const)('%p %p', (foo: Tuple, bar: Tuple) => {
 
         const x = { username: foo[0], password: foo[1] };
         const y = { username: bar[0], password: bar[1] };
@@ -324,7 +332,7 @@ describe('eqBasic', () => {
         [ [ 'a',  '' ], [  '', 'a' ] ],
         [ [  '', 'b' ], [ 'b',  '' ] ],
 
-    ] as const)('%p %p', (foo, bar) => {
+    ] as const)('%p %p', (foo: Tuple, bar: Tuple) => {
 
         const x = { username: foo[0], password: foo[1] };
         const y = { username: bar[0], password: bar[1] };
@@ -393,7 +401,7 @@ describe('rules', () => {
             '178.0.0.2',
             '178.0.0.128',
 
-        ])('yes - %s', item => {
+        ])('yes - %s', (item: string) => {
             expect(tests(item)).toBe(true);
         });
 
@@ -409,7 +417,7 @@ describe('rules', () => {
             '192.167.1.2',
             '178.0.1.2',
 
-        ])('not - %s', item => {
+        ])('not - %s', (item: string) => {
             expect(tests(item)).toBe(false);
         });
 
@@ -445,7 +453,7 @@ describe('basicInfo', () => {
         [ 'foo', 'bar' ],
         [ '111', '222' ],
 
-    ])('%s', (name, pass) => {
+    ])('%s', (name: string, pass: string) => {
 
         const basic = stringify([ name, pass ]);
         const info = O.some({ name, pass });
@@ -492,7 +500,7 @@ describe('incrementLE2', () => {
         [ [ 0xFF, 0xFF ], [ 0x00, 0x00 ] ],
         [ [ 0xFF, 0xFF, 0x01, 0xFF ], [ 0x00, 0x00, 0x02, 0xFF ] ],
 
-    ])('%p', (before, after) => {
+    ])('%p', (before: number[], after: number[]) => {
         expect(incrementLE2(toByteArray(before))).toEqual(toByteArray(after));
     });
 
@@ -531,9 +539,9 @@ describe('genLevel', () => {
         [ ___, In, In ],
         [ DEV, __, De ],
 
-    ])('%s | %s = %s', (NODE_ENV, LOG_LEVEL, result) => {
+    ])('%s | %s = %s', (NODE_ENV: string, LOG_LEVEL: string, res: string) => {
 
-        expect(read({ NODE_ENV, LOG_LEVEL })).toBe(result);
+        expect(read({ NODE_ENV, LOG_LEVEL })).toBe(res);
 
     });
 
@@ -554,7 +562,7 @@ describe('chunksOf', () => {
         [ 2, 5, [ 2, 2, 1 ] ],
         [ 0x3FFF, 0x3FFF, [ 0x3FFF ] ],
 
-    ])('%d / %d', (max, chunk, result) => {
+    ])('%d / %d', (max: number, chunk: number, result: number[]) => {
 
         expect(
 
@@ -585,7 +593,7 @@ describe('split', () => {
         4,
         5,
         10,
-    ])('by %d', num => {
+    ])('by %d', (num: number) => {
 
         const slice = split({ at: num });
         const [ head, tail ] = slice(buffer);
@@ -712,7 +720,7 @@ describe('socks5Handshake', () => {
         [ 111, '1.2.3.4' ],
         [ 222, 'example.com' ],
 
-    ])('[%s] %s', (port, host) => {
+    ])('[%s] %s', (port: number, host: string) => {
         expect(
             socks5Handshake(host, port),
         ).toStrictEqual(
@@ -726,7 +734,7 @@ describe('socks5Handshake', () => {
         [ 'новини.com', 'xn--b1amarcd.com' ],
         [ '名がドメイン.com', 'xn--v8jxj3d1dzdz08w.com' ],
 
-    ])('[%s] %s', (raw, result) => {
+    ])('[%s] %s', (raw: string, result: string) => {
         expect(pick(raw)).toBe(result);
     });
 
@@ -781,7 +789,7 @@ describe('readTimes', () => {
 
         [ '1.2e2m', m(1.2e2, 'm'), 1000 * 120 * 60 ],
 
-    ])('%s = %d', (str, a, b) => {
+    ])('%s = %d', (str: string, a: Millisecond, b: number) => {
 
         expect(a).toBe(b);
         expect(readTimes(str)).toStrictEqual(O.of(a));
@@ -804,7 +812,7 @@ describe('readTimes', () => {
         '1.23e1m',
         'wat1s',
 
-    ])('NOT %s', str => {
+    ])('NOT %s', (str: string) => {
 
         expect(readTimes(str)).toBe(O.none);
 
@@ -957,7 +965,9 @@ describe('timeout', () => {
 
     test('', async () => {
 
-        jest.useFakeTimers('legacy');
+        jest.useFakeTimers({
+            legacyFakeTimers: true,
+        });
 
         const future = timeout(900);
 
@@ -1106,7 +1116,7 @@ describe('toBasicCredentials', () => {
         [ 'a:b', 'YTpi' ],
         [ 'a:',  'YTo=' ],
         [  ':b', 'OmI=' ],
-    ])('%p', (auth, result) => {
+    ])('%p', (auth: string, result: string) => {
         expect(toBasicCredentials(auth)).toBe(R.concat('Basic ', result));
     });
 
@@ -1132,7 +1142,7 @@ describe('readOptionalString', () => {
         [     {}, O.none ],
         [     [], O.none ],
 
-    ])('%p', (raw, result) => {
+    ])('%p', (raw: unknown, result: O.Option<string>) => {
 
         expect(equals(readOptionalString(raw), result)).toBe(true);
 
@@ -1200,7 +1210,7 @@ describe('trimBase64URI', () => {
         `vmess://${ b(JSON.stringify({ net: 'ws', v: 2 })) }`,
         'waaaaaaaaaaaaaaaat',
 
-    ])('unchanged - %s', raw => {
+    ])('unchanged - %s', (raw: string) => {
 
         expect(trimBase64URI(raw)).toBe(raw);
 
@@ -1213,7 +1223,7 @@ describe('trimBase64URI', () => {
         [ 'http://',     'localhost', '#aaa' ],
         [ 'http://',   'example.com',     '' ],
 
-    ])('valid - %s%s%s', (p, foo, bar) => {
+    ])('valid - %s%s%s', (p: string, foo: string, bar: string) => {
 
         expect(
             trimBase64URI(stdA.join ('') ([ p, a(foo), bar ])),
@@ -1237,7 +1247,7 @@ describe('sieve', () => {
 
         [ 'Y-O-L-O',          R.F ],
 
-    ])('%s', async (domain, result) => {
+    ])('%s', async (domain: string, result: typeof R.T) => {
 
         const block = sieve(fixtures('sieve/block'));
 
@@ -1445,11 +1455,11 @@ describe('HKDF_SHA1', () => {
             'a0bc90fe7a3fef57087f96ceeaccea0241f6e00a3fe35a789ced78dfbc7c95f5',
         ],
 
-    ])('%i - %s', (length, key, salt, info, hash) => {
+    ])('%i - %s', ((length, key, salt, info, hash) => {
         expect(
             HKDF_SHA1(key, salt, info, length),
         ).toStrictEqual(h(hash));
-    });
+    }) as F.FunctionN<[ number, string, string, string, string ], void>);
 
     const h = R.o(
         R.curryN(2, Buffer.from)(R.__, 'hex') as Fn<string, Buffer>,
@@ -1471,7 +1481,7 @@ describe('isPrivateIP', () => {
         '192.168.0.1',
         '::ffff:192.168.1.1',
 
-    ])('yes - %s', item => {
+    ])('yes - %s', (item: string) => {
         expect(isPrivateIP(item)).toBe(true);
     });
 
@@ -1481,7 +1491,7 @@ describe('isPrivateIP', () => {
         'localhost',
         'example.com',
 
-    ])('not - %s', item => {
+    ])('not - %s', (item: string) => {
         expect(isPrivateIP(item)).toBe(false);
     });
 
@@ -1499,7 +1509,7 @@ describe('isBlockedIP', () => {
         '0:0:0:0:0:0:0:0',
         '::',
 
-    ])('yes - %s', item => {
+    ])('yes - %s', (item: string) => {
         expect(isBlockedIP(item)).toBe(true);
     });
 
@@ -1510,7 +1520,7 @@ describe('isBlockedIP', () => {
         '191.1.1.1',
         '127.0.0.1',
 
-    ])('not - %s', item => {
+    ])('not - %s', (item: string) => {
         expect(isBlockedIP(item)).toBe(false);
     });
 

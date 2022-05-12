@@ -1,3 +1,9 @@
+import {
+    jest, describe, test, expect,
+    beforeAll, beforeEach,
+    afterAll,
+} from '@jest/globals';
+
 import DNS from 'dns';
 import tls from 'tls';
 import { Duplex } from 'stream';
@@ -100,7 +106,7 @@ describe('genDoH', () => {
 
 describe('genDoT', () => {
 
-    const connect = tls.connect as jest.Mock;
+    const connect = jest.mocked(tls.connect);
 
     class MockSocket extends Duplex {
 
@@ -150,7 +156,9 @@ describe('genDoT', () => {
 
     test('valid', async () => {
 
-        connect.mockImplementationOnce((_opts, cb: () => void) => {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        connect.mockImplementationOnce((_opts: unknown, cb: () => void) => {
 
             setImmediate(cb);
 
@@ -171,7 +179,9 @@ describe('genDoT', () => {
 
     test('empty', async () => {
 
-        connect.mockImplementationOnce((_opts, cb: () => void) => {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        connect.mockImplementationOnce((_opts: unknown, cb: () => void) => {
 
             setImmediate(cb);
 
@@ -211,8 +221,8 @@ describe('genDoT', () => {
 
 describe('genDNS', () => {
 
-    const setServers = jest.fn();
-    const resolve4 = jest.fn();
+    const setServers = jest.fn<typeof DNS.promises.setServers>();
+    const resolve4 = jest.fn<typeof DNS.promises.resolve4>();
 
 
 
@@ -269,7 +279,7 @@ describe('genDNS', () => {
 
         const dns = genDNS('1.1.1.1');
 
-        resolve4.mockResolvedValueOnce([]);
+        resolve4.mockResolvedValueOnce([] as never);
 
         const results = await u.run(dns('example.com'));
 

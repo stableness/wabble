@@ -1,3 +1,7 @@
+import {
+    describe, test, expect,
+} from '@jest/globals';
+
 import { Readable } from 'stream';
 
 import {
@@ -51,7 +55,7 @@ describe('do_not_have_authentication', () => {
         [ [    1,    3    ] ],
         [ [ 0, 1,    3, 4 ] ],
 
-    ])('no 0x02 in %p', methods => {
+    ])('no 0x02 in %p', (methods: number[]) => {
         expect(do_not_have_authentication(methods)).toBe(true);
     });
 
@@ -61,7 +65,7 @@ describe('do_not_have_authentication', () => {
         [ [    1, 2, 3    ] ],
         [ [ 0, 1, 2, 3, 4 ] ],
 
-    ])('have 0x02 in %p', methods => {
+    ])('have 0x02 in %p', (methods: number[]) => {
         expect(do_not_have_authentication(methods)).toBe(false);
     });
 
@@ -137,7 +141,7 @@ describe('date_to_dump_name', () => {
         sample ('2018') ('01') ('05') ('00:00:00') (pid),
         sample ('2022') ('04') ('13') ('10:20:30') (pid),
 
-    ])('%s', (iso, dump) => {
+    ])('%s', (iso: string, dump: string) => {
 
         expect(the(new Date(iso))).toEqual(dump);
 

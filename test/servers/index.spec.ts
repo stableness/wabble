@@ -1,3 +1,7 @@
+import {
+    describe, test, expect,
+} from '@jest/globals';
+
 import pino from 'pino';
 
 import * as R from 'ramda';

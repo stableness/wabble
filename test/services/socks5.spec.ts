@@ -1,3 +1,7 @@
+import {
+    jest, describe, test, expect,
+} from '@jest/globals';
+
 import net from 'net';
 import http from 'http';
 
@@ -49,7 +53,7 @@ describe('socks5Proxy', () => {
         'socks5://                 localhost   /hello   ?   c=world           ',
         'socks5://                 localhost   /hello   ?   c=world- & e      ',
 
-    ])('%s', async raw => {
+    ])('%s', async (raw: string) => {
 
         const env = genEnv(raw);
 

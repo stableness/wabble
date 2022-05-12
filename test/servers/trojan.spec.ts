@@ -1,3 +1,8 @@
+import {
+    jest, describe, test, expect,
+    beforeAll,
+} from '@jest/globals';
+
 import { PassThrough } from 'stream';
 
 import {
@@ -49,7 +54,7 @@ describe('chain', () => {
             allowHalfOpen: false,
         });
 
-        (connect as jest.Mock).mockImplementationOnce(() => {
+        jest.mocked(connect).mockImplementationOnce((() => {
 
             setTimeout(() => sink.emit('secureConnect'), 10);
 
@@ -57,7 +62,7 @@ describe('chain', () => {
                 setNoDelay: jest.fn(() => sink),
             });
 
-        });
+        }) as never);
 
         expect.assertions(2);
 
@@ -115,7 +120,7 @@ describe('memHash', () => {
         [ 'wat', 'ac50789f2e2563245cd93ca1fd58a286e0668d401b03e06be8a30266' ],
         [ 'lol', 'edef97a036c86f6d7ab1e07f12c83bffab9b2d381f0f07a43c3fb2ff' ],
 
-    ])('%s - %s', (raw, hash) => {
+    ])('%s - %s', (raw: string, hash: string) => {
 
         expect(memHash(raw)).toStrictEqual(Buffer.from(hash));
 
