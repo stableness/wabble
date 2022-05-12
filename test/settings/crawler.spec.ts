@@ -1,4 +1,8 @@
 import {
+    jest, describe, test, expect,
+} from '@jest/globals';
+
+import {
     taskEither as TE,
     readonlyArray as A,
     function as F,
@@ -21,9 +25,9 @@ import {
 
 jest.mock('../../src/utils/index.js', () => {
 
-    const origin: Record<string, unknown> = jest.requireActual(
+    const origin = jest.requireActual(
         '../../src/utils/index.js',
-    );
+    ) as Record<string, unknown>;
 
     return {
         ...origin,
@@ -62,7 +66,7 @@ describe('crawler', () => {
         [   [ h('ss://foobar') ],
             [   'ss://foobar' ],
         ],
-    ])('%p', (a, b) => {
+    ])('%p', (a: string[], b: string[]) => {
 
         const env: Env = {
             endpoint: 'https://github.com/whatwg/url/blob/main/README.md',
@@ -71,7 +75,7 @@ describe('crawler', () => {
 
         const task = crawlRowsStartsBy ('ss://', 'https://') (env);
 
-        const fn = loadPath as jest.MockedFunction<typeof loadPath>;
+        const fn = jest.mocked(loadPath);
 
         fn.mockReturnValue(TE.of(R.join('\n', a)));
 
@@ -97,7 +101,7 @@ describe('crawler', () => {
         [ 'http://foobar', [                       ] ],
         [ 'http://foobar', [ 'wat://aa', 'waaaaat' ] ],
 
-    ])('%s', (endpoint, arr) => {
+    ])('%s', (endpoint: string, arr: string[]) => {
 
         const env: Env = {
             endpoint,
@@ -107,7 +111,7 @@ describe('crawler', () => {
 
         const task = crawlRowsStartsBy ('ss://') (env);
 
-        const fn = loadPath as jest.MockedFunction<typeof loadPath>;
+        const fn = jest.mocked(loadPath);
 
         fn.mockReturnValue(TE.of(R.join('\n', arr)));
 
@@ -127,7 +131,7 @@ describe('crawler', () => {
         const first  = 'ss://foo';
         const second = 'ss://bar';
 
-        const fn = (loadPath as jest.MockedFunction<typeof loadPath>)
+        const fn = jest.mocked(loadPath)
             .mockReturnValueOnce(TE.of(first))
             .mockReturnValueOnce(TE.of(second))
         ;
