@@ -1,3 +1,9 @@
+import {
+    jest, describe, test, expect,
+    beforeAll,
+    afterAll,
+} from '@jest/globals';
+
 import { Socket } from 'net';
 import { PassThrough, Readable, Transform } from 'stream';
 
@@ -27,9 +33,9 @@ jest.retryTimes(0);
 
 jest.mock('../../src/servers/index.js', () => {
 
-    const origin: Record<string, unknown> = jest.requireActual(
+    const origin = jest.requireActual(
         '../../src/servers/index.js',
-    );
+    ) as Record<string, unknown>;
 
     return {
         ...origin,
@@ -60,9 +66,11 @@ describe('tunnel', () => {
 
     test('timeout', () => {
 
-        jest.useFakeTimers('legacy');
+        jest.useFakeTimers({
+            legacyFakeTimers: true,
+        });
 
-        (netConnectTo as jest.Mock).mockImplementationOnce(() => {
+        jest.mocked(netConnectTo).mockImplementationOnce(() => {
             return new Socket();
         });
 
@@ -137,19 +145,19 @@ describe('encrypt & decrypt', () => {
         'aes-256-gcm',
         'chacha20-poly1305',
 
-    ])('alg: %s', alg => {
+    ])('alg: %s', (alg: string) => {
 
         const sink = new PassThrough({
             allowHalfOpen: false,
         });
 
-        (netConnectTo as jest.Mock).mockImplementationOnce(() => {
+        jest.mocked(netConnectTo).mockImplementationOnce((() => {
 
             const source = genChopper(2);
             setTimeout(() => source.emit('connect'), 10);
             return source;
 
-        });
+        }) as never);
 
         return expect(F.pipe(
 
