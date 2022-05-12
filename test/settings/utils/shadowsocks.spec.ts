@@ -1,3 +1,7 @@
+import {
+    describe, test, expect,
+} from '@jest/globals';
+
 import { URL } from 'url';
 
 import { base64url } from 'rfc4648';
@@ -62,6 +66,8 @@ describe('readAlgKey', () => {
         R.toString,
     );
 
+    type CB = F.FunctionN<[ string, string, string, string ], void>;
+
     test.each([
 
         [ a('foo:bar'), 'foo', 'bar' ],
@@ -79,7 +85,7 @@ describe('readAlgKey', () => {
         [ a(''), _____, _____ ],
         [ b(''), _____, _____ ],
 
-    ])('%s', (raw, ur, ps) => {
+    ])('%s', ((raw, ur, ps) => {
 
         const or = R.defaultTo(_____);
 
@@ -90,7 +96,7 @@ describe('readAlgKey', () => {
         expect(or(alg)).toBe(ur);
         expect(or(key)).toBe(ps);
 
-    });
+    }) as CB);
 
     test.each([
 
@@ -109,7 +115,7 @@ describe('readAlgKey', () => {
         [ a(''), 'alg', _____, 'alg' ],
         [ b(''), 'alg', _____, 'alg' ],
 
-    ])('%s', (raw, ur, ps, alg_) => {
+    ])('%s', ((raw, ur, ps, alg_) => {
 
         const or = R.defaultTo(_____);
 
@@ -120,7 +126,7 @@ describe('readAlgKey', () => {
         expect(or(alg)).toBe(ur);
         expect(or(key)).toBe(ps);
 
-    });
+    }) as CB);
 
     test.each([
 
@@ -139,7 +145,7 @@ describe('readAlgKey', () => {
         [ a(''), _____, 'key', 'key' ],
         [ b(''), _____, 'key', 'key' ],
 
-    ])('%s', (raw, ur, ps, key_) => {
+    ])('%s', ((raw, ur, ps, key_) => {
 
         const or = R.defaultTo(_____);
 
@@ -150,7 +156,7 @@ describe('readAlgKey', () => {
         expect(or(alg)).toBe(ur);
         expect(or(key)).toBe(ps);
 
-    });
+    }) as CB);
 
 });
 
