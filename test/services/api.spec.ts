@@ -1,3 +1,9 @@
+import {
+    jest, describe, test, expect,
+    beforeAll,
+    afterAll,
+} from '@jest/globals';
+
 import { Readable } from 'stream';
 
 import {
@@ -75,7 +81,7 @@ describe('api', () => {
 
         'OPTIONS /cors',
 
-    ])('%s', async entry => {
+    ])('%s', async (entry: string) => {
 
         const [ method = 'GET', path = '/404' ] = u.str2arr(entry);
 
