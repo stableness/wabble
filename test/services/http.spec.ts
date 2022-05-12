@@ -1,3 +1,7 @@
+import {
+    jest, describe, test, expect,
+} from '@jest/globals';
+
 import net from 'net';
 import http from 'http';
 import type { Socket } from 'net';
@@ -79,12 +83,14 @@ jest.retryTimes(0);
 
 describe('httpProxy', () => {
 
+    type Opts = Partial<{ debug: boolean, warn: boolean }>;
+
     test.each([
 
         { debug: true },
         {  warn: true },
 
-    ])('short for proxy auth in %p', async opts => {
+    ])('short for proxy auth in %p', async (opts: Opts) => {
 
         const { auth } = genAuth({ username: 'foo', password: 'bar' });
 
@@ -174,7 +180,7 @@ describe('httpProxy', () => {
         'http://                 localhost   /hello   ?   c=world             ',
         'http://                 localhost   /hello   ?   c=world- & e        ',
 
-    ])('%s', async raw => {
+    ])('%s', async (raw: string) => {
 
         const env = genEnv(raw);
 
@@ -274,7 +280,7 @@ export function genAuth ({ username, password }: Basic) {
 
     const auth = F.pipe(
         O.some(u.eqBasic({ username, password })),
-        O.filter(test => test({ username: '', password: '' }) === false),
+        O.filter(check => check({ username: '', password: '' }) === false),
     );
 
     const basic = O.chain (F.constant(O.some({ username, password }))) (auth);
