@@ -963,17 +963,15 @@ describe('mem', () => {
 
 describe('timeout', () => {
 
-    test('', async () => {
+    test('', () => {
 
-        jest.useFakeTimers({
-            legacyFakeTimers: true,
-        });
+        jest.useFakeTimers();
 
         const future = timeout(900);
 
         jest.runOnlyPendingTimers();
 
-        await expect(future).rejects.toThrow();
+        return expect(future).rejects.toThrow();
 
     }, 10);
 
