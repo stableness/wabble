@@ -67,7 +67,9 @@ describe('tunnel', () => {
     test('timeout', () => {
 
         jest.useFakeTimers({
-            legacyFakeTimers: true,
+            doNotFake: [
+                'setImmediate',
+            ],
         });
 
         jest.mocked(netConnectTo).mockImplementationOnce(() => {
@@ -76,17 +78,17 @@ describe('tunnel', () => {
 
         const timeoutError = new u.ErrorWithCode('SERVER_SOCKET_TIMEOUT');
 
-        const task = u.run(F.pipe(
-            tunnel({ host: 'localhost', port: 8080 }),
-            TE.mapLeft(err => u.eqErrorWithCode.equals(err, timeoutError)),
-            TE.toUnion,
-        ));
-
         setImmediate(() => {
-            jest.runAllTimers();
+            jest.runOnlyPendingTimers();
         });
 
-        return expect(task).resolves.toBe(true);
+        return expect(stdTE.unsafeUnwrapLeft(F.pipe(
+
+            tunnel({ host: 'localhost', port: 8080 }),
+
+            TE.mapLeft(err => u.eqErrorWithCode.equals(err, timeoutError)),
+
+        ))).resolves.toBe(true);
 
     }, 50);
 
