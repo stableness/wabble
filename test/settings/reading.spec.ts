@@ -113,8 +113,8 @@ describe('decodeResolver', () => {
         [    '0ms',  0 ],
         [  '-99ms',  0 ],
         [   '42ms', 42 ],
-        [ void 0, 80 ],
-    ])('timeout - %d %d', (timeout: string, result: number) => {
+        [   void 0, 80 ],
+    ])('timeout - %d %d', (timeout, result) => {
 
         const either = readResolver(timeout == null ? {} : { timeout });
 
