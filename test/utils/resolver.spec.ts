@@ -256,11 +256,11 @@ describe('genDNS', () => {
 
     test.each([
 
-        [                             ],
-        [            'not ip address' ],
-        [ '1.1.1.1', 'not ip address' ],
+        { list: [                             ] },
+        { list: [            'not ip address' ] },
+        { list: [ '1.1.1.1', 'not ip address' ] },
 
-    ])('invalid resolver [ %s, %s ]', async (...list) => {
+    ])('invalid resolver $list', ({ list }) => {
 
         setServers.mockImplementationOnce(() => {
             throw new Error('invalid ips');
@@ -268,12 +268,14 @@ describe('genDNS', () => {
 
         const dns = genDNS(list);
 
-        const results = await u.run(dns('example.com'));
+        return expect(u.std.TE.unsafeUnwrap(F.pipe(
+            dns('example.com'),
+            TE.orElseFirstIOK(() => () => {
+                expect(resolve4).not.toHaveBeenCalled();
+            }),
+        ))).rejects.toThrowError();
 
-        expect(resolve4).not.toHaveBeenCalled();
-        expect(E.isLeft(results)).toBe(true);
-
-    });
+    }, 100);
 
     test('empty result', async () => {
 
