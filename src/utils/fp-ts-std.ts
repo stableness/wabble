@@ -8,6 +8,7 @@ export {
     tuple as Tp,
     number as Num,
     url as URL,
+    taskEither as TE,
 } from 'fp-ts-std';
 
 export * from 'fp-ts-std';
