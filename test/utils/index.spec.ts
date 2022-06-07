@@ -68,7 +68,6 @@ import {
     raceTaskByTimeout,
     str2arr,
     mkMillisecond,
-    type Millisecond,
     toByteArray,
     monoidBuffer,
     readFile,
@@ -309,15 +308,15 @@ describe('monoidBuffer', () => {
 
 describe('eqBasic', () => {
 
-    type Tuple = [ string, string ];
+    const { tuple } = F;
 
     test.each([
 
-        [ [ 'a', 'b' ], [ 'a', 'b' ] ],
-        [ [ 'a',  '' ], [ 'a',  '' ] ],
-        [ [  '', 'b' ], [  '', 'b' ] ],
+        { foo: tuple('a', 'b'), bar: tuple('a', 'b') },
+        { foo: tuple('a',  ''), bar: tuple('a',  '') },
+        { foo: tuple( '', 'b'), bar: tuple( '', 'b') },
 
-    ] as const)('%p %p', (foo: Tuple, bar: Tuple) => {
+    ])('$foo $bar', ({ foo, bar }) => {
 
         const x = { username: foo[0], password: foo[1] };
         const y = { username: bar[0], password: bar[1] };
@@ -328,11 +327,11 @@ describe('eqBasic', () => {
 
     test.each([
 
-        [ [ 'a', 'b' ], [ 'a', 'c' ] ],
-        [ [ 'a',  '' ], [  '', 'a' ] ],
-        [ [  '', 'b' ], [ 'b',  '' ] ],
+        { foo: tuple('a', 'b'), bar: tuple('a', 'c') },
+        { foo: tuple('a',  ''), bar: tuple( '', 'a') },
+        { foo: tuple( '', 'b'), bar: tuple('b',  '') },
 
-    ] as const)('%p %p', (foo: Tuple, bar: Tuple) => {
+    ])('$foo $bar', ({ foo, bar }) => {
 
         const x = { username: foo[0], password: foo[1] };
         const y = { username: bar[0], password: bar[1] };
@@ -539,7 +538,7 @@ describe('genLevel', () => {
         [ ___, In, In ],
         [ DEV, __, De ],
 
-    ])('%s | %s = %s', (NODE_ENV: string, LOG_LEVEL: string, res: string) => {
+    ])('%s | %s = %s', (NODE_ENV, LOG_LEVEL, res) => {
 
         expect(read({ NODE_ENV, LOG_LEVEL })).toBe(res);
 
@@ -789,7 +788,7 @@ describe('readTimes', () => {
 
         [ '1.2e2m', m(1.2e2, 'm'), 1000 * 120 * 60 ],
 
-    ])('%s = %d', (str: string, a: Millisecond, b: number) => {
+    ])('%s = %d', (str, a, b) => {
 
         expect(a).toBe(b);
         expect(readTimes(str)).toStrictEqual(O.of(a));
@@ -1245,7 +1244,7 @@ describe('sieve', () => {
 
         [ 'Y-O-L-O',          R.F ],
 
-    ])('%s', async (domain: string, result: typeof R.T) => {
+    ])('%s', async (domain, result) => {
 
         const block = sieve(fixtures('sieve/block'));
 
