@@ -124,21 +124,21 @@ const config$ = loader$.pipe(
 );
 
 const directList$ = config$.pipe(
-    Rx.pluck('sieve', 'direct'),
+    Rx.map(c => c.sieve.direct),
     Rx.map(O.getOrElse(F.constant('@stableness/sieve-tray/lib/china-list'))),
     Rx.mergeMap(u.sieve),
     Rx.shareReplay({ bufferSize: 1, refCount: false }),
 );
 
 const rejectList$ = config$.pipe(
-    Rx.pluck('sieve', 'reject'),
+    Rx.map(c => c.sieve.reject),
     Rx.map(O.getOrElse(F.constant('@stableness/sieve-tray/lib/block-list'))),
     Rx.mergeMap(u.sieve),
     Rx.shareReplay({ bufferSize: 1, refCount: false }),
 );
 
 const rules$ = config$.pipe(
-    Rx.pluck('rules'),
+    Rx.map(c => c.rules),
     Rx.map(R.evolve({
         proxy: u.rules.through,
         direct: u.rules.through,
@@ -161,23 +161,23 @@ const rules$ = config$.pipe(
 );
 
 const dealer$ = config$.pipe(
-    Rx.pluck('servers'),
+    Rx.map(c => c.servers),
     Rx.map(u.loopNext),
     Rx.map(hit => ({ hit })),
 );
 
 const services$ = config$.pipe(
-    Rx.pluck('services'),
+    Rx.map(c => c.services),
 );
 
 const api$ = config$.pipe(
-    Rx.pluck('api'),
+    Rx.map(c => c.api),
 );
 
 export type Resolver = Rx.ObservedValueOf<typeof resolver$>;
 
 const resolver$ = config$.pipe(
-    Rx.pluck('resolver'),
+    Rx.map(c => c.resolver),
     Rx.map(R.evolve({
         upstream: O.map(R.o(
             R.evolve({
