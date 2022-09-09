@@ -74,6 +74,6 @@ jobs:
             after_n_builds: 3
           EOF
 
-      - uses: codecov/codecov-action@v2
+      - uses: codecov/codecov-action@v3
         timeout-minutes: 1
 
