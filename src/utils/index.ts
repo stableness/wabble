@@ -311,7 +311,7 @@ export const monoidBuffer = run(function () {
 
         concatC: std.F.curry2(monoid.concat),
 
-        concatF: std.F.curry2(F.flip(monoid.concat)),
+        concatF: F.flip(std.F.curry2(monoid.concat)),
 
     };
 

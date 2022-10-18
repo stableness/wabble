@@ -738,7 +738,7 @@ describe('socks5Handshake', () => {
     });
 
     const pick = F.flow(
-        stdF.curry2 (F.flip(socks5Handshake)) (0),
+        F.flip(stdF.curry2(socks5Handshake)) (0),
         split({ at: 5 }),
         Tp.snd,
         split({ at: -2 }),
@@ -771,7 +771,7 @@ describe('socks5Handshake', () => {
 
 describe('readTimes', () => {
 
-    const m = F.flip(F.untupled(stdF.uncurry2(mkMillisecond)));
+    const m = F.untupled(stdF.uncurry2(F.flip(mkMillisecond)));
 
     test.each([
 
