@@ -387,7 +387,7 @@ export function DecryptStream (
 
         transform (chunk: Uint8Array, _enc: string, cb: TransformCallback) {
 
-            const push = IoE.tryCatchK(u.unary(F.flip(cb)), E.toError);
+            const push = IoE.tryCatchK(d => cb(u.Undefined, d), E.toError);
 
             u.run(F.pipe(
                 read,
