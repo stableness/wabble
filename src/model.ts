@@ -125,14 +125,14 @@ const config$ = loader$.pipe(
 
 const directList$ = config$.pipe(
     Rx.map(c => c.sieve.direct),
-    Rx.map(O.getOrElse(F.constant('@stableness/sieve-tray/lib/china-list'))),
+    Rx.map(O.getOrElse(F.constant('@stableness/sieve-tray/lib/china-list.js'))),
     Rx.mergeMap(u.sieve),
     Rx.shareReplay({ bufferSize: 1, refCount: false }),
 );
 
 const rejectList$ = config$.pipe(
     Rx.map(c => c.sieve.reject),
-    Rx.map(O.getOrElse(F.constant('@stableness/sieve-tray/lib/block-list'))),
+    Rx.map(O.getOrElse(F.constant('@stableness/sieve-tray/lib/block-list.js'))),
     Rx.mergeMap(u.sieve),
     Rx.shareReplay({ bufferSize: 1, refCount: false }),
 );
