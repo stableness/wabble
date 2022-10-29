@@ -141,10 +141,11 @@ export const mem = {
 
 
 
-export const isIP = R.o(
-    P.not(R.equals(0)),
-    net.isIP,
-);
+export type StringOfIP = string & {
+    readonly StringOfIP: unique symbol;
+};
+
+export const isIP = (str: string): str is StringOfIP => net.isIP(str) !== 0;
 
 
 
