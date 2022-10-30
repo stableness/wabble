@@ -83,7 +83,7 @@ jest.retryTimes(0);
 
 describe('httpProxy', () => {
 
-    type Opts = Partial<{ debug: boolean, warn: boolean }>;
+    type Opts = { debug?: boolean, warn?: boolean };
 
     test.each([
 
