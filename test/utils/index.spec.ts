@@ -1265,15 +1265,20 @@ describe('sieve', () => {
 
 
 
-    test('(__wat__)', async () => {
+    test.each([
 
-        const __wat = sieve('__wat');
+        '__wat',
+        'sieve/empty',
+
+    ])('%s', async path => {
+
+        const obs = sieve(fixtures(path));
 
         await expect(
 
             Rx.lastValueFrom(
 
-                __wat.pipe(
+                obs.pipe(
                     Rx.map(R.applyTo('O_o')),
                 ),
 
