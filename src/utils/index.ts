@@ -905,9 +905,8 @@ export const isReadonlyNonEmptyArray: <A> (as: readonly A[]) => as is NA.Readonl
 
 export const decoderNonEmptyArrayOf = F.flow(
     Dc.array,
-    Dc.map(NA.fromArray),
-    Dc.refine(O.isSome, 'NonEmptyArray'),
-    Dc.map(R.prop('value')),
+    Dc.readonly,
+    Dc.refine(isReadonlyNonEmptyArray, 'NonEmptyArray'),
 );
 
 
