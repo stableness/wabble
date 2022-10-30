@@ -893,20 +893,10 @@ export const basicInfo = run(function () {
 
 
 
-// eslint-disable-next-line max-len
-export const isReadonlyNonEmptyArray: <A> (as: readonly A[]) => as is NA.ReadonlyNonEmptyArray<A>
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
-= NA.isNonEmpty as never;
-
-
-
-
-
 export const decoderNonEmptyArrayOf = F.flow(
     Dc.array,
     Dc.readonly,
-    Dc.refine(isReadonlyNonEmptyArray, 'NonEmptyArray'),
+    Dc.refine(A.isNonEmpty, 'NonEmptyArray'),
 );
 
 
