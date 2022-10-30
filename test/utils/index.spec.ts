@@ -81,7 +81,6 @@ import {
     genLevel,
     bufferToString,
     readTimes,
-    isReadonlyNonEmptyArray,
 
 } from '../../src/utils/index.js';
 
@@ -1526,20 +1525,6 @@ describe('isBlockedIP', () => {
     ])('not - %s', (item: string) => {
         expect(isBlockedIP(item)).toBe(false);
     });
-
-});
-
-
-
-
-
-describe('isReadonlyNonEmptyArray', () => {
-
-    expect(isReadonlyNonEmptyArray).toBeDefined();
-
-    expect(isReadonlyNonEmptyArray([   ])).toBe(false);
-
-    expect(isReadonlyNonEmptyArray([ 1 ])).toBe(true);
 
 });
 
