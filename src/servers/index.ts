@@ -189,7 +189,7 @@ const from_DoH_DoT = (type: string) => (opts: Opts) => (query: Query) => {
 
         }),
 
-        TE.map(R.prop('data')),
+        TE.map(d => d.data),
 
     );
 
@@ -230,7 +230,7 @@ const fromDNS = (opts: Opts) => (query: DNS_query) => {
 
         }),
 
-        TE.map(R.prop('address')),
+        TE.map(d => d.address),
 
     );
 

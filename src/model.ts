@@ -184,7 +184,7 @@ const resolver$ = config$.pipe(
                 tls: A.map(({ uri }: NSResolver) => genDoT(uri)),
                 udp: A.map(({ uri }: NSResolver) => genDNS(uri.host)),
             }),
-            u.groupBy(R.prop('protocol')),
+            u.groupBy(d => d.protocol),
         )),
     })),
     Rx.map(({ ttl, upstream, timeout }) => {
@@ -193,9 +193,9 @@ const resolver$ = config$.pipe(
             <T> (arr: readonly T[] = []) => NA.fromReadonlyArray(arr),
         );
 
-        const doh = trim(O.map (R.prop('https')) (upstream));
-        const dot = trim(O.map (R.prop('tls')) (upstream));
-        const dns = trim(O.map (R.prop('udp')) (upstream));
+        const doh = trim(F.pipe(upstream, O.map(d => d.https)));
+        const dot = trim(F.pipe(upstream, O.map(d => d.tls)));
+        const dns = trim(F.pipe(upstream, O.map(d => d.udp)));
 
         return { ttl, timeout, doh, dot, dns, cache: dnsCache };
 
