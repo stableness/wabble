@@ -1090,9 +1090,9 @@ export function sieve (list: string) {
 
     type Has = (domain: string) => boolean;
 
-    return Rx.defer(() => import(list) as Promise<{ has: Has }>).pipe(
-        Rx.map(R.prop('has')),
-        Rx.catchError(R.always(rxOf(R.F as Has))),
+    return Rx.defer(() => import(list) as Promise<{ has?: Has }>).pipe(
+        Rx.map(({ has = F.constFalse }) => has),
+        Rx.catchError(() => rxOf(F.constFalse)),
     );
 
 }
