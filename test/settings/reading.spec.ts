@@ -322,7 +322,7 @@ describe('filterTags', () => {
         ],
 
     ])('%p', (bar: string[], source: string[], result: string[]) => {
-        expect(unwrap(filterTags(wrap(source), bar))).toEqual(result);
+        expect(unwrap(wrap(source), bar)).toEqual(result);
     });
 
     test.each([
@@ -343,7 +343,7 @@ describe('filterTags', () => {
         ],
 
     ])('%p', (bar: string[], source: string[], result: string[]) => {
-        expect(unwrap(filterTags(wrap(source), bar))).toEqual(result);
+        expect(unwrap(wrap(source), bar)).toEqual(result);
     });
 
 
@@ -353,15 +353,13 @@ describe('filterTags', () => {
         A.map(R.objOf('tags')),
     );
 
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    const unwrap = A.map(F.flow(
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        R.prop('tags'),
-        Array.from,
-        R.join(''),
-    ));
+    const unwrap = F.flow(
+        filterTags,
+        A.map(F.flow(
+            d => Array.from(d.tags),
+            R.join(''),
+        )),
+    );
 
 });
 
