@@ -33,9 +33,9 @@ jest.retryTimes(0);
 
 jest.mock('../../src/servers/index.js', () => {
 
-    const origin = jest.requireActual(
+    const origin = jest.requireActual<Record<string, unknown>>(
         '../../src/servers/index.js',
-    ) as Record<string, unknown>;
+    );
 
     return {
         ...origin,
