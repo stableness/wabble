@@ -25,9 +25,9 @@ import {
 
 jest.mock('../../src/utils/index.js', () => {
 
-    const origin = jest.requireActual(
+    const origin = jest.requireActual<Record<string, unknown>>(
         '../../src/utils/index.js',
-    ) as Record<string, unknown>;
+    );
 
     return {
         ...origin,
