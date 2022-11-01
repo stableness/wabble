@@ -72,7 +72,7 @@ servers: # remote, circular ordering (round-robin)
 
   # trojan
   - uri: trojan://example.org:443
-    password: 123456
+    password: abcd123456
     ssl: # optional, each fields default as below
       verify: true
       verify_hostname: true
