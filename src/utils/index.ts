@@ -3,10 +3,9 @@ import { URL, domainToASCII } from 'url';
 import { once } from 'events';
 import { IncomingHttpHeaders } from 'http';
 import crypto from 'crypto';
-import { promisify } from 'util';
+import { promisify, TextDecoder as TD, TextEncoder as TeEn } from 'util';
 import { PathLike, promises as fs } from 'fs';
 import { pipeline } from 'stream';
-import { TextDecoder as TD } from 'util';
 
 import fetch from 'node-fetch';
 
@@ -764,6 +763,18 @@ export const bufferToString = run(function () {
     type Param = Parameters<typeof TD.prototype.decode>;
 
     return (...rest: Param) => td.decode(...rest);
+
+});
+
+
+
+
+
+export const stringToBuffer = run(function () {
+
+    const encoder = new TeEn();
+
+    return (str: string) => encoder.encode(str);
 
 });
 
