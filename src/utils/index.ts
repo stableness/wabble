@@ -830,6 +830,7 @@ export const trimBase64URI = (raw: string) => F.pipe(
     O.chain(readOptionalString),
     O.chain(base => F.pipe(
         O.tryCatch(() => base64.parse(base)),
+        O.alt(() => O.tryCatch(() => base64.parse(base, { loose: true }))),
         O.map(bufferToString),
         O.map(after => Str.replace (base, after) (raw)),
         O.chainFirst(std.URL.parseO),
