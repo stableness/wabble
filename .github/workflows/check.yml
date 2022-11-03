@@ -14,16 +14,16 @@ jobs:
 
   build:
     name: Check
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     strategy:
       matrix:
-        node: [ '12', '14', '16' ]
+        node: [ '12', '14', '16', '18' ]
 
     steps:
 
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
-      - uses: actions/setup-node@v2
+      - uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node }}
 
@@ -36,6 +36,13 @@ jobs:
 
       - run: NO_SKIP=on npm run test -- --coverage --verbose
         timeout-minutes: 2
+        if: matrix.node < 17
+
+      - run: NO_SKIP=on npm run test -- --coverage --verbose
+        timeout-minutes: 2
+        if: matrix.node >= 17
+        env:
+          NODE_OPTIONS: --openssl-legacy-provider
 
       - name: Smoking build
         run: |-
@@ -62,6 +69,6 @@ jobs:
               after_n_builds: 3
           EOF
 
-      - uses: codecov/codecov-action@v2
+      - uses: codecov/codecov-action@v3
         timeout-minutes: 1
 
