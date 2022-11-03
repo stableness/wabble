@@ -8,6 +8,8 @@ import { Writable, Readable } from 'stream';
 
 import nock from 'nock';
 
+import { base64 } from 'rfc4648';
+
 import { bind } from 'proxy-bind';
 
 import * as R from 'ramda';
@@ -28,6 +30,7 @@ import {
 import {
     array as stdA,
     function as stdF,
+    either as stdE,
 } from 'fp-ts-std';
 
 import {
@@ -1181,6 +1184,22 @@ describe('readURL', () => {
 
     });
 
+    test.each([
+        'ss://YmYtY2ZiOnRlc3RAMTkyLjE2OC4xMDAuMTI6ODg4OA#Foo%20Bar',
+        'ss://YmYtY2ZiOnRlc3RAMTkyLjE2OC4xMDAuMTI6ODg4OA==#Foo%20Bar',
+    ])('ss uri in base64 %s', str => {
+
+        const url = stdE.unsafeUnwrap(decodeURL(str));
+
+        expect(url.protocol).toBe('ss:');
+        expect(url.username).toBe('bf-cfb');
+        expect(url.password).toBe('test');
+        expect(url.hostname).toBe('192.168.100.12');
+        expect(url.port    ).toBe('8888');
+        expect(url.hash.substring(1)).toBe(encodeURIComponent('Foo Bar'));
+
+    });
+
     const { decode: decodeURL } = readURL;
 
 });
@@ -1193,6 +1212,7 @@ describe('trimBase64URI', () => {
 
     const a = F.identity;
     const b = (s: string) => Buffer.from(s).toString('base64');
+    const c = (s: string) => base64.stringify(Buffer.from(s), { pad: false });
 
     test.each([
 
@@ -1226,6 +1246,12 @@ describe('trimBase64URI', () => {
             trimBase64URI(stdA.join ('') ([ p, a(foo), bar ])),
         ).toBe(
             trimBase64URI(stdA.join ('') ([ p, b(foo), bar ])),
+        );
+
+        expect(
+            trimBase64URI(stdA.join ('') ([ p, b(foo), bar ])),
+        ).toBe(
+            trimBase64URI(stdA.join ('') ([ p, c(foo), bar ])),
         );
 
     });
