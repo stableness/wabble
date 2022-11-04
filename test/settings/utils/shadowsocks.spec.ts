@@ -9,6 +9,9 @@ import { base64url } from 'rfc4648';
 import {
     option as O,
     function as F,
+    reader as Rd,
+    readonlyArray as A,
+    readonlyNonEmptyArray as NA,
 } from 'fp-ts';
 
 import * as R from 'ramda';
@@ -17,6 +20,8 @@ import {
     readBasic,
     readAlgKey,
 } from '../../../src/settings/utils/shadowsocks.js';
+
+import * as u from '../../../src/utils/index.js';
 
 
 
@@ -57,33 +62,30 @@ describe('readAlgKey', () => {
 
     const _____ = 'x';
 
-    const a = F.identity;
-
-    const b = F.flow(
-        Buffer.from,
-        base64url.stringify,
-        Buffer.from,
-        R.toString,
+    const mk = F.pipe(
+        Rd.sequenceArray<Uint8Array, string>([
+            b => base64url.stringify(b),
+            b => base64url.stringify(b, { pad: false }),
+            b => Buffer.from(b).toString('base64url'),
+        ]),
+        Rd.local(u.stringToBuffer),
+        Rd.chain(F.flip(A.prepend)),
+        Rd.local(([ x ]: NA.ReadonlyNonEmptyArray<string>) => x),
+        Rd.chain(arr => ([ _, ...xs ]) => F.pipe(
+            arr,
+            A.map(F.flip (A.prepend) (xs)),
+        )),
     );
 
-    test.each([
+    test.each(A.flatten<ReadonlyArray<string>>([
 
-        [ a('foo:bar'), 'foo', 'bar' ],
-        [ b('foo:bar'), 'foo', 'bar' ],
+        mk([ 'foo:bar', 'foo', 'bar' ]),
+        mk([ 'foo',     _____, 'foo' ]),
+        mk([ 'foo:',    _____, 'foo' ]),
+        mk([ ':bar',    _____, 'bar' ]),
+        mk([ '',        _____, _____ ]),
 
-        [ a('foo'), _____, 'foo' ],
-        [ b('foo'), _____, 'foo' ],
-
-        [ a('foo:'), _____, 'foo' ],
-        [ b('foo:'), _____, 'foo' ],
-
-        [ a(':bar'), _____, 'bar' ],
-        [ b(':bar'), _____, 'bar' ],
-
-        [ a(''), _____, _____ ],
-        [ b(''), _____, _____ ],
-
-    ])('%s', (raw, ur, ps) => {
+    ]))('%s', (raw, ur, ps) => {
 
         const or = R.defaultTo(_____);
 
@@ -96,24 +98,15 @@ describe('readAlgKey', () => {
 
     });
 
-    test.each([
+    test.each(A.flatten<ReadonlyArray<string>>([
 
-        [ a('foo:bar'), 'alg', 'bar', 'alg' ],
-        [ b('foo:bar'), 'alg', 'bar', 'alg' ],
+        mk([ 'foo:bar', 'alg', 'bar', 'alg' ]),
+        mk([ 'foo',     'alg', 'foo', 'alg' ]),
+        mk([ 'foo:',    'alg', 'foo', 'alg' ]),
+        mk([ ':bar',    'alg', 'bar', 'alg' ]),
+        mk([ '',        'alg', _____, 'alg' ]),
 
-        [ a('foo'), 'alg', 'foo', 'alg' ],
-        [ b('foo'), 'alg', 'foo', 'alg' ],
-
-        [ a('foo:'), 'alg', 'foo', 'alg' ],
-        [ b('foo:'), 'alg', 'foo', 'alg' ],
-
-        [ a(':bar'), 'alg', 'bar', 'alg' ],
-        [ b(':bar'), 'alg', 'bar', 'alg' ],
-
-        [ a(''), 'alg', _____, 'alg' ],
-        [ b(''), 'alg', _____, 'alg' ],
-
-    ])('%s', (raw, ur, ps, alg_) => {
+    ]))('%s', (raw, ur, ps, alg_) => {
 
         const or = R.defaultTo(_____);
 
@@ -126,24 +119,15 @@ describe('readAlgKey', () => {
 
     });
 
-    test.each([
+    test.each(A.flatten<ReadonlyArray<string>>([
 
-        [ a('foo:bar'), 'foo', 'key', 'key' ],
-        [ b('foo:bar'), 'foo', 'key', 'key' ],
+        mk([ 'foo:bar', 'foo', 'key', 'key' ]),
+        mk([ 'foo',     _____, 'key', 'key' ]),
+        mk([ 'foo:',    _____, 'key', 'key' ]),
+        mk([ ':bar',    _____, 'key', 'key' ]),
+        mk([ '',        _____, 'key', 'key' ]),
 
-        [ a('foo'), _____, 'key', 'key' ],
-        [ b('foo'), _____, 'key', 'key' ],
-
-        [ a('foo:'), _____, 'key', 'key' ],
-        [ b('foo:'), _____, 'key', 'key' ],
-
-        [ a(':bar'), _____, 'key', 'key' ],
-        [ b(':bar'), _____, 'key', 'key' ],
-
-        [ a(''), _____, 'key', 'key' ],
-        [ b(''), _____, 'key', 'key' ],
-
-    ])('%s', (raw, ur, ps, key_) => {
+    ]))('%s', (raw, ur, ps, key_) => {
 
         const or = R.defaultTo(_____);
 
