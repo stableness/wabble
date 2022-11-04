@@ -156,5 +156,45 @@ describe('readAlgKey', () => {
 
     });
 
+    test.each([
+
+        [   'cmM0LW1kNTpwYXNzd2Q',
+            'rc4-md5', 'passwd',
+        ],
+
+        [   'YWVzLTEyOC1nY206dGVzdA',
+            'aes-128-gcm', 'test',
+        ],
+        [   'YWVzLTEyOC1nY206dGVzdA=',
+            'aes-128-gcm', 'test',
+        ],
+
+        [   'YWVzLTEyOC1nY206c2hhZG93c29ja3M',
+            'aes-128-gcm', 'shadowsocks',
+        ],
+        [   'YWVzLTEyOC1nY206c2hhZG93c29ja3M=',
+            'aes-128-gcm', 'shadowsocks',
+        ],
+
+        [   'Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTpHIXlCd1BXSDNWYW8=',
+            'chacha20-ietf-poly1305', 'G!yBwPWH3Vao',
+        ],
+        [   'Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTpHIXlCd1BXSDNWYW8',
+            'chacha20-ietf-poly1305', 'G!yBwPWH3Vao',
+        ],
+
+    ])('base64 auth - %s', (raw, user, pass) => {
+
+        const or = R.defaultTo(_____);
+
+        const { username, password } = new URL(`http://${ raw }@foobar`);
+
+        const { alg, key } = readAlgKey({ username, password });
+
+        expect(or(alg)).toBe(user);
+        expect(or(key)).toBe(pass);
+
+    });
+
 });
 
