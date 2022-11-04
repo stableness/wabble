@@ -123,12 +123,35 @@ export function readAlgKey (opts: Opts): AlgKey {
     const passEscaped = decodeURIComponent(password);
 
     return F.pipe(
-        u.readOptionalString(userEscaped),
-        O.chain(O.tryCatchK(base64url.parse)),
-        O.map(u.bufferToString),
-        O.chain(u.readOptionalString),
-        O.map(Str.split(':')),
-        O.getOrElseW(() => [ userEscaped, passEscaped ]),
+        O.sequenceArray([
+            u.readOptionalString(userEscaped),
+            u.readOptionalString(passEscaped),
+        ]),
+        O.altW(() => F.pipe(
+            u.readOptionalString(userEscaped),
+            O.alt(() => u.readOptionalString(passEscaped)),
+            O.chain(str => F.pipe(
+                O.tryCatch(() => base64url.parse(str)),
+                O.alt(() => F.pipe(
+                    O.tryCatch(() => base64url.parse(str, { loose: true })),
+                    O.map(buf => base64url.stringify(buf, { pad: true })),
+                    O.chain(O.tryCatchK(base64url.parse)),
+                )),
+                O.map(u.bufferToString),
+                O.filter(F.flow(
+                    u.stringToBuffer,
+                    buf => base64url.stringify(buf, { pad: false }),
+                    F.flip (Str.startsWith) (str),
+                )),
+            )),
+            O.chain(u.readOptionalString),
+            O.map(F.pipe(
+                u.std.Str.prepend(':'),
+                u.std.F.unless(Str.includes(':')),
+            )),
+            O.map(Str.split(':')),
+        )),
+        O.getOrElseW(() => [ '', userEscaped || passEscaped ]),
         readBasic,
         ({ user, pass }) => ({
             alg: firstOf(
