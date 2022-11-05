@@ -85,21 +85,16 @@ const at = <T> (i: number) => (as: readonly T[]) => F.pipe(
 
 export const readBasic = F.pipe(
     Rd.Do,
-    Rd.apS('user', Rd.asks(at<string>(0))),
-    Rd.apS('pass', Rd.asks(at<string>(1))),
-    Rd.bind('both', ({ user, pass }) => Rd.of(F.pipe(
-        O.Do,
-        O.apS('ur', user),
-        O.apS('ps', pass),
-    ))),
-    Rd.map(({ user, pass, both }) => ({
+    Rd.apS('user', at<string>(0)),
+    Rd.apS('pass', at<string>(1)),
+    Rd.map(({ user, pass }) => ({
         user: F.pipe(
-            both,
-            O.map(({ ur }) => ur),
+            pass,
+            O.apSecond(user),
         ),
         pass: F.pipe(
-            both,
-            O.map(({ ps }) => ps),
+            user,
+            O.apSecond(pass),
             O.alt(() => user),
             O.alt(() => pass),
         ),
