@@ -67,9 +67,9 @@ jobs:
 
 
 
-      - uses: actions/upload-artifact@v1
+      - uses: actions/upload-artifact@v3
         with:
-          path: dist/artifacts
+          path: dist/artifacts/
           name: wabble-${{ steps.release.outputs.ver }}
 
 
