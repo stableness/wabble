@@ -1,9 +1,8 @@
 import { base64url } from 'rfc4648';
 
 import {
+    alternative,
     struct,
-    monoid as Md,
-    semigroup as Sg,
     either as E,
     readonlyArray as A,
     reader as Rd,
@@ -72,7 +71,7 @@ const alias = u.std.F.guard ([
 
 const bytesToKey = u.curry2(u.EVP_BytesToKey);
 
-const firstOf = F.untupled(Md.concatAll(O.getMonoid<string>(Sg.first())));
+const firstOf = F.untupled(alternative.altAll(O.Alternative));
 
 const at = <T> (i: number) => (as: readonly T[]) => F.pipe(
     A.lookup(i, as),
