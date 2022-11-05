@@ -73,7 +73,8 @@ describe('readAlgKey', () => {
         Rd.local(([ x ]: NA.ReadonlyNonEmptyArray<string>) => x),
         Rd.chain(arr => ([ _, ...xs ]) => F.pipe(
             arr,
-            A.map(F.flip (A.prepend) (xs)),
+            A.map(A.prepend),
+            A.flap(xs),
         )),
     );
 
