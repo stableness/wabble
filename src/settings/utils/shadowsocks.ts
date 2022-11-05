@@ -73,10 +73,10 @@ const bytesToKey = u.curry2(u.EVP_BytesToKey);
 
 const firstOf = F.untupled(alternative.altAll(O.Alternative));
 
-const at = <T> (i: number) => (as: readonly T[]) => F.pipe(
-    A.lookup(i, as),
+const at = u.curry2(F.flow(
+    A.lookup,
     O.chain(u.readOptionalString),
-);
+));
 
 
 
@@ -84,8 +84,8 @@ const at = <T> (i: number) => (as: readonly T[]) => F.pipe(
 
 export const readBasic = F.pipe(
     Rd.Do,
-    Rd.apS('user', at<string>(0)),
-    Rd.apS('pass', at<string>(1)),
+    Rd.apS('user', at(0)),
+    Rd.apS('pass', at(1)),
     Rd.map(({ user, pass }) => ({
         user: F.pipe(
             pass,
