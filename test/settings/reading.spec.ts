@@ -7,9 +7,12 @@ import * as R from 'ramda';
 import {
     either as E,
     option as O,
+    taskEither as TE,
     readonlyArray as A,
     function as F,
 } from 'fp-ts';
+
+import { parse } from 'yaml';
 
 import {
 
@@ -285,6 +288,58 @@ describe('convert', () => {
         expect(() => convert(setting)).not.toThrow();
 
     });
+
+});
+
+
+
+
+
+describe('parse yaml in README.md', () => {
+
+    test('smoking', async () => {
+
+        const config = await u.std.TE.unsafeUnwrap(F.pipe(
+            read_str('./README.md'),
+            TE.map(crop('```yaml', '```')),
+            TE.chainEitherK(p_yaml),
+            TE.chainEitherK(p_setting),
+        ));
+
+        {
+            const api = u.std.O.unsafeUnwrap(config.api);
+
+            expect(api.port).toStrictEqual(8080);
+        }
+
+        {
+            expect(
+                config.resolver.timeout,
+            ).toStrictEqual(
+                u.mkMillisecond ('ms') (80),
+            );
+
+            const ttl = u.std.O.unsafeUnwrap(config.resolver.ttl);
+
+            expect(ttl.min).toStrictEqual(u.mkMillisecond ('h') (1));
+            expect(ttl.max).toStrictEqual(u.mkMillisecond ('d') (1));
+        }
+
+    });
+
+
+
+    const read_str = u.readFileInStringOf('utf-8');
+
+    const p_yaml = E.tryCatchK(parse as u.Fn<string, unknown>, E.toError);
+    const p_setting = E.tryCatchK(convert, E.toError);
+
+    const crop = (l: string, r: string) => (str: string) => {
+        const i = str.indexOf(l);
+        const j = i + l.length;
+        const k = str.indexOf(r, j);
+        return str.substring(j, k);
+    };
 
 });
 
