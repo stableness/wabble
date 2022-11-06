@@ -1,6 +1,6 @@
 import { pino } from 'pino';
 
-import { load as loadYAML } from 'js-yaml';
+import { parse as loadYAML } from 'yaml';
 
 import * as R from 'ramda';
 
