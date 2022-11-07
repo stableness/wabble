@@ -25,7 +25,7 @@ release()
 
     PKG=package.json VER=$(jq -r '.version' package.json) TMP=lite.json
 
-    echo ::set-output name=ver::${VER}
+    echo "ver=${VER}" >> $GITHUB_OUTPUT
 
     npm run -s bundle
 

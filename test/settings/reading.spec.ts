@@ -7,9 +7,12 @@ import * as R from 'ramda';
 import {
     either as E,
     option as O,
+    taskEither as TE,
     readonlyArray as A,
     function as F,
 } from 'fp-ts';
+
+import { parse } from 'yaml';
 
 import {
 
@@ -235,6 +238,16 @@ describe('convert', () => {
                 { uri: 'trojan://127.0.0.1', password: 'foobar', ssl: { cipher: 'wat' } },
             ],
         },
+        {
+            resolver: {
+                hosts: {
+                    localhost: 42,
+                    wat: '  ',
+                    foo: '127.0.0.999',
+                    bar: 'not ip address',
+                },
+            },
+        },
     ])('invalid: %p', value => {
         expect(() => convert(value)).toThrowError();
     });
@@ -249,6 +262,13 @@ describe('convert', () => {
                 { uri: 'socks5://foo:bar@0.0.0.0:8080' },
             ],
             doh: true,
+            resolver: {
+                hosts: {
+                    localhost: '::ffff:192.168.1.1',
+                    foo: '127.0.0.1',
+                    bar: '    192.168.1.1     ',
+                },
+            },
             tags: [ 'http' ],
             servers: [
                 { uri: 'socks5://127.0.0.1:8080' },
@@ -292,6 +312,58 @@ describe('convert', () => {
 
 
 
+describe('parse yaml in README.md', () => {
+
+    test('smoking', async () => {
+
+        const config = await u.std.TE.unsafeUnwrap(F.pipe(
+            read_str('./README.md'),
+            TE.map(crop('```yaml', '```')),
+            TE.chainEitherK(p_yaml),
+            TE.chainEitherK(p_setting),
+        ));
+
+        {
+            const api = u.std.O.unsafeUnwrap(config.api);
+
+            expect(api.port).toStrictEqual(8080);
+        }
+
+        {
+            expect(
+                config.resolver.timeout,
+            ).toStrictEqual(
+                u.mkMillisecond ('ms') (80),
+            );
+
+            const ttl = u.std.O.unsafeUnwrap(config.resolver.ttl);
+
+            expect(ttl.min).toStrictEqual(u.mkMillisecond ('h') (1));
+            expect(ttl.max).toStrictEqual(u.mkMillisecond ('d') (1));
+        }
+
+    });
+
+
+
+    const read_str = u.readFileInStringOf('utf-8');
+
+    const p_yaml = E.tryCatchK(parse as u.Fn<string, unknown>, E.toError);
+    const p_setting = E.tryCatchK(convert, E.toError);
+
+    const crop = (l: string, r: string) => (str: string) => {
+        const i = str.indexOf(l);
+        const j = i + l.length;
+        const k = str.indexOf(r, j);
+        return str.substring(j, k);
+    };
+
+});
+
+
+
+
+
 describe('filterTags', () => {
 
     test.each([
@@ -322,7 +394,7 @@ describe('filterTags', () => {
         ],
 
     ])('%p', (bar: string[], source: string[], result: string[]) => {
-        expect(unwrap(filterTags(wrap(source), bar))).toEqual(result);
+        expect(unwrap(wrap(source), bar)).toEqual(result);
     });
 
     test.each([
@@ -343,27 +415,23 @@ describe('filterTags', () => {
         ],
 
     ])('%p', (bar: string[], source: string[], result: string[]) => {
-        expect(unwrap(filterTags(wrap(source), bar))).toEqual(result);
+        expect(unwrap(wrap(source), bar)).toEqual(result);
     });
 
 
 
-    const SetC = R.constructN<[string], Set<string>>(1, Set);
+    const wrap = F.flow(
+        A.map((str: string) => new Set(str)),
+        A.map(R.objOf('tags')),
+    );
 
-    const wrap = A.map(F.flow(
-        SetC,
-        R.objOf('tags'),
-    ));
-
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    const unwrap = A.map(F.flow(
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        R.prop('tags'),
-        Array.from,
-        R.join(''),
-    ));
+    const unwrap = F.flow(
+        filterTags,
+        A.map(F.flow(
+            d => Array.from(d.tags),
+            R.join(''),
+        )),
+    );
 
 });
 

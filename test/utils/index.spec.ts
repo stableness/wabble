@@ -238,7 +238,10 @@ describe('EVP_BytesToKey', () => {
 
 describe('portNormalize', () => {
 
-    const read = R.o(portNormalize, R.constructN(1, URL));
+    const read = F.flow(
+        (str: string) => new URL(str),
+        portNormalize,
+    );
 
     test.each([
 
@@ -1078,7 +1081,7 @@ describe('groupBy', () => {
 
         const { triangle, square, circular } = F.pipe(
             list,
-            groupBy(R.prop('shape')),
+            groupBy(d => d.shape),
         );
 
         expect(triangle.length).toBe(1);

@@ -5,6 +5,7 @@ import {
     option as O,
     predicate as P,
     function as F,
+    readonlyRecord as Rc,
 } from 'fp-ts';
 
 import * as Dc from 'io-ts/lib/Decoder.js';
@@ -225,6 +226,19 @@ export const decodeTimesUnion = F.pipe(
 
 
 
+
+export const decodeIP = F.pipe(
+
+    u.readTrimmedNonEmptyString,
+
+    Dc.refine(u.isIP, 'invalid IP address'),
+
+);
+
+
+
+
+
 const DEFAULT_RESOLVER_TIMEOUT = u.mkMillisecond ('ms') (80);
 
 export const decodeResolver = F.pipe(
@@ -269,9 +283,14 @@ export const decodeResolver = F.pipe(
 
         ),
 
+        hosts: F.pipe(
+            Dc.UnknownRecord,
+            Dc.compose(Dc.fromRecord(decodeIP)),
+        ),
+
     }),
 
-    Dc.map(({ ttl, upstream, timeout }) => {
+    Dc.map(({ ttl, upstream, timeout, hosts = Rc.empty }) => {
 
         const mkMS = u.mkMillisecond('ms');
 
@@ -297,6 +316,8 @@ export const decodeResolver = F.pipe(
             upstream: O.fromNullable(upstream),
 
             timeout: R.clamp(Zero, Max, timeout ?? DEFAULT_RESOLVER_TIMEOUT),
+
+            hosts,
 
         };
 
@@ -356,6 +377,7 @@ export const convert: u.Fn<unknown, Config> = F.flow(
             ttl: O.none,
             upstream: O.none,
             timeout: DEFAULT_RESOLVER_TIMEOUT,
+            hosts: Rc.empty,
         },
 
         sieve: {
