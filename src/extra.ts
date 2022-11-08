@@ -4,7 +4,11 @@ export { logging, errToIgnoresBy, catchException } from './model.js';
 export { convert } from './settings/index.js';
 export * from './settings/crawler.js';
 
-export { netConnectTo } from './servers/index.js';
+export {
+    // eslint-disable-next-line deprecation/deprecation
+    netConnectTo,
+    connect_tcp,
+} from './servers/index.js';
 
 export {
     cryptoPairs,

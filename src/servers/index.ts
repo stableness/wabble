@@ -12,6 +12,7 @@ import {
     readerTaskEither as RTE,
     readonlyMap as M,
     reader as Rd,
+    readerIO as RI,
     number as Num,
     io as IO,
     either as E,
@@ -69,7 +70,10 @@ export function connect (opts: Opts, server: Remote | 'origin') {
         TE.chain(host => {
 
             if (server === 'origin') {
-                return hook(netConnectTo({ host, port }));
+                return F.pipe(
+                    TE.rightIO(connect_tcp({ host, port })),
+                    TE.chain(hook),
+                );
             }
 
             const { protocol } = server;
@@ -276,11 +280,30 @@ export const updateCache: u.CurryT<[
 
 
 
+/**
+ * @deprecated use connect_tcp instead
+ */
 export const netConnectTo = F.pipe(
 
     Rd.asks(net.connect as u.Fn<net.TcpNetConnectOpts, net.Socket>),
 
     Rd.chainFirst(socket => () => {
+        socket.setNoDelay(true);
+    }),
+
+);
+
+
+
+
+
+export const connect_tcp = F.pipe(
+
+    RI.ask<net.TcpNetConnectOpts>(),
+
+    RI.chainIOK(opts => () => net.connect(opts)),
+
+    RI.chainFirstIOK(socket => () => {
         socket.setNoDelay(true);
     }),
 

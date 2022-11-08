@@ -23,7 +23,7 @@ import * as u from '../utils/index.js';
 
 import type { AEAD, Stream } from '../settings/utils/shadowsocks.js';
 
-import { netConnectTo, RTE_O_E_V, destroyBy } from './index.js';
+import { connect_tcp, RTE_O_E_V, destroyBy } from './index.js';
 
 
 
@@ -80,7 +80,7 @@ type ConnOpts = Pick<ShadowSocks, 'host' | 'port'>;
 
 export const tunnel = (remote: ConnOpts) => u.bracket(
 
-    TE.rightIO(() => netConnectTo(remote)),
+    TE.rightIO(connect_tcp(remote)),
 
     (socket: Socket) => F.pipe(
         race(u.onceTE('connect', socket)),

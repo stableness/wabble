@@ -11,7 +11,7 @@ import {
 import type { Socks5, Basic } from '../config.js';
 import * as u from '../utils/index.js';
 
-import { destroyBy, netConnectTo, RTE_O_E_V, elapsed } from './index.js';
+import { destroyBy, connect_tcp, RTE_O_E_V, elapsed } from './index.js';
 
 
 
@@ -52,7 +52,7 @@ type ConnOpts = Pick<Socks5, 'host' | 'port' | 'auth'>;
 
 export const tunnel = (remote: ConnOpts) => (head: Uint8Array) => u.bracket(
 
-    TE.rightIO(() => netConnectTo(remote)),
+    TE.rightIO(connect_tcp(remote)),
 
     (socket: Socket) => {
 
