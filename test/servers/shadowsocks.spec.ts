@@ -39,7 +39,7 @@ jest.mock('../../src/servers/index.js', () => {
 
     return {
         ...origin,
-        netConnectTo: jest.fn(),
+        connect_tcp: jest.fn(),
     };
 
 });
@@ -51,7 +51,7 @@ import {
 } from '../../src/servers/shadowsocks.js';
 
 import {
-    netConnectTo,
+    connect_tcp,
 } from '../../src/servers/index.js';
 
 
@@ -72,7 +72,7 @@ describe('tunnel', () => {
             ],
         });
 
-        jest.mocked(netConnectTo).mockImplementationOnce(() => {
+        jest.mocked(connect_tcp).mockImplementationOnce(() => () => {
             return new Socket();
         });
 
@@ -153,7 +153,7 @@ describe('encrypt & decrypt', () => {
             allowHalfOpen: false,
         });
 
-        jest.mocked(netConnectTo).mockImplementationOnce((() => {
+        jest.mocked(connect_tcp).mockImplementationOnce((() => () => {
 
             const source = genChopper(2);
             setTimeout(() => source.emit('connect'), 10);
