@@ -57,7 +57,7 @@ export const chain: u.Fn<ShadowSocks, RTE_O_E_V> = remote => opts => {
 
         )),
 
-        TE.mapLeft(R.tap(abort)),
+        TE.orElseFirstIOK(F.constant(abort)),
 
         TE.chain(({ enc, socket, dec }) => hook(enc, socket, dec)),
 
