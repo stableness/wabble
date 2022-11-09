@@ -30,7 +30,7 @@ export const chain: u.Fn<Trojan, RTE_O_E_V> = remote => opts => {
 
         elapsed(remote, opts),
 
-        TE.mapLeft(R.tap(abort)),
+        TE.orElseFirstIOK(F.constant(abort)),
 
         TE.chain(hook),
 
