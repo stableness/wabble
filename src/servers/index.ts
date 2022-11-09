@@ -65,7 +65,7 @@ export function connect (opts: Opts, server: Remote | 'origin') {
 
         /*#__NOINLINE__*/ resolve(opts),
 
-        TE.mapLeft(R.tap(abort)),
+        TE.orElseFirstIOK(F.constant(abort)),
 
         TE.chain(host => {
 

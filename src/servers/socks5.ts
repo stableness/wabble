@@ -1,7 +1,5 @@
 import { type Socket } from 'net';
 
-import * as R from 'ramda';
-
 import {
     taskEither as TE,
     option as O,
@@ -29,7 +27,7 @@ export const chain: u.Fn<Socks5, RTE_O_E_V> = remote => opts => {
 
         elapsed(remote, opts),
 
-        TE.mapLeft(R.tap(abort)),
+        TE.orElseFirstIOK(F.constant(abort)),
 
         TE.chain(hook),
 
