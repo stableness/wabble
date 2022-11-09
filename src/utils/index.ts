@@ -445,11 +445,6 @@ export function split ({ at }: { at: number }) {
 
 
 
-/**
- * @deprecated use try2TE instead
- */
-export const tryCatchToError = try2TE;
-
 // :: (() -> Promise a) -> TaskEither Error a
 export function try2TE <A> (fn: F.Lazy<Promise<A>>) {
     return TE.tryCatch(fn, E.toError);
