@@ -7,6 +7,7 @@ import * as R from 'ramda';
 import {
     either as E,
     option as O,
+    predicate as P,
     taskEither as TE,
     readonlyArray as A,
     function as F,
@@ -377,7 +378,7 @@ describe('filterTags', () => {
         ],
 
     ])('%p', (bar: string[], source: string[], result: string[]) => {
-        expect(unwrap(wrap(source), bar)).toEqual(result);
+        expect(filter (bar) (source)).toEqual(result);
     });
 
     test.each([
@@ -398,23 +399,14 @@ describe('filterTags', () => {
         ],
 
     ])('%p', (bar: string[], source: string[], result: string[]) => {
-        expect(unwrap(wrap(source), bar)).toEqual(result);
+        expect(filter (bar) (source)).toEqual(result);
     });
 
 
-
-    const wrap = F.flow(
-        A.map((str: string) => new Set(str)),
-        A.map(R.objOf('tags')),
-    );
-
-    const unwrap = F.flow(
-        filterTags,
-        A.map(F.flow(
-            d => Array.from(d.tags),
-            R.join(''),
-        )),
-    );
+    const filter = (tags: readonly string[]) => A.filter<string>(F.pipe(
+        filterTags(tags),
+        P.contramap(str => [ ...str ]),
+    ));
 
 });
 
