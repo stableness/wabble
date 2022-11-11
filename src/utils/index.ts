@@ -33,6 +33,7 @@ import {
     predicate as P,
     separated as Sp,
     refinement as Rf,
+    number as Num,
     reader as Rd,
     monoid as Md,
     alternative as Altv,
@@ -614,6 +615,29 @@ export const readTimes = run(function () {
     );
 
 });
+
+
+
+
+
+export const safe_int = ({
+
+    min = Number.MIN_SAFE_INTEGER,
+    max = Number.MAX_SAFE_INTEGER,
+
+}) => F.pipe(
+
+    Num.isNumber,
+
+    Rf.compose(Md.concatAll (P.getMonoidAll<number>()) ([
+
+        Number.isSafeInteger,
+        n => n >= min,
+        n => n <= max,
+
+    ]) as Rf.Refinement<number, number>),
+
+);
 
 
 
