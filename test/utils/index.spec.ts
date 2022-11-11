@@ -71,6 +71,7 @@ import {
     raceTaskByTimeout,
     str2arr,
     mkMillisecond,
+    safe_int,
     toByteArray,
     monoidBuffer,
     readFile,
@@ -822,6 +823,49 @@ describe('readTimes', () => {
         expect(readTimes(str)).toBe(O.none);
 
     });
+
+});
+
+
+
+
+
+describe('safe_init', () => {
+
+    test.each([
+
+        -1,
+        2.5,
+        4.2,
+        3n,
+        'wat',
+        2,
+        9.8,
+        1e3,
+        null,
+        undefined,
+
+    ])('unsafe int from 3 to 5: %s', n => {
+
+        expect(safe_int ({ min: 3, max: 5 }) (n)).toBeUndefined();
+
+    });
+
+    test.each([
+
+        3,
+        4,
+        5,
+
+    ])('%s', (n: unknown) => {
+
+        expect(safe_int ({                }) (n)).toBe(n);
+        expect(safe_int ({ min: 3         }) (n)).toBe(n);
+        expect(safe_int ({ min: 3, max: 5 }) (n)).toBe(n);
+        expect(safe_int ({         max: 5 }) (n)).toBe(n);
+
+    });
+
 
 });
 

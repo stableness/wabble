@@ -624,6 +624,31 @@ export const readTimes = run(function () {
 
 
 
+export function safe_int ({
+    min = Number.MIN_SAFE_INTEGER,
+    max = Number.MAX_SAFE_INTEGER,
+}) {
+
+    return function (n: unknown): number | undefined {
+
+        if (   typeof n === 'number'
+            && Number.isSafeInteger(n)
+            && n >= min
+            && n <= max
+        ) {
+            return n;
+        }
+
+        return undefined;
+
+    };
+
+}
+
+
+
+
+
 export const hash = run(function () {
 
     type Alg = 'md4' | 'md5' | 'sha1' | 'sha224' | 'sha256' | 'sha512';
