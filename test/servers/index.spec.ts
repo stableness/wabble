@@ -248,10 +248,10 @@ describe('resolve', () => {
 
         const cache = u.run(Ref.newIORef(M.empty));
 
-        const dns = O.some(NA.of(F.constant(F.pipe(
+        const dns = O.some(NA.of((_: string) => F.pipe(
             TE.left(new Error('late')),
             T.delay(stdNum.add (init.resolver.timeout) (mkMS_ms(5))),
-        ))));
+        )));
 
         const resolver = { ...init.resolver, dns, cache };
         const opts = { ...init, resolver };
@@ -270,10 +270,10 @@ describe('resolve', () => {
 
         const address = '1.2.3.4';
 
-        const dns = O.some(NA.of(F.constant(F.pipe(
+        const dns = O.some(NA.of((_: string) => F.pipe(
             TE.right(NA.of({ address, ttl: 10 / 1000 })),
             T.delay(init.resolver.timeout - mkMS_ms(5)),
-        ))));
+        )));
 
         const resolver = { ...init.resolver, dns };
         const opts = { ...init, resolver };
