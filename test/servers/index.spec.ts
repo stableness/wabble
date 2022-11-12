@@ -27,6 +27,7 @@ import {
     race,
     resolve,
     updateCache,
+    by_race,
 } from '../../src/servers/index.js';
 
 
@@ -100,6 +101,59 @@ describe('race', () => {
         ));
 
     }, 100);
+
+});
+
+
+
+
+
+describe('by_race', () => {
+
+    test.each([
+
+        0,
+        -1,
+        2.3,
+        -3.5,
+        -42,
+        'string',
+        null,
+        undefined,
+
+    ])('invalid timeout - %p', n => {
+
+        const te = TE.right('data');
+
+        expect(by_race (n) ('wat') (te)).toBe(te);
+
+    });
+
+    test('on time', async () => {
+
+        const te = F.pipe(
+            TE.right('foo'),
+            T.delay(50),
+        );
+
+        await expect(u.unwrapTaskEither(
+            by_race (5_000) ('timeout') (te),
+        )).resolves.toBe('foo');
+
+    }, 200);
+
+    test('over time', async () => {
+
+        const te = F.pipe(
+            TE.right('foo'),
+            T.delay(100),
+        );
+
+        await expect(u.unwrapTaskEither(
+            by_race (20) ('timeout') (te),
+        )).rejects.toThrowError('timeout');
+
+    }, 150);
 
 });
 
