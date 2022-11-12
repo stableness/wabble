@@ -9,6 +9,7 @@ import * as R from 'ramda';
 import {
     readonlyMap as M,
     readonlyNonEmptyArray as NA,
+    readonlyRecord as Rc,
     either as E,
     option as O,
     task as T,
@@ -128,6 +129,7 @@ describe('resolve', () => {
             dot: O.none,
             ttl: O.none,
             cache: u.run(Ref.newIORef(M.empty)),
+            hosts: Rc.empty,
         },
     };
 
@@ -251,6 +253,7 @@ describe('updateCache', () => {
         doh: O.none,
         dot: O.none,
         ttl: O.none,
+        hosts: Rc.empty,
     };
 
     test('cached', async () => {
