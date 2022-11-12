@@ -363,6 +363,17 @@ export function elapsed (remote: Remote, { logger }: ChainOpts) {
 
 
 
+export const by_race = F.flow(
+    O.fromPredicate(u.safe_int({})),
+    O.filter(u.std.Num.isPositive),
+    O.map(u.curry2(u.raceTaskByTimeout)),
+    O.getOrElseW(() => F.constant(F.identity)),
+);
+
+
+
+
+
 const unknownRemote = ({ protocol }: Remote) => {
     return new Error(`Non supported protocol [${ protocol }]`);
 };
