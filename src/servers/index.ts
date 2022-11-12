@@ -12,6 +12,7 @@ import {
     readerTaskEither as RTE,
     readonlyMap as M,
     reader as Rd,
+    refinement as RF,
     readerIO as RI,
     number as Num,
     io as IO,
@@ -357,6 +358,24 @@ export function elapsed (remote: Remote, { logger }: ChainOpts) {
     });
 
 }
+
+
+
+
+
+const is_positive = F.pipe(
+    Num.isNumber, RF.compose(
+        u.std.Num.isPositive as RF.Refinement<number, number>,
+    ),
+);
+
+export const by_race = F.flip((err: string | Error) => F.pipe(
+    u.safe_int({}),
+    Rd.map(n => is_positive(n)
+        ? u.unary(u.raceTaskByTimeout(n, err))
+        : F.identity as never,
+    ),
+));
 
 
 
