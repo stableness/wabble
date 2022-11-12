@@ -325,6 +325,15 @@ describe('parse yaml in README.md', () => {
             expect(ttl.max).toStrictEqual(u.mkMillisecond ('d') (1));
         }
 
+        {
+            const remote = u.std.O.unsafeUnwrap(F.pipe(
+                config.servers,
+                A.findFirst(ser => ser.timeout != null),
+            ));
+
+            expect(remote.timeout).toStrictEqual(u.mkMillisecond ('s') (5));
+        }
+
     });
 
 

@@ -63,12 +63,34 @@ const decodeServices = F.pipe(
 
 
 
+export const decodeTimesUnion = F.pipe(
+
+    u.readTrimmedNonEmptyString,
+
+    Dc.parse(n => F.pipe(
+
+        u.readTimes(n),
+
+        O.match(
+            () => Dc.failure(n, 'unreadable time'),
+            Dc.success,
+        ),
+
+    )),
+
+);
+
+
+
+
+
 const decodeServers = F.pipe(
 
     baseURI,
 
     Dc.intersect(Dc.partial({
         tags: u.readTrimmedNonEmptyStringArr,
+        timeout: decodeTimesUnion,
         key: u.readTrimmedNonEmptyString,
         alg: u.readTrimmedNonEmptyString,
         password: u.readTrimmedNonEmptyString,
@@ -77,7 +99,7 @@ const decodeServers = F.pipe(
 
     Dc.parse(server => {
 
-        const { uri, tags = [] } = server;
+        const { uri, tags = [], timeout } = server;
 
         const { protocol, hostname, username, password } = uri;
         const port = u.portNormalize(uri);
@@ -92,6 +114,7 @@ const decodeServers = F.pipe(
             host: hostname,
             port: +port,
             tags: new Set([ ...tags, proto ]),
+            ...(timeout && { timeout }),
         });
 
         let result;
@@ -201,26 +224,6 @@ export const decodeAPI = F.pipe(
 
 );
 
-
-
-
-
-export const decodeTimesUnion = F.pipe(
-
-    u.readTrimmedNonEmptyString,
-
-    Dc.parse(n => F.pipe(
-
-        u.readTimes(n),
-
-        O.match(
-            () => Dc.failure(n, 'unreadable time'),
-            Dc.success,
-        ),
-
-    )),
-
-);
 
 
 

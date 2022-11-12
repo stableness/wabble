@@ -61,6 +61,7 @@ servers: # remote, circular ordering (round-robin)
 
   # http
   - uri: http://example.org:3128
+    timeout: 5s
 
   # socks5
   - uri: socks5://example.org:1080

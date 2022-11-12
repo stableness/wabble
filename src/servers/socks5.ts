@@ -11,7 +11,13 @@ import {
 import type { Socks5, Basic } from '../config.js';
 import * as u from '../utils/index.js';
 
-import { destroyBy, connect_tcp, RTE_O_E_V, elapsed } from './index.js';
+import {
+    destroyBy,
+    connect_tcp,
+    RTE_O_E_V,
+    elapsed,
+    by_race,
+} from './index.js';
 
 
 
@@ -46,9 +52,7 @@ const timeoutError = new u.ErrorWithCode(
     'socks5 server timeout',
 );
 
-const race = u.raceTaskByTimeout(1000 * 5, timeoutError);
-
-type ConnOpts = Pick<Socks5, 'host' | 'port' | 'auth'>;
+type ConnOpts = Pick<Socks5, 'host' | 'port' | 'auth' | 'timeout'>;
 
 export const tunnel = (remote: ConnOpts) => (head: Uint8Array) => u.bracket(
 
@@ -63,7 +67,9 @@ export const tunnel = (remote: ConnOpts) => (head: Uint8Array) => u.bracket(
 
         return F.pipe(
 
-            race(u.onceTE('connect', socket)),
+            u.onceTE('connect', socket),
+
+            F.pipe(timeoutError, by_race (remote.timeout ?? 5_000)),
 
             TE.chain(() => write(make(auth))),
 
