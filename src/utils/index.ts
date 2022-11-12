@@ -141,10 +141,11 @@ export const mem = {
 
 
 
-export const isIP = R.o(
-    P.not(R.equals(0)),
-    net.isIP,
-);
+export type StringOfIP = string & {
+    readonly StringOfIP: unique symbol;
+};
+
+export const isIP = (str: string): str is StringOfIP => net.isIP(str) !== 0;
 
 
 
@@ -445,11 +446,6 @@ export function split ({ at }: { at: number }) {
 
 
 
-/**
- * @deprecated use try2TE instead
- */
-export const tryCatchToError = try2TE;
-
 // :: (() -> Promise a) -> TaskEither Error a
 export function try2TE <A> (fn: F.Lazy<Promise<A>>) {
     return TE.tryCatch(fn, E.toError);
@@ -619,6 +615,31 @@ export const readTimes = run(function () {
     );
 
 });
+
+
+
+
+
+export function safe_int ({
+    min = Number.MIN_SAFE_INTEGER,
+    max = Number.MAX_SAFE_INTEGER,
+}) {
+
+    return function (n: unknown): number | undefined {
+
+        if (   typeof n === 'number'
+            && Number.isSafeInteger(n)
+            && n >= min
+            && n <= max
+        ) {
+            return n;
+        }
+
+        return undefined;
+
+    };
+
+}
 
 
 

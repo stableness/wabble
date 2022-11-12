@@ -23,7 +23,7 @@ import * as u from '../utils/index.js';
 
 import type { AEAD, Stream } from '../settings/utils/shadowsocks.js';
 
-import { connect_tcp, RTE_O_E_V, destroyBy } from './index.js';
+import { connect_tcp, RTE_O_E_V, destroyBy, by_race } from './index.js';
 
 
 
@@ -57,7 +57,7 @@ export const chain: u.Fn<ShadowSocks, RTE_O_E_V> = remote => opts => {
 
         )),
 
-        TE.mapLeft(R.tap(abort)),
+        TE.orElseFirstIOK(F.constant(abort)),
 
         TE.chain(({ enc, socket, dec }) => hook(enc, socket, dec)),
 
@@ -74,16 +74,15 @@ const timeoutError = new u.ErrorWithCode(
     'shadowsocks server timeout',
 );
 
-const race = u.raceTaskByTimeout(1000 * 5, timeoutError);
-
-type ConnOpts = Pick<ShadowSocks, 'host' | 'port'>;
+type ConnOpts = Pick<ShadowSocks, 'host' | 'port' | 'timeout'>;
 
 export const tunnel = (remote: ConnOpts) => u.bracket(
 
     TE.rightIO(connect_tcp(remote)),
 
     (socket: Socket) => F.pipe(
-        race(u.onceTE('connect', socket)),
+        u.onceTE('connect', socket),
+        F.pipe(timeoutError, by_race (remote.timeout ?? 5_000)),
         TE.map(F.constant(socket)),
     ),
 

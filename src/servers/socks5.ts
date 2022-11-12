@@ -1,7 +1,5 @@
 import { type Socket } from 'net';
 
-import * as R from 'ramda';
-
 import {
     taskEither as TE,
     option as O,
@@ -11,7 +9,13 @@ import {
 import type { Socks5, Basic } from '../config.js';
 import * as u from '../utils/index.js';
 
-import { destroyBy, connect_tcp, RTE_O_E_V, elapsed } from './index.js';
+import {
+    destroyBy,
+    connect_tcp,
+    RTE_O_E_V,
+    elapsed,
+    by_race,
+} from './index.js';
 
 
 
@@ -29,7 +33,7 @@ export const chain: u.Fn<Socks5, RTE_O_E_V> = remote => opts => {
 
         elapsed(remote, opts),
 
-        TE.mapLeft(R.tap(abort)),
+        TE.orElseFirstIOK(F.constant(abort)),
 
         TE.chain(hook),
 
@@ -46,9 +50,7 @@ const timeoutError = new u.ErrorWithCode(
     'socks5 server timeout',
 );
 
-const race = u.raceTaskByTimeout(1000 * 5, timeoutError);
-
-type ConnOpts = Pick<Socks5, 'host' | 'port' | 'auth'>;
+type ConnOpts = Pick<Socks5, 'host' | 'port' | 'auth' | 'timeout'>;
 
 export const tunnel = (remote: ConnOpts) => (head: Uint8Array) => u.bracket(
 
@@ -63,7 +65,9 @@ export const tunnel = (remote: ConnOpts) => (head: Uint8Array) => u.bracket(
 
         return F.pipe(
 
-            race(u.onceTE('connect', socket)),
+            u.onceTE('connect', socket),
+
+            F.pipe(timeoutError, by_race (remote.timeout ?? 5_000)),
 
             TE.chain(() => write(make(auth))),
 

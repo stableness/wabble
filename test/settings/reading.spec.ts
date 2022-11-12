@@ -7,6 +7,7 @@ import * as R from 'ramda';
 import {
     either as E,
     option as O,
+    predicate as P,
     taskEither as TE,
     readonlyArray as A,
     function as F,
@@ -238,6 +239,16 @@ describe('convert', () => {
                 { uri: 'trojan://127.0.0.1', password: 'foobar', ssl: { cipher: 'wat' } },
             ],
         },
+        {
+            resolver: {
+                hosts: {
+                    localhost: 42,
+                    wat: '  ',
+                    foo: '127.0.0.999',
+                    bar: 'not ip address',
+                },
+            },
+        },
     ])('invalid: %p', value => {
         expect(() => convert(value)).toThrowError();
     });
@@ -252,6 +263,13 @@ describe('convert', () => {
                 { uri: 'socks5://foo:bar@0.0.0.0:8080' },
             ],
             doh: true,
+            resolver: {
+                hosts: {
+                    localhost: '::ffff:192.168.1.1',
+                    foo: '127.0.0.1',
+                    bar: '    192.168.1.1     ',
+                },
+            },
             tags: [ 'http' ],
             servers: [
                 { uri: 'socks5://127.0.0.1:8080' },
@@ -325,6 +343,15 @@ describe('parse yaml in README.md', () => {
             expect(ttl.max).toStrictEqual(u.mkMillisecond ('d') (1));
         }
 
+        {
+            const remote = u.std.O.unsafeUnwrap(F.pipe(
+                config.servers,
+                A.findFirst(ser => ser.timeout != null),
+            ));
+
+            expect(remote.timeout).toStrictEqual(u.mkMillisecond ('s') (5));
+        }
+
     });
 
 
@@ -377,7 +404,7 @@ describe('filterTags', () => {
         ],
 
     ])('%p', (bar: string[], source: string[], result: string[]) => {
-        expect(unwrap(wrap(source), bar)).toEqual(result);
+        expect(filter (bar) (source)).toEqual(result);
     });
 
     test.each([
@@ -398,23 +425,14 @@ describe('filterTags', () => {
         ],
 
     ])('%p', (bar: string[], source: string[], result: string[]) => {
-        expect(unwrap(wrap(source), bar)).toEqual(result);
+        expect(filter (bar) (source)).toEqual(result);
     });
 
 
-
-    const wrap = F.flow(
-        A.map((str: string) => new Set(str)),
-        A.map(R.objOf('tags')),
-    );
-
-    const unwrap = F.flow(
-        filterTags,
-        A.map(F.flow(
-            d => Array.from(d.tags),
-            R.join(''),
-        )),
-    );
+    const filter = (tags: readonly string[]) => A.filter<string>(F.pipe(
+        filterTags(tags),
+        P.contramap(str => [ ...str ]),
+    ));
 
 });
 

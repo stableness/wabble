@@ -45,6 +45,10 @@ resolver:
     - uri:   tls://1.1.1.1             # DNS over TLS   (DoT)
     - uri: https://1.1.1.1/dns-query   # DNS over HTTPS (DoH)
 
+  hosts:
+    localhost: 127.0.0.1
+    my-router: 192.168.255.1
+
 
 
 services: # local
@@ -61,6 +65,7 @@ servers: # remote, circular ordering (round-robin)
 
   # http
   - uri: http://example.org:3128
+    timeout: 5s
 
   # socks5
   - uri: socks5://example.org:1080

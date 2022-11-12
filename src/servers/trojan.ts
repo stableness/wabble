@@ -12,7 +12,7 @@ import type { Trojan } from '../config.js';
 
 import * as u from '../utils/index.js';
 
-import { RTE_O_E_V, destroyBy, elapsed } from './index.js';
+import { RTE_O_E_V, destroyBy, elapsed, by_race } from './index.js';
 
 
 
@@ -30,7 +30,7 @@ export const chain: u.Fn<Trojan, RTE_O_E_V> = remote => opts => {
 
         elapsed(remote, opts),
 
-        TE.mapLeft(R.tap(abort)),
+        TE.orElseFirstIOK(F.constant(abort)),
 
         TE.chain(hook),
 
@@ -46,8 +46,6 @@ const timeoutError = new u.ErrorWithCode(
     'SERVER_SOCKET_TIMEOUT',
     'trojan server timeout',
 );
-
-const race = u.raceTaskByTimeout(1000 * 5, timeoutError);
 
 export const tunnel = (opts: Trojan) => (head: Uint8Array) => u.bracket(
 
@@ -90,7 +88,8 @@ export const tunnel = (opts: Trojan) => (head: Uint8Array) => u.bracket(
     }),
 
     (socket: Socket) => F.pipe(
-        race(u.onceTE('secureConnect', socket)),
+        u.onceTE('secureConnect', socket),
+        F.pipe(timeoutError, by_race (opts.timeout ?? 5_000)),
         TE.map(F.constant(socket)),
     ),
 

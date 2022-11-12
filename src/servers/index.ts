@@ -12,6 +12,7 @@ import {
     readerTaskEither as RTE,
     readonlyMap as M,
     reader as Rd,
+    refinement as RF,
     readerIO as RI,
     number as Num,
     io as IO,
@@ -22,6 +23,7 @@ import {
     string as Str,
     readonlyArray as A,
     readonlyNonEmptyArray as NA,
+    readonlyRecord as Rc,
 } from 'fp-ts';
 
 import type { Remote } from '../config.js';
@@ -65,7 +67,7 @@ export function connect (opts: Opts, server: Remote | 'origin') {
 
         /*#__NOINLINE__*/ resolve(opts),
 
-        TE.mapLeft(R.tap(abort)),
+        TE.orElseFirstIOK(F.constant(abort)),
 
         TE.chain(host => {
 
@@ -131,11 +133,13 @@ export function race (err: Error) {
 
 export function resolve (opts: Opts) {
 
-    const { host, resolver: { cache, timeout, doh, dot, dns } } = opts;
+    const { host, resolver: { cache, timeout, hosts, doh, dot, dns } } = opts;
 
     return F.pipe(
 
         isIP(host),
+
+        O.alt(() => Rc.lookup (host) (hosts)),
 
         O.alt(F.pipe(
             cache.read,
@@ -357,6 +361,24 @@ export function elapsed (remote: Remote, { logger }: ChainOpts) {
     });
 
 }
+
+
+
+
+
+const is_positive = F.pipe(
+    Num.isNumber, RF.compose(
+        u.std.Num.isPositive as RF.Refinement<number, number>,
+    ),
+);
+
+export const by_race = F.flip((err: string | Error) => F.pipe(
+    u.safe_int({}),
+    Rd.map(n => is_positive(n)
+        ? u.unary(u.raceTaskByTimeout(n, err))
+        : F.identity as never,
+    ),
+));
 
 
 

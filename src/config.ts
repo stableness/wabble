@@ -7,7 +7,7 @@ import type {
 
 import * as SS from './settings/utils/shadowsocks.js';
 
-import { Fn, Millisecond } from './utils/index.js';
+import type { Fn, Millisecond, StringOfIP } from './utils/index.js';
 
 
 
@@ -23,6 +23,8 @@ interface Base {
     port: number;
 
     tags: Set<string>;
+
+    timeout?: Millisecond;
 
     attr?: Partial<{
         priority: string;
@@ -162,6 +164,7 @@ export interface Config {
         }>;
         upstream: O.Option<NA.ReadonlyNonEmptyArray<NSResolver>>;
         timeout: Millisecond;
+        hosts: Readonly<Record<string, StringOfIP>>;
     };
 
     api: O.Option<API>;

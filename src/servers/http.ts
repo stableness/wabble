@@ -14,7 +14,7 @@ import type { Http } from '../config.js';
 
 import * as u from '../utils/index.js';
 
-import { RTE_O_E_V, destroyBy, elapsed } from './index.js';
+import { RTE_O_E_V, destroyBy, elapsed, by_race } from './index.js';
 
 
 
@@ -32,7 +32,7 @@ export const chain: u.Fn<Http, RTE_O_E_V> = remote => opts => {
 
         elapsed(remote, opts),
 
-        TE.mapLeft(R.tap(abort)),
+        TE.orElseFirstIOK(F.constant(abort)),
 
         TE.chain(hook),
 
@@ -48,8 +48,6 @@ const timeoutError = new u.ErrorWithCode(
     'SERVER_SOCKET_TIMEOUT',
     'http server timeout',
 );
-
-const race = u.raceTaskByTimeout(1000 * 5, timeoutError);
 
 export const tunnel = (opts: Http) => (path: string) => u.bracket(
 
@@ -84,7 +82,10 @@ export const tunnel = (opts: Http) => (path: string) => u.bracket(
 
     }),
 
-    req => race(u.onceSndTE<Socket>('connect', req)),
+    req => F.pipe(
+        u.onceSndTE<Socket>('connect', req),
+        F.pipe(timeoutError, by_race (opts.timeout ?? 5_000)),
+    ),
 
     destroyBy(timeoutError),
 

@@ -9,6 +9,7 @@ import * as R from 'ramda';
 import {
     readonlyMap as M,
     readonlyNonEmptyArray as NA,
+    readonlyRecord as Rc,
     either as E,
     option as O,
     task as T,
@@ -27,6 +28,7 @@ import {
     race,
     resolve,
     updateCache,
+    by_race,
 } from '../../src/servers/index.js';
 
 
@@ -107,6 +109,59 @@ describe('race', () => {
 
 
 
+describe('by_race', () => {
+
+    test.each([
+
+        0,
+        -1,
+        2.3,
+        -3.5,
+        -42,
+        'string',
+        null,
+        undefined,
+
+    ])('invalid timeout - %p', n => {
+
+        const te = TE.right('data');
+
+        expect(by_race (n) ('wat') (te)).toBe(te);
+
+    });
+
+    test('on time', async () => {
+
+        const te = F.pipe(
+            TE.right('foo'),
+            T.delay(50),
+        );
+
+        await expect(u.unwrapTaskEither(
+            by_race (5_000) ('timeout') (te),
+        )).resolves.toBe('foo');
+
+    }, 200);
+
+    test('over time', async () => {
+
+        const te = F.pipe(
+            TE.right('foo'),
+            T.delay(100),
+        );
+
+        await expect(u.unwrapTaskEither(
+            by_race (20) ('timeout') (te),
+        )).rejects.toThrowError('timeout');
+
+    }, 150);
+
+});
+
+
+
+
+
 const mkMS_s = u.mkMillisecond('s');
 const mkMS_ms = u.mkMillisecond('ms');
 
@@ -128,6 +183,7 @@ describe('resolve', () => {
             dot: O.none,
             ttl: O.none,
             cache: u.run(Ref.newIORef(M.empty)),
+            hosts: Rc.empty,
         },
     };
 
@@ -251,6 +307,7 @@ describe('updateCache', () => {
         doh: O.none,
         dot: O.none,
         ttl: O.none,
+        hosts: Rc.empty,
     };
 
     test('cached', async () => {

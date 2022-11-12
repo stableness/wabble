@@ -4,6 +4,11 @@ import {
     either as E,
     option as O,
     predicate as P,
+    struct,
+    string as Str,
+    reader as Rd,
+    readonlyArray as A,
+    readonlyRecord as Rc,
     function as F,
 } from 'fp-ts';
 
@@ -63,12 +68,34 @@ const decodeServices = F.pipe(
 
 
 
+export const decodeTimesUnion = F.pipe(
+
+    u.readTrimmedNonEmptyString,
+
+    Dc.parse(n => F.pipe(
+
+        u.readTimes(n),
+
+        O.match(
+            () => Dc.failure(n, 'unreadable time'),
+            Dc.success,
+        ),
+
+    )),
+
+);
+
+
+
+
+
 const decodeServers = F.pipe(
 
     baseURI,
 
     Dc.intersect(Dc.partial({
         tags: u.readTrimmedNonEmptyStringArr,
+        timeout: decodeTimesUnion,
         key: u.readTrimmedNonEmptyString,
         alg: u.readTrimmedNonEmptyString,
         password: u.readTrimmedNonEmptyString,
@@ -77,7 +104,7 @@ const decodeServers = F.pipe(
 
     Dc.parse(server => {
 
-        const { uri, tags = [] } = server;
+        const { uri, tags = [], timeout } = server;
 
         const { protocol, hostname, username, password } = uri;
         const port = u.portNormalize(uri);
@@ -92,6 +119,7 @@ const decodeServers = F.pipe(
             host: hostname,
             port: +port,
             tags: new Set([ ...tags, proto ]),
+            ...(timeout && { timeout }),
         });
 
         let result;
@@ -181,6 +209,18 @@ const decodeRules = Dc.struct({
 
 
 
+export const decodeIP = F.pipe(
+
+    u.readTrimmedNonEmptyString,
+
+    Dc.refine(u.isIP, 'invalid IP address'),
+
+);
+
+
+
+
+
 export const decodeAPI = F.pipe(
 
     Dc.struct({
@@ -201,26 +241,6 @@ export const decodeAPI = F.pipe(
 
 );
 
-
-
-
-
-export const decodeTimesUnion = F.pipe(
-
-    u.readTrimmedNonEmptyString,
-
-    Dc.parse(n => F.pipe(
-
-        u.readTimes(n),
-
-        O.match(
-            () => Dc.failure(n, 'unreadable time'),
-            Dc.success,
-        ),
-
-    )),
-
-);
 
 
 
@@ -269,9 +289,14 @@ export const decodeResolver = F.pipe(
 
         ),
 
+        hosts: F.pipe(
+            Dc.UnknownRecord,
+            Dc.compose(Dc.fromRecord(decodeIP)),
+        ),
+
     }),
 
-    Dc.map(({ ttl, upstream, timeout }) => {
+    Dc.map(({ ttl, upstream, timeout, hosts = Rc.empty }) => {
 
         const mkMS = u.mkMillisecond('ms');
 
@@ -297,6 +322,8 @@ export const decodeResolver = F.pipe(
             upstream: O.fromNullable(upstream),
 
             timeout: R.clamp(Zero, Max, timeout ?? DEFAULT_RESOLVER_TIMEOUT),
+
+            hosts,
 
         };
 
@@ -348,7 +375,13 @@ export const convert: u.Fn<unknown, Config> = F.flow(
         rules,
         services,
 
-        servers: filterTags(servers, tags),
+        servers: F.pipe(
+            servers,
+            A.filter<Remote>(F.pipe(
+                filterTags(tags ?? []),
+                P.contramap(ser => [ ...ser.tags ]),
+            )),
+        ),
 
         api: O.fromNullable(api),
 
@@ -356,6 +389,7 @@ export const convert: u.Fn<unknown, Config> = F.flow(
             ttl: O.none,
             upstream: O.none,
             timeout: DEFAULT_RESOLVER_TIMEOUT,
+            hosts: Rc.empty,
         },
 
         sieve: {
@@ -373,44 +407,23 @@ export const convert: u.Fn<unknown, Config> = F.flow(
 
 
 
-type TagsOnlyRemote = Partial<Remote> & Pick<Remote, 'tags'>;
-
-export function filterTags
-<T extends TagsOnlyRemote> (servers: readonly T[], tags?: string[]) {
-
-    // tags
-    const t = R.uniq(tags ?? []);
-
-    if (t.length < 1) {
-        return servers;
-    }
-
-    // Include
-    const i = R.reject(R.startsWith('-'), t);
-
-    // Exclude
-    const e = R.map(R.tail as u.Fn<string>, R.symmetricDifference(i, t));
-
-    // tags to array
-    const t2a = R.o(
-        Array.from,
-        R.prop('tags') as () => T['tags'],
-    ) as u.Fn<T, string[]>;
-
-    const isSubset = R.o(
-        R.isEmpty,
-        R.difference(i),
-    );
-
-    const isExclude = R.o(
-        R.isEmpty,
-        R.intersection(e),
-    );
-
-    return R.filter(R.o(F.pipe(isSubset, P.and(isExclude)), t2a), servers);
-
-}
-
-
-
+export const filterTags = F.pipe(
+    Rd.Do,
+    Rd.apS('subset', F.pipe(A.filter(P.not(Str.startsWith('-'))))),
+    Rd.bind('exclude', ({ subset }) => F.flow(
+        u.std.A.symmetricDifference (Str.Eq) (subset),
+        A.map(u.std.Str.dropLeft(1)),
+    )),
+    Rd.map(F.flow(
+        struct.evolve({
+            subset: u.curry2(A.difference(Str.Eq)),
+            exclude: u.curry2(A.intersection(Str.Eq)),
+        }),
+        Rc.map(Rd.map(A.isEmpty)),
+    )),
+    Rd.map(({ subset, exclude }) => F.pipe(
+        (subset), P.and (exclude),
+    )),
+    Rd.local(A.uniq(Str.Eq)),
+);
 
