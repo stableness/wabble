@@ -22,6 +22,7 @@ import {
     string as Str,
     readonlyArray as A,
     readonlyNonEmptyArray as NA,
+    readonlyRecord as Rc,
 } from 'fp-ts';
 
 import type { Remote } from '../config.js';
@@ -131,11 +132,13 @@ export function race (err: Error) {
 
 export function resolve (opts: Opts) {
 
-    const { host, resolver: { cache, timeout, doh, dot, dns } } = opts;
+    const { host, resolver: { cache, timeout, hosts, doh, dot, dns } } = opts;
 
     return F.pipe(
 
         isIP(host),
+
+        O.alt(() => Rc.lookup (host) (hosts)),
 
         O.alt(F.pipe(
             cache.read,
