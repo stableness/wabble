@@ -24,6 +24,8 @@ interface Base {
 
     tags: Set<string>;
 
+    timeout?: Millisecond;
+
     attr?: Partial<{
         priority: string;
         fit: boolean;
