@@ -283,6 +283,7 @@ export const updateCache: u.CurryT<[
 /**
  * @deprecated use connect_tcp instead
  */
+/* istanbul ignore next */
 export const netConnectTo = F.pipe(
 
     Rd.asks(net.connect as u.Fn<net.TcpNetConnectOpts, net.Socket>),
