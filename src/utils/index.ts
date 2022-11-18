@@ -28,6 +28,7 @@ import {
     taskEither as TE,
     io as IO,
     option as O,
+    ord,
     string as Str,
     state as S,
     predicate as P,
@@ -148,9 +149,9 @@ export const mem = {
 
 
 
-export const isIP = R.o(
-    P.not(R.equals(0)),
+export const isIP = F.flow(
     net.isIP,
+    P.not(eqeqeq(0)),
 );
 
 
@@ -159,7 +160,7 @@ export const isIP = R.o(
 
 export function testWith (list: Iterable<Fn<string, boolean>>) {
 
-    return R.memoizeWith(R.identity, test);
+    return R.memoizeWith(F.identity, test);
 
     function test (str: string) {
 
@@ -734,14 +735,17 @@ export function HKDF_SHA1 (
 
 
 
+const lte = std.F.curry2(ord.leq(Num.Ord));
+const gte = std.F.curry2(ord.geq(Num.Ord));
+
 export const numberToUInt16BE = std.F.guard ([
 
-    [    R.equals(443), F.constant(Uint8Array.of(0x01, 0xBB)) ],
-    [     R.equals(80), F.constant(Uint8Array.of(0x00, 0x50)) ],
-    [ R.equals(0x3FFF), F.constant(Uint8Array.of(0x3F, 0xFF)) ],
+    [    eqeqeq(443), F.constant(Uint8Array.of(0x01, 0xBB)) ],
+    [     eqeqeq(80), F.constant(Uint8Array.of(0x00, 0x50)) ],
+    [ eqeqeq(0x3FFF), F.constant(Uint8Array.of(0x3F, 0xFF)) ],
 
-    [ R.lte(0xFFFF), F.constant(Uint8Array.of(0xFF, 0xFF)) ],
-    [      R.gte(0), F.constant(Uint8Array.of(0x00, 0x00)) ],
+    [   lte(0xFFFF), F.constant(Uint8Array.of(0xFF, 0xFF)) ],
+    [        gte(0), F.constant(Uint8Array.of(0x00, 0x00)) ],
 
 ]) (mem.in100((num: number) => Uint8Array.of(num >>> 8, num)));
 
@@ -788,7 +792,10 @@ export const isBlockedIP = run(function () {
 
 
 
-export const str2arr = R.o(R.split(/\s+/), R.trim);
+export const str2arr = F.flow(
+    Str.trim,
+    Str.split(/\s+/),
+);
 
 
 
@@ -806,9 +813,9 @@ export type NonEmptyString = string & {
 
 export const readTrimmedNonEmptyString = F.pipe(
     Dc.string,
-    Dc.map(R.trim),
+    Dc.map(Str.trim),
     Dc.refine(
-        P.not(R.equals('')) as Rf.Refinement<string, NonEmptyString>,
+        P.not(eqeqeq('')) as Rf.Refinement<string, NonEmptyString>,
         'NonEmptyString',
     ),
 );
@@ -962,7 +969,7 @@ export const eqBasic = std.F.curry2(
 
 
 export const toBasicCredentials = R.memoizeWith(
-    R.identity as typeof String,
+    F.identity as typeof String,
     F.flow(
         unary(Buffer.from),
         base64.stringify,
@@ -1108,7 +1115,11 @@ export const decodeBase = run(function () {
 
 
 
-export const groupBy = R.groupBy;
+export const groupBy: <T, K extends string>
+(fn: (a: T) => K) =>
+    (as: ReadonlyArray<T>) =>
+        Readonly<Record<K, ReadonlyArray<T>>>
+= NA.groupBy;
 
 
 
@@ -1141,14 +1152,14 @@ export function timeout (ms: number) {
 
 
 
-export const constErr = R.o(R.always, Error);
+export const constErr = (msg: string) => () => new Error(msg);
 
 
 
 
 
 export const onceErr: Fn<NodeJS.EventEmitter, Promise<[ Error ]>>
-    = R.flip(once)('error') as never;
+= emitter => once(emitter, 'error') as never;
 
 
 
