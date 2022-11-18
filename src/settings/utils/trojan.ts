@@ -70,7 +70,7 @@ const codec = Dc.struct({
 
             ...rest,
 
-            cipher: F.pipe(
+            ciphers: F.pipe(
                 R.concat(cipher, cipher_tls13),
                 R.filter(Boolean),
                 R.join(':'),
