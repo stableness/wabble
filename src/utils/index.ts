@@ -115,8 +115,7 @@ export const Undefined = F.constUndefined();
 
 
 
-export const eqeqeq: <T> (_: T) => Rf.Refinement<T, T>
-= std.F.curry2(Eq.eqStrict.equals) as never;
+export const eqeqeq = <T> (a: T) => (b: T): b is T => a === b;
 
 
 
