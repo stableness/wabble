@@ -2,8 +2,6 @@ import { type Socket } from 'net';
 import crypto from 'crypto';
 import { Transform, TransformCallback } from 'stream';
 
-import * as R from 'ramda';
-
 import {
     either as E,
     ioRef as Ref,
@@ -46,7 +44,11 @@ export const chain: u.Fn<ShadowSocks, RTE_O_E_V> = remote => opts => {
             u.elapsed(ping => () => {
 
                 const { cipher: { type, algorithm } } = remote;
-                const base = R.pick([ 'host', 'port', 'protocol' ], remote);
+
+                const base = F.pipe(
+                    remote,
+                    u.std.readonlyStruct.pick([ 'host', 'port', 'protocol' ]),
+                );
 
                 logger
                     .child({ ...base, type, algorithm, ping })

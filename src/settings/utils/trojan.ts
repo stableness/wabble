@@ -1,8 +1,10 @@
-import * as R from 'ramda';
-
 import {
+    string as Str,
     function as F,
+    readonlyArray as A,
 } from 'fp-ts';
+
+import { Lens } from 'monocle-ts';
 
 import * as Dc from 'io-ts/lib/Decoder.js';
 
@@ -71,9 +73,8 @@ const codec = Dc.struct({
             ...rest,
 
             ciphers: F.pipe(
-                R.concat(cipher, cipher_tls13),
-                R.filter(Boolean),
-                R.join(':'),
+                (cipher), A.concat (cipher_tls13),
+                A.intercalate (Str.Monoid) (':'),
             ),
 
         })),
@@ -86,22 +87,18 @@ const codec = Dc.struct({
 
 
 
+const ssl = Lens.fromNullableProp<{ ssl?: unknown }>()('ssl', {});
+
 export const parse = F.flow(
 
-    R.evolve({
-
-        ssl: R.mergeRight({
-
-            verify: true,
-            verify_hostname: true,
-            sni: void 0,
-            alpn: ALPN,
-            cipher: CIPHER,
-            cipher_tls13: CIPHER_TLS13,
-
-        }),
-
-    }),
+    ssl.modify(u.std.readonlyStruct.merge({
+        verify: true,
+        verify_hostname: true,
+        sni: void 0,
+        alpn: ALPN,
+        cipher: CIPHER,
+        cipher_tls13: CIPHER_TLS13,
+    })),
 
     codec.decode,
 
