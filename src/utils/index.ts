@@ -1152,11 +1152,10 @@ type RS = NodeJS.ReadableStream;
 type WS = NodeJS.WritableStream;
 type RWS = NodeJS.ReadWriteStream;
 
-// TODO: https://github.com/microsoft/TypeScript/pull/41544
 interface Pump {
     (readable: RS, writable: WS): Promise<void>;
-    (readable: RS, ...trans: RWS[]): Promise<void>;
+    (readable: RS, ...trans: [ ...RWS[], WS ]): Promise<void>;
 }
 
-export const pump: Pump = promisify(pipeline);
+export const pump: Pump = promisify(pipeline) as never;
 
