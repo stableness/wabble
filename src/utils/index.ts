@@ -2,7 +2,7 @@ import net from 'net';
 import { URL, domainToASCII } from 'url';
 import { once } from 'events';
 import { IncomingHttpHeaders } from 'http';
-import crypto from 'crypto';
+import cpt from 'crypto';
 import { promisify, TextDecoder as TD, TextEncoder as TeEn } from 'util';
 import { PathLike, promises as fs } from 'fs';
 import { pipeline } from 'stream';
@@ -659,7 +659,7 @@ export const hash = run(function () {
 
         return function digest (data: Data) {
 
-            return crypto.createHash(algorithm).update(data).digest();
+            return cpt.createHash(algorithm).update(data).digest();
 
         };
 

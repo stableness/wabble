@@ -1,5 +1,5 @@
 import { type Socket } from 'net';
-import crypto from 'crypto';
+import cpt from 'crypto';
 import { Transform, TransformCallback } from 'stream';
 
 import * as R from 'ramda';
@@ -156,7 +156,7 @@ export function EncryptAEAD (
         head: Uint8Array,
 ) {
 
-    const salt = crypto.randomBytes(saltSize);
+    const salt = cpt.randomBytes(saltSize);
     const subKey = u.HKDF_SHA1(key, salt, SS_SUBKEY, keySize);
 
     const pack = F.flow(
@@ -215,8 +215,8 @@ function genAEADEncrypt (
 
             Rd.asks(read),
 
-            Rd.map(iv => crypto.createCipheriv(
-                algorithm as crypto.CipherGCMTypes,
+            Rd.map(iv => cpt.createCipheriv(
+                algorithm as cpt.CipherGCMTypes,
                 subKey,
                 iv,
                 { authTagLength },
@@ -300,8 +300,8 @@ function genAEADDecrypt (
 
             Rd.asks(read),
 
-            Rd.map(iv => crypto.createDecipheriv(
-                algorithm as crypto.CipherCCMTypes,
+            Rd.map(iv => cpt.createDecipheriv(
+                algorithm as cpt.CipherCCMTypes,
                 subKey,
                 iv,
                 { authTagLength },
@@ -337,11 +337,11 @@ export function EncryptStream (
         head: Uint8Array,
 ) {
 
-    const iv = crypto.randomBytes(ivLength);
+    const iv = cpt.randomBytes(ivLength);
 
     const isRC4 = algorithm.startsWith(RC4);
 
-    const cipher = crypto.createCipheriv(
+    const cipher = cpt.createCipheriv(
         isRC4 ? RC4 : algorithm,
         isRC4 ? u.hash.md5(concat(key, iv)) : key,
         isRC4 ? EMPTY : iv,
@@ -378,7 +378,7 @@ export function DecryptStream (
         ivLength: number,
 ) {
 
-    type State = E.Either<Uint8Array, crypto.Decipher>;
+    type State = E.Either<Uint8Array, cpt.Decipher>;
 
     const { read, write } = u.run(Ref.newIORef<State>(E.left(EMPTY)));
 
@@ -406,7 +406,7 @@ export function DecryptStream (
 
                     const isRC4 = algorithm.startsWith(RC4);
 
-                    const decipher = crypto.createDecipheriv(
+                    const decipher = cpt.createDecipheriv(
                         isRC4 ? RC4 : algorithm,
                         isRC4 ? u.hash.md5(concat(key, iv)) : key,
                         isRC4 ? EMPTY : iv,
