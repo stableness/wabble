@@ -42,6 +42,6 @@ jobs:
       - run: npm run test -- --coverage --reporters=jest-sonar
 
       - name: SonarCloud Scan
-        uses: SonarSource/sonarcloud-github-action@v1.9
+        uses: SonarSource/sonarcloud-github-action@v2.0.0
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
