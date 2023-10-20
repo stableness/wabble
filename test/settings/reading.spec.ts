@@ -239,6 +239,16 @@ describe('convert', () => {
                 { uri: 'trojan://127.0.0.1', password: 'foobar', ssl: { cipher: 'wat' } },
             ],
         },
+        {
+            resolver: {
+                hosts: {
+                    localhost: 42,
+                    wat: '  ',
+                    foo: '127.0.0.999',
+                    bar: 'not ip address',
+                },
+            },
+        },
     ])('invalid: %p', value => {
         expect(() => convert(value)).toThrowError();
     });
@@ -253,6 +263,13 @@ describe('convert', () => {
                 { uri: 'socks5://foo:bar@0.0.0.0:8080' },
             ],
             doh: true,
+            resolver: {
+                hosts: {
+                    localhost: '::ffff:192.168.1.1',
+                    foo: '127.0.0.1',
+                    bar: '    192.168.1.1     ',
+                },
+            },
             tags: [ 'http' ],
             servers: [
                 { uri: 'socks5://127.0.0.1:8080' },
@@ -324,6 +341,10 @@ describe('parse yaml in README.md', () => {
 
             expect(ttl.min).toStrictEqual(u.mkMillisecond ('h') (1));
             expect(ttl.max).toStrictEqual(u.mkMillisecond ('d') (1));
+
+            expect(
+                config.resolver.hosts,
+            ).toHaveProperty('localhost', '127.0.0.1');
         }
 
         {
