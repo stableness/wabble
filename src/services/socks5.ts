@@ -12,8 +12,6 @@ import {
     function as F,
 } from 'fp-ts';
 
-import * as R from 'ramda';
-
 import * as Rx from 'rxjs';
 
 import type { Logging } from '../model.js';
@@ -22,6 +20,7 @@ import type { Service } from '../config.js';
 import * as u from '../utils/index.js';
 
 import {
+    once,
     readFrame,
     do_not_have_authentication,
 } from './utils.js';
@@ -98,7 +97,7 @@ export const socks5Proxy =
             const write = u.writeToTaskEither(socket);
 
             const frame = readFrame(read);
-            const frameToString = TE.map (R.toString) (frame);
+            const frameToString = TE.map (u.bufferToString) (frame);
 
             const result = await u.run(F.pipe(
 
@@ -222,7 +221,7 @@ export const socks5Proxy =
 
                 logger.debug({
                     msg: 'SOCKS5_HANDSHAKE_ERROR',
-                    message: R.propOr('unknown', 'message')(result.left),
+                    message: result.left.message,
                 });
 
             }
@@ -250,7 +249,7 @@ export const socks5Proxy =
 
             },
 
-            abort: R.once(() => {
+            abort: once(() => {
 
                 socket.resume();
                 socket.write(E_REFUSED, () => {

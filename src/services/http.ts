@@ -13,15 +13,13 @@ import {
     function as F,
 } from 'fp-ts';
 
-import * as R from 'ramda';
-
 import * as Rx from 'rxjs';
 
 import type { Logging } from '../model.js';
 import type { Service } from '../config.js';
 import * as u from '../utils/index.js';
 
-import { do_not_require } from './utils.js';
+import { do_not_require, once } from './utils.js';
 
 
 
@@ -58,7 +56,7 @@ export const httpProxy =
             const { url = '' } = request;
 
             if (url.startsWith('/http://') === true) {
-                request.url = R.tail(url);
+                request.url = u.std.Str.dropLeft (1) (url);
             }
 
             if (request.url?.startsWith('http://') === false) {
@@ -239,7 +237,7 @@ export const requestOn = Rx.pipe(
 
         },
 
-        abort: R.once(() => {
+        abort: once(() => {
             response.socket?.resume();
             response.writeHead(503).end();
         }),
@@ -275,7 +273,7 @@ export const connectOn = Rx.pipe(
 
         },
 
-        abort: R.once(() => {
+        abort: once(() => {
             socket.resume();
             socket.end(u.headerJoin([ 'HTTP/1.0 503' ]));
         }),
@@ -322,7 +320,7 @@ export function mapConnect (
 
 
 
-export const omitHopHeaders = R.omit([
+export const omitHopHeaders = u.std.readonlyStruct.omit<string>([
     'proxy-authorization',
     'proxy-connection',
     'transfer-encoding',
