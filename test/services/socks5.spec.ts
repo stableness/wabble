@@ -125,7 +125,6 @@ const socks5: Result<TE_ES> = ports => ({ url }) => {
                 port: ports.server,
                 logger: pino({
                     base: null,
-                    prettyPrint: false,
                     enabled: true,
                 }),
                 abort: F.constVoid,

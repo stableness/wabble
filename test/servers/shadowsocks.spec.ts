@@ -213,7 +213,6 @@ const through: u.CurryT<[
         abort: F.constVoid,
         logger: pino({
             base: null,
-            prettyPrint: false,
             enabled: true,
         }),
         hook: u.catchKToError(async (...rest: NodeJS.ReadWriteStream[]) => {
