@@ -82,7 +82,6 @@ export function genLogging ({ debug = false, warn = false } = {}): Logging {
 
         logger: pino({
             base: null,
-            prettyPrint: false,
             enabled: false,
         }),
 
