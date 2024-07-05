@@ -29,7 +29,6 @@ plugins:
 
   - '@typescript-eslint'
   - deprecation
-  - import
 
 
 
@@ -40,7 +39,6 @@ extends:
   - eslint:recommended
   - plugin:@typescript-eslint/recommended
   - plugin:@typescript-eslint/recommended-requiring-type-checking
-  - plugin:import/typescript
 
 
 
@@ -92,11 +90,6 @@ rules:
     - argsIgnorePattern: ^_
 
   deprecation/deprecation: error
-
-  import/extensions:
-    - error
-    - always
-    - ignorePackages: true
 
   space-before-function-paren: 'off'
   '@typescript-eslint/space-before-function-paren':
