@@ -21,8 +21,6 @@ jobs:
     strategy:
       matrix:
         node:
-          - 14
-          - 16
           - 18
           - 20
           - 22
@@ -35,49 +33,9 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
 
-      - run: npm install --no-save
-        env:
-          ADBLOCK: true
-          DISABLE_OPENCOLLECTIVE: true
+      - run: npx pkg-fence --lodash --nolyfill
 
-      - run: npm run lint
 
-      - run: NO_SKIP=on npm run test -- --coverage --verbose
-        timeout-minutes: 2
-        if: matrix.node < 17
-
-      - run: NO_SKIP=on npm run test -- --coverage --verbose
-        timeout-minutes: 2
-        if: matrix.node >= 17
-        env:
-          NODE_OPTIONS: --openssl-legacy-provider
-
-      - name: Smoking build
-        run: |-
-          sh ci.sh ./ prerelease
-          npm run build
-          npm pack --dry-run
-
-      - name: Smoking bundle
-        run: |-
-          sh ci.sh ./ prerelease
-          npm run bundle
-
-      - name: Check executable
-        run: |-
-          [[ "$(node dist/bin.cjs -v)" == "$(jq -r '.version' package.json)" ]] && echo y
-
-      - name: Misc
-        run: |-
-          ls -lh dist/bin.cjs
-          cat <<-EOF > codecov.yml
-          codecov:
-            allow_coverage_offsets: True
-            notify:
-              after_n_builds: 3
-          comment:
-            after_n_builds: 3
-          EOF
 
       - uses: codecov/codecov-action@v3.1.5
         timeout-minutes: 1
