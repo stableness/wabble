@@ -33,7 +33,7 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
 
-      - run: npx pkg-fence --lodash --nolyfill
+      - run: npm shrinkwrap && cat npm-shrinkwrap.json | npx pkg-fence --lodash --nolyfill
 
 
 
