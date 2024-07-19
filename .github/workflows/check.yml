@@ -40,6 +40,12 @@ jobs:
           ADBLOCK: true
           DISABLE_OPENCOLLECTIVE: true
 
+      - name: pkg-fence
+        if: matrix.node >= 18
+        run: |-
+          npm shrinkwrap
+          cat npm-shrinkwrap.json | npm ls `npx --yes pkg-fence --relief --nolyfill`
+
       - run: npm run lint
 
       - run: NO_SKIP=on npm run test -- --coverage --verbose
