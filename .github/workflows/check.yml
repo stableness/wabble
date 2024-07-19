@@ -35,12 +35,16 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
 
-      - run: npm install --package-lock --no-save
+      - run: npm install --no-save
         env:
           ADBLOCK: true
           DISABLE_OPENCOLLECTIVE: true
 
-      - run: npx pkg-fence --nolyfill --relief < package-lock.json
+      - name: pkg-fence
+        if: matrix.node >= 18
+        run: |-
+          npm shrinkwrap
+          cat npm-shrinkwrap.json | npm ls `npx --yes pkg-fence --relief --nolyfill`
 
       - run: npm run lint
 
