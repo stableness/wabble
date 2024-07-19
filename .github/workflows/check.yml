@@ -35,10 +35,12 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
 
-      - run: npm install --no-save
+      - run: npm install --package-lock --no-save
         env:
           ADBLOCK: true
           DISABLE_OPENCOLLECTIVE: true
+
+      - run: npx pkg-fence --nolyfill --relief < package-lock.json
 
       - run: npm run lint
 
