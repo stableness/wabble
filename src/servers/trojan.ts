@@ -1,8 +1,6 @@
 import { type Socket } from 'net';
 import { connect } from 'tls';
 
-import * as R from 'ramda';
-
 import {
     taskEither as TE,
     function as F,
@@ -74,7 +72,7 @@ export const tunnel = (opts: Trojan) => (head: Uint8Array) => u.bracket(
             rejectUnauthorized,
 
             ...(
-                R.not(verify_hostname)
+                verify_hostname === false
                 && { checkServerIdentity: F.constUndefined }
             ),
 

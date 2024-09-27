@@ -1,12 +1,12 @@
-import * as R from 'ramda';
-
 import {
     either as E,
     option as O,
+    ord as Od,
     predicate as P,
     struct,
     string as Str,
     reader as Rd,
+    number as Num,
     readonlyArray as A,
     readonlyRecord as Rc,
     function as F,
@@ -37,7 +37,7 @@ const decodeServices = F.pipe(
 
     Dc.parse(({ uri: { protocol, port, hostname, username, password } }) => {
 
-        const proto = R.init(protocol);
+        const proto = str_init(protocol);
 
         const auth = F.pipe(
             O.some(u.eqBasic({ username, password })),
@@ -48,7 +48,7 @@ const decodeServices = F.pipe(
 
             return Dc.success({
                 auth,
-                port: R.subtract(+port, +(process.env.DEV_PORT_MINUS ?? 0)),
+                port: subtract(+port, +(process.env.DEV_PORT_MINUS ?? 0)),
                 host: hostname,
                 // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
                 protocol: proto as typeof proto,
@@ -108,14 +108,14 @@ const decodeServers = F.pipe(
 
         const { protocol, hostname, username, password } = uri;
         const port = u.portNormalize(uri);
-        const proto = R.init(protocol);
+        const proto = str_init(protocol);
 
         const auth = F.pipe(
             O.of({ username, password }),
             O.filter(P.not(u.eqBasic({ username: '', password: '' }))),
         );
 
-        const baseWith = R.mergeLeft({
+        const baseWith = u.std.readonlyStruct.merge({
             host: hostname,
             port: +port,
             tags: new Set([ ...tags, proto ]),
@@ -141,7 +141,7 @@ const decodeServers = F.pipe(
 
             F.pipe(
 
-                Trojan.parse({ ssl: {}, password: username, ...server }),
+                Trojan.parse({ password: username, ...server }),
 
                 E.mapLeft(Dc.draw),
 
@@ -168,7 +168,7 @@ const decodeServers = F.pipe(
 
         if (proto === 'http' || proto === 'https') {
 
-            const verify = R.pathOr(true, [ 'ssl', 'verify' ], server);
+            const verify = false !== server.ssl?.verify;
 
             result = baseWith({
                 protocol: proto,
@@ -224,7 +224,7 @@ export const decodeAPI = F.pipe(
         shared,
         cors,
         host: shared ? '0.0.0.0' : '127.0.0.1',
-        port: R.subtract(port, +(process.env.DEV_PORT_MINUS ?? 0)),
+        port: subtract(port, +(process.env.DEV_PORT_MINUS ?? 0)),
     })),
 
 );
@@ -260,7 +260,7 @@ export const decodeResolver = F.pipe(
 
                 return F.pipe(
 
-                    R.init(uri.protocol),
+                    str_init(uri.protocol),
 
                     proto.decode,
 
@@ -292,10 +292,10 @@ export const decodeResolver = F.pipe(
                 O.fromNullable(ttl),
                 O.map(opts => {
 
-                    const min = R.max(Zero, opts.min ?? Zero);
-                    const max = R.clamp(min, Max, opts.max ?? Max);
+                    const min = mills_ord.max(Zero, opts.min ?? Zero);
+                    const max = mills_ord.clamp (min, Max) (opts.max ?? Max);
 
-                    const calc = R.clamp(min, max);
+                    const calc = mills_ord.clamp(min, max);
 
                     return { min, max, calc };
 
@@ -304,13 +304,35 @@ export const decodeResolver = F.pipe(
 
             upstream: O.fromNullable(upstream),
 
-            timeout: R.clamp(Zero, Max, timeout ?? DEFAULT_RESOLVER_TIMEOUT),
+            timeout: F.pipe(
+                timeout ?? DEFAULT_RESOLVER_TIMEOUT,
+                mills_ord.clamp(Zero, Max),
+            ),
 
         };
 
     }),
 
 );
+
+
+
+
+
+const mills_ord = F.pipe(
+    Rd.Do as Rd.Reader<
+        Od.Ord<u.Millisecond>,
+        Rc.ReadonlyRecord<never, unknown>
+    >,
+    Rd.apS('min', Od.min),
+    Rd.apS('max', Od.max),
+    Rd.apS('clamp', Od.clamp),
+    F.apply(Num.Ord),
+);
+
+const subtract = F.untupled(u.uncurry2(F.flip(u.std.number.subtract)));
+
+const str_init = u.std.Str.dropRight(1);
 
 
 

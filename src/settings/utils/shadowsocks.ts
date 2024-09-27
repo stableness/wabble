@@ -11,8 +11,6 @@ import {
     function as F,
 } from 'fp-ts';
 
-import * as R from 'ramda';
-
 import * as u from '../../utils/index.js';
 
 
@@ -61,8 +59,8 @@ const cipher = {
 
 
 const alias = u.std.F.guard ([
-    [ R.equals('chacha20-ietf-poly1305'), R.always('chacha20-poly1305') ],
-    [ R.equals('chacha20-ietf'),          R.always('chacha20') ],
+    [ u.eqeqeq('chacha20-ietf-poly1305'), F.constant('chacha20-poly1305') ],
+    [ u.eqeqeq('chacha20-ietf'),          F.constant('chacha20') ],
 ]) (F.identity);
 
 

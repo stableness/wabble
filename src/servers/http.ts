@@ -2,8 +2,6 @@ import https from 'https';
 import http from 'http';
 import type { Socket } from 'net';
 
-import * as R from 'ramda';
-
 import {
     taskEither as TE,
     option as O,
@@ -26,7 +24,7 @@ export const chain: u.Fn<Http, RTE_O_E_V> = remote => opts => {
 
     return F.pipe(
 
-        TE.rightIO(() => R.join(':', [ host, port ])),
+        TE.rightIO(() => `${ host }:${ port }`),
 
         TE.chain(tunnel(remote)),
 

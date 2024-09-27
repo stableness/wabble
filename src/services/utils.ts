@@ -1,12 +1,13 @@
-import * as R from 'ramda';
-
 import {
     taskEither as TE,
+    number as Num,
     string as Str,
     readonlyArray as A,
     function as F,
     predicate as P,
 } from 'fp-ts';
+
+import { bind } from 'proxy-bind';
 
 import { option2B, Fn, std, type CurryT } from '../utils/index.js';
 
@@ -15,7 +16,7 @@ import { option2B, Fn, std, type CurryT } from '../utils/index.js';
 
 
 // :: number[] -> boolean
-export const do_not_have_authentication = P.not(R.includes(0x02));
+export const do_not_have_authentication = P.not(A.elem (Num.Eq) (0x02));
 
 
 
@@ -55,4 +56,23 @@ export const date_to_dump_name: CurryT<[ string, Date, string ]>
     std.A.join('-'),
     std.Str.append('.heapsnapshot'),
 );
+
+
+
+
+
+export const once = <T> (f: F.Lazy<T>) => F.pipe(
+    bind(gen_once(f)).next,
+    std.lazy.map(r => r.value),
+);
+
+function* gen_once <T> (f: () => T) {
+
+    const res = f();
+
+    while (true) {
+        yield res;
+    }
+
+}
 

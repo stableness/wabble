@@ -3,8 +3,6 @@ import type { Writable } from 'stream';
 
 import type { Logger } from 'pino';
 
-import * as R from 'ramda';
-
 import {
     monoid,
     task as T,
@@ -19,9 +17,11 @@ import {
     option as O,
     predicate as P,
     function as F,
+    struct,
     string as Str,
     readonlyArray as A,
     readonlyNonEmptyArray as NA,
+    readonlyRecord as Rc,
 } from 'fp-ts';
 
 import type { Remote } from '../config.js';
@@ -174,10 +174,14 @@ const from_DoH_DoT = (type: string) => (opts: Opts) => (query: Query) => {
 
         query(host),
 
-        TE.map(/*#__NOINLINE__*/ A.findFirst(R.where({
-            type: R.equals('A'),
-            data: R.is(String),
-        }))),
+        TE.map(/*#__NOINLINE__*/ A.findFirst(F.flow(
+            u.std.readonlyStruct.pick([ 'type', 'data' ]),
+            struct.evolve({
+                type: u.eqeqeq('A'),
+                data: Str.isString,
+            }),
+            Rc.every(Boolean),
+        ))),
 
         TE.chain(TE.fromOption(no_valid_entries)),
 
@@ -216,9 +220,13 @@ const fromDNS = (opts: Opts) => (query: DNS_query) => {
 
         query(host),
 
-        TE.map(/*#__NOINLINE__*/ A.findFirst(R.where({
-            address: R.is(String),
-        }))),
+        TE.map(/*#__NOINLINE__*/ A.findFirst(F.flow(
+            u.std.readonlyStruct.pick([ 'address' ]),
+            struct.evolve({
+                address: Str.isString,
+            }),
+            Rc.every(Boolean),
+        ))),
 
         TE.chain(TE.fromOption(no_valid_entries)),
 
@@ -349,8 +357,8 @@ export function elapsed (remote: Remote, { logger }: ChainOpts) {
 
         const proxy = F.pipe(
             remote,
-            R.pick([ 'host', 'port', 'protocol' ]),
-            R.mergeLeft({ ping }),
+            u.std.readonlyStruct.pick([ 'host', 'port', 'protocol' ]),
+            u.std.readonlyStruct.merge({ ping }),
         );
 
         logger.child({ proxy }).trace('Elapsed');

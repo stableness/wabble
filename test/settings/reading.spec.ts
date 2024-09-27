@@ -25,6 +25,10 @@ import {
 
 } from '../../src/settings/reading.js';
 
+import type {
+    Trojan,
+} from '../../src/config.js';
+
 import * as u from '../../src/utils/index.js';
 
 
@@ -266,6 +270,7 @@ describe('convert', () => {
                 { uri: 'ss://YWVzLTEyOC1jdHI6Zm9vYmFy@127.0.0.1:8080' },
                 { uri: 'ss://YWVzLTEyOC1jdHI6Zm9vYmFy@127.0.0.1', key: 'hello' },
                 { uri: 'ss://YWVzLTEyOC1jdHI6Zm9vYmFy@127.0.0.1', alg: 'aes-256-ctr' },
+                { uri: 'trojan://foobar@127.0.0.1' },
                 { uri: 'trojan://foobar@127.0.0.1', ssl: { verify: true } },
                 { uri: 'trojan://127.0.0.1', password: 'foobar', ssl: { verify: true } },
                 { uri: 'trojan://127.0.0.1', password: 'foobar', ssl: { sni: 'localhost' } },
@@ -333,6 +338,21 @@ describe('parse yaml in README.md', () => {
             ));
 
             expect(remote.timeout).toStrictEqual(u.mkMillisecond ('s') (7));
+        }
+
+        {
+            const { password, ssl } = u.std.O.unsafeUnwrap(F.pipe(
+                config.servers,
+                A.findFirst((ser): ser is Trojan => ser.protocol === 'trojan'),
+            ));
+
+            expect(password).toBe('abcd123456');
+
+            expect(ssl.alpn).toStrictEqual([ 'h2', 'http/1.1' ]);
+
+            expect(
+                ssl.ciphers?.includes('ECDHE-RSA-CHACHA20-POLY1305'),
+            ).toBe(true);
         }
 
     });
