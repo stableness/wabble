@@ -209,6 +209,18 @@ const decodeRules = Dc.struct({
 
 
 
+export const decodeIP = F.pipe(
+
+    u.readTrimmedNonEmptyString,
+
+    Dc.refine(u.isIP, 'invalid IP address'),
+
+);
+
+
+
+
+
 export const decodeAPI = F.pipe(
 
     Dc.struct({
@@ -277,9 +289,14 @@ export const decodeResolver = F.pipe(
 
         ),
 
+        hosts: F.pipe(
+            Dc.UnknownRecord,
+            Dc.compose(Dc.fromRecord(decodeIP)),
+        ),
+
     }),
 
-    Dc.map(({ ttl, upstream, timeout }) => {
+    Dc.map(({ ttl, upstream, timeout, hosts = Rc.empty }) => {
 
         const mkMS = u.mkMillisecond('ms');
 
@@ -305,6 +322,8 @@ export const decodeResolver = F.pipe(
             upstream: O.fromNullable(upstream),
 
             timeout: R.clamp(Zero, Max, timeout ?? DEFAULT_RESOLVER_TIMEOUT),
+
+            hosts,
 
         };
 
@@ -370,6 +389,7 @@ export const convert: u.Fn<unknown, Config> = F.flow(
             ttl: O.none,
             upstream: O.none,
             timeout: DEFAULT_RESOLVER_TIMEOUT,
+            hosts: Rc.empty,
         },
 
         sieve: {

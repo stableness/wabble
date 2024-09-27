@@ -187,7 +187,7 @@ const resolver$ = config$.pipe(
             u.groupBy(d => d.protocol),
         )),
     })),
-    Rx.map(({ ttl, upstream, timeout }) => {
+    Rx.map(({ ttl, upstream, timeout, hosts }) => {
 
         const trim = O.chain(
             <T> (arr: readonly T[] = []) => NA.fromReadonlyArray(arr),
@@ -197,7 +197,7 @@ const resolver$ = config$.pipe(
         const dot = trim(F.pipe(upstream, O.map(d => d.tls)));
         const dns = trim(F.pipe(upstream, O.map(d => d.udp)));
 
-        return { ttl, timeout, doh, dot, dns, cache: dnsCache };
+        return { ttl, timeout, hosts, doh, dot, dns, cache: dnsCache };
 
     }),
 );
@@ -276,7 +276,11 @@ const runner$ = services$.pipe(
             hook: u.catchKToError(hook),
             logger: logger.child({ host, port }),
             rejection: rules.reject(host),
-            direction: rules.direct(host),
+            direction: F.pipe(
+                record_has(resolver.hosts),
+                P.or(rules.direct),
+                F.apply(host),
+            ),
         })),
 
         Rx.filter(opts => {
@@ -435,4 +439,10 @@ export const { has: errToIgnoresBy } = bind(new Set([
     'ERR_STREAM_PREMATURE_CLOSE',
     'BLOCKED_HOST',
 ]));
+
+
+
+
+
+const record_has = F.flip(u.std.F.curry2(Rc.has));
 
